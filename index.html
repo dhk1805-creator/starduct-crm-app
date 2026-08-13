@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v11 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v12 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -470,9 +470,28 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v11 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v12 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08 đợt 5: định lượng theo loại mục tiêu ----
+['Tham gia (trưng bày/diễn giả)','Exhibit (booth/speaker)'],
+['Tham quan (khảo sát)','Visit (survey)'],
+['Tham dự (hội thảo/hiệp hội)','Attend (seminar/association)'],
+['Cuộc gặp cấp ra quyết định','Decision-maker meetings'],
+['TK nâng phủ ≥2','Accounts raised to ≥2'],
+['Dự án spec-in','Spec-in projects'],
+['Doanh thu (VND)','Revenue (VND)'],
+['Đơn OEM/ODM','OEM/ODM orders'],
+['Tổng thầu mới','New GCs'],
+['NPP/Agent mới','New distributors/agents'],
+['Kỹ sư spec','Spec engineers'],
+['CĐT mới','New developers'],
+['TVTK mới','New consultants'],
+['Số sự kiện','Events count'],
+['Lead mục tiêu','Target leads'],
+['— Hình thức —','— Format —'],
+['Đơn vị là gì?','What unit?'],
+['tham gia','exhibit'],['tham quan','visit'],['tham dự','attend'],
 // ---- bổ sung 13/08 đợt 4: duyệt + phân công DA ----
 ['Ý kiến duyệt / lý do từ chối (bắt buộc khi từ chối — L4)','Approval comment / rejection reason (required on reject — rule L4)'],
 ['Kế hoạch đang chờ duyệt','Plan awaiting approval'],
@@ -1154,18 +1173,23 @@ async function openKH(id){
     ${['chinh','phu','khac'].map(u=>{const g=objs.filter(o=>o.uu_tien===u);if(!g.length)return'';
       return `<div style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin-bottom:6px">
       <b style="font-size:12px">${{chinh:'🥇 CHÍNH',phu:'🥈 PHỤ',khac:'🥉 KHÁC'}[u]}</b>
-      ${g.map(o=>{const pc=o.so_luong?Math.min(100,Math.round((+o.ket_qua_so||0)*100/+o.so_luong)):null;
+      ${g.map(o=>{const ct=o.chi_tiet||{},kq=o.ket_qua_chi_tiet||{};
+        const keys=Object.keys(ct).filter(k=>typeof ct[k]==='number');
+        const pcs=keys.map(k=>Math.min(1,(+kq[k]||0)/ct[k]));
+        const pc=pcs.length?Math.round(pcs.reduce((a,b)=>a+b,0)*100/pcs.length):null;
         return `<div style="padding:6px 0;border-top:1px solid var(--border)">
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <span style="flex:1;min-width:200px">${esc(o.dien_giai)}
-            <span class="muted">· ${OBJ_LOAI[o.loai]||''}${o.vung_quoc_gia?' · '+esc(o.vung_quoc_gia):''}${o.han?' · hạn '+o.han:''}</span></span>
-          ${o.so_luong?`<span class="tag">${(+o.ket_qua_so||0).toLocaleString('vi')} / ${(+o.so_luong).toLocaleString('vi')} ${OBJ_DV[o.don_vi]||''} ${pc!==null?'· '+pc+'%':''}</span>`:''}
+            <span class="muted">· ${OBJ_LOAI[o.loai]||''}${ct.ht?' · '+{tham_gia:'tham gia',tham_quan:'tham quan',tham_du:'tham dự'}[ct.ht]:''}${o.vung_quoc_gia?' · '+esc(o.vung_quoc_gia):''}${o.han?' · hạn '+o.han:''}</span></span>
+          ${pc!==null?`<span class="tag" style="${pc>=100?'background:var(--ok-bg);color:var(--ok)':''}">${pc}%</span>`:''}
         </div>
-        ${o.so_luong?`<div style="height:5px;background:var(--border);border-radius:3px;margin:4px 0">
-          <div style="height:5px;width:${pc||0}%;background:${pc>=100?'var(--ok)':'var(--b400)'};border-radius:3px"></div></div>`:''}
-        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">
-          <input id="oks-${o.id}" type="number" placeholder="Số đạt được" value="${o.ket_qua_so??''}" style="width:110px">
-          <input id="okt-${o.id}" placeholder="Diễn giải kết quả…" value="${esc(o.ket_qua||'')}" style="flex:1;min-width:160px">
+        ${pc!==null?`<div style="height:5px;background:var(--border);border-radius:3px;margin:4px 0">
+          <div style="height:5px;width:${pc}%;background:${pc>=100?'var(--ok)':'var(--b400)'};border-radius:3px"></div></div>`:''}
+        <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center">
+          ${keys.map(k=>`<label style="font-size:12px;display:flex;align-items:center;gap:4px;margin:0">
+            <span class="muted">${OBJ_QTY_LBL[k]||(o.loai==='khac'&&ct.dv?ct.dv:k)}:</span>
+            <input id="okq-${o.id}-${k}" type="number" min="0" value="${kq[k]??''}" placeholder="0" style="width:70px"><span class="muted">/${(+ct[k]).toLocaleString('vi')}</span></label>`).join('')}
+          <input id="okt-${o.id}" placeholder="Diễn giải kết quả…" value="${esc(o.ket_qua||'')}" style="flex:1;min-width:150px">
           <button class="btn" onclick="capNhatObj('${o.id}','${p.id}')">Lưu</button>
         </div></div>`}).join('')}</div>`}).join('')}`:''}
     <h3 style="font-size:13px;margin:0 0 6px">Hạng mục kế hoạch (${items.length})</h3>
@@ -1329,9 +1353,12 @@ function nhipHTML(p,items){
     </div>`}).join('');
 }
 async function capNhatObj(objId,planId){
-  const so=document.getElementById('oks-'+objId).value;
+  const kqct={};
+  document.querySelectorAll('[id^="okq-'+objId+'-"]').forEach(el=>{
+    const k=el.id.split('-').pop();if(el.value!=='')kqct[k]=+el.value});
   const kq=document.getElementById('okt-'+objId).value.trim();
-  const r=await sb.from('crm_plan_objectives').update({ket_qua_so:so===''?null:+so,ket_qua:kq||null}).eq('id',objId);
+  const r=await sb.from('crm_plan_objectives').update({
+    ket_qua_chi_tiet:Object.keys(kqct).length?kqct:null,ket_qua:kq||null}).eq('id',objId);
   if(r.error){alert(r.error.message);return}
   openKH(planId);
 }
@@ -1418,18 +1445,39 @@ function moMauKH(){
 let OBJ_SEQ=0;
 const OBJ_LOAI={ban_hang:'Bán hàng',tiep_can_thi_truong:'Tiếp cận thị trường mới',su_kien:'Sự kiện / triển lãm',quan_he:'Xây quan hệ',khac:'Khác'};
 const OBJ_DV={bo_vav:'bộ VAV',vnd:'VND doanh thu',cdt:'CĐT',tvtk:'TVTK',tong_thau:'Tổng thầu',ky_su:'Kỹ sư',npp:'NPP',oem:'OEM/ODM',su_kien:'sự kiện',khac:'khác'};
+// Bo cau hoi dinh luong theo loai muc tieu — moi loai hoi dung cau cua no
+const OBJ_QTY={
+  ban_hang:[['vnd','Doanh thu (VND)'],['bo_vav','Số bộ VAV'],['oem','Đơn OEM/ODM']],
+  tiep_can_thi_truong:[['cdt','CĐT mới'],['tvtk','TVTK mới'],['tong_thau','Tổng thầu mới'],['ky_su','Kỹ sư spec'],['npp','NPP/Agent mới']],
+  quan_he:[['phu2','TK nâng phủ ≥2'],['gap_qd','Cuộc gặp cấp ra quyết định'],['spec_in','Dự án spec-in']],
+  su_kien:[['su_kien','Số sự kiện'],['lead','Lead mục tiêu']],
+  khac:[['so','Bao nhiêu']]
+};
+const OBJ_QTY_LBL=Object.fromEntries([].concat(...Object.values(OBJ_QTY)));
+function qtyHTML(i,loai){
+  return OBJ_QTY[loai].map(([k,l])=>
+    `<input id="oq-${i}-${k}" type="number" min="0" placeholder="${l}">`).join('')
+    +(loai==='su_kien'?`<select id="oq-${i}-ht"><option value="">— Hình thức —</option>
+      <option value="tham_gia">Tham gia (trưng bày/diễn giả)</option>
+      <option value="tham_quan">Tham quan (khảo sát)</option>
+      <option value="tham_du">Tham dự (hội thảo/hiệp hội)</option></select>`:'')
+    +(loai==='khac'?`<input id="oq-${i}-dv" placeholder="Đơn vị là gì?">`:'');
+}
+function doiLoaiObj(i){
+  document.getElementById('objQty-'+i).innerHTML=qtyHTML(i,document.getElementById('ol-'+i).value);
+  applyLang();
+}
 function themObj(u){
   const i='o'+(OBJ_SEQ++);
   const div=document.createElement('div');
   div.className='objrow';div.dataset.uu=u;div.dataset.idx=i;
   div.style.cssText='margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)';
   div.innerHTML=`<div class="grid g4" style="gap:6px">
-    <select id="ol-${i}">${Object.entries(OBJ_LOAI).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+    <select id="ol-${i}" onchange="doiLoaiObj('${i}')">${Object.entries(OBJ_LOAI).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
     <input id="od-${i}" placeholder="Diễn giải mục tiêu — càng rõ càng tốt *" style="grid-column:span 3">
-    <input id="os-${i}" type="number" min="0" placeholder="Bao nhiêu">
-    <select id="ou-${i}"><option value="">— Đơn vị —</option>${Object.entries(OBJ_DV).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
-    <input id="ov-${i}" placeholder="Vùng / quốc gia — vd: KR, Đông Nam Á">
-    <input id="oh-${i}" type="date" title="Khi nào">
+    <div id="objQty-${i}" class="grid g4" style="grid-column:span 4;gap:6px">${qtyHTML(i,'ban_hang')}</div>
+    <input id="ov-${i}" placeholder="Vùng / quốc gia — vd: KR, Đông Nam Á" style="grid-column:span 2">
+    <input id="oh-${i}" type="date" title="Khi nào" style="grid-column:span 2">
   </div>`;
   document.getElementById('objList-'+u).appendChild(div);applyLang();
 }
@@ -1469,8 +1517,13 @@ async function luuMauKH(loai){
   for(const row of document.querySelectorAll('#mObjs .objrow')){
     const i=row.dataset.idx,dg=v('od-'+i);
     if(!dg)continue;
+    const loai=v('ol-'+i)||'khac';
+    const ct={};
+    for(const [k] of (OBJ_QTY[loai]||[])){const x=+v('oq-'+i+'-'+k);if(x)ct[k]=x}
+    if(loai==='su_kien'&&v('oq-'+i+'-ht'))ct.ht=v('oq-'+i+'-ht');
+    if(loai==='khac'&&v('oq-'+i+'-dv'))ct.dv=v('oq-'+i+'-dv');
     const ins=await sb.from('crm_plan_objectives').insert({plan_id:planId,uu_tien:row.dataset.uu,
-      loai:v('ol-'+i)||null,dien_giai:dg,so_luong:+v('os-'+i)||null,don_vi:v('ou-'+i)||null,
+      loai:loai,dien_giai:dg,chi_tiet:Object.keys(ct).length?ct:null,
       vung_quoc_gia:v('ov-'+i)||null,han:v('oh-'+i)||null});
     if(!ins.error)okObj++;
   }
