@@ -812,6 +812,7 @@ const CFG_MAC_DINH={
     await loadAll();
   }catch(e){ console.warn('Tự kết nối lại thất bại:',e) }
 })();
+
 /* === NSCA: nhận diện người dùng theo email đã đăng nhập === */
 async function autoMe(){
   if(ME) return;
@@ -843,7 +844,7 @@ async function loadAll(){
   window.NHANSU=ns.data||[];
   nsList.innerHTML=NHANSU.map(n=>`<option value="${esc(n.ho_ten)}">${esc(n.chuc_danh)}</option>`).join('');
   modSel.value=MOD;applyMod();
- await autoMe();showMe();if(!ME)dlgLogin.showModal();
+  await autoMe();showMe();if(!ME)dlgLogin.showModal();
   loadPlans();
 }
 
@@ -1459,6 +1460,10 @@ function renderDT(){
   (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu — thu hẹp bộ lọc để xem thêm.</div>':'');
 }
 
+const VUNGDM={mien_bac:'Miền Bắc',mien_trung:'Miền Trung',mien_nam:'Miền Nam',
+  dong_nam_a:'Đông Nam Á',dong_bac_a:'Đông Bắc Á',trung_dong:'Trung Đông',
+  chau_dai_duong:'Châu Đại Dương',bac_my:'Bắc Mỹ',chau_au:'Châu Âu',khac:'Khác'};
+const KENHDM={npp:'NPP (phân phối)',agent:'Agent / Broker',oem_odm:'OEM / ODM',truc_tiep:'Trực tiếp'};
 async function openOrg(id){
   const o=id?ORGS.find(x=>x.id===id):{phan_loai:'cdt',quoc_gia:MOD==='nd'?'VN':'',trang_thai_phu:0,loai_ban_ghi:'muc_tieu'};
   orgTitle.textContent=id?o.ten:'Thêm đối tác';
@@ -1474,7 +1479,9 @@ async function openOrg(id){
     <div class="frow"><label>Nhóm quan hệ</label><select id="oQH">
       <option value="">— Chưa phân loại —</option>${Object.entries(QH).map(([k,v])=>
       `<option value="${k}"${o.quan_he===k?' selected':''}>${v}</option>`).join('')}</select></div>
-    <div class="frow"><label>Người phụ trách</label><input id="oChu" value="${esc(o.nguoi_phu_trach||'')}"></div>
+    <div class="frow"><label>Người phụ trách</label><input id="oChu" list="nsList" placeholder="chọn từ danh sách nhân sự" value="${esc(o.nguoi_phu_trach||'')}"></div>
+    <div class="frow"><label>Vùng</label><select id="oVung"><option value="">— Chưa xếp —</option>${Object.entries(VUNGDM).map(([k,v])=>`<option value="${k}"${o.vung===k?' selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="frow"><label>Kênh thương mại</label><select id="oKenh"><option value="">— Chưa xếp —</option>${Object.entries(KENHDM).map(([k,v])=>`<option value="${k}"${o.kenh_thuong_mai===k?' selected':''}>${v}</option>`).join('')}</select></div>
     <div class="frow"><label>Đối thủ đang chiếm</label><input id="oDT" value="${esc(o.doi_thu_dang_chiem||'')}"></div>
     <div class="frow"><label>Ghi chú</label><textarea id="oGC">${esc(o.ghi_chu||'')}</textarea></div>
     ${id?`<h3 style="font-size:13px;margin:14px 0 8px">Người liên hệ (${contacts.length})</h3>
@@ -1492,6 +1499,7 @@ async function openOrg(id){
 async function saveOrg(id){
   const rec={ten:oTen.value.trim(),phan_loai:oPL.value,quoc_gia:oQG.value.trim().toUpperCase(),
     trang_thai_phu:+oPhu.value,quan_he:oQH.value||null,nguoi_phu_trach:oChu.value.trim()||null,
+    vung:oVung.value||null,kenh_thuong_mai:oKenh.value||null,
     doi_thu_dang_chiem:oDT.value.trim()||null,ghi_chu:oGC.value.trim()||null,updated_at:new Date().toISOString()};
   if(!rec.ten)return;
   const r=id?await sb.from('crm_org').update(rec).eq('id',id):await sb.from('crm_org').insert(rec);
