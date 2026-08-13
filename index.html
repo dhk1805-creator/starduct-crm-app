@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v12 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v13 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -470,9 +470,19 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v12 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v13 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08 đợt 6: phân cấp duyệt + kinh phí công tác ----
+['Dự trù kinh phí công tác (nếu kỳ này có đi công tác trong/ngoài nước)','Trip budget estimate (if this period involves domestic/overseas travel)'],
+['Ghi chú — vd: HN–Seoul khứ hồi ×2 người','Note — e.g. HN–Seoul round trip ×2 pax'],
+['Dự trù kinh phí công tác','Trip budget estimate'],
+['(CFO duyệt riêng)','(separate CFO approval)'],
+['Dự trù kinh phí công tác: ','Trip budget estimate: '],
+['chờ cấp','awaiting'],['+ Thêm khoản','+ Add line'],
+['Vé máy bay','Airfare'],['Tàu / xe','Train / car'],['Khách sạn','Hotel'],
+['Ăn uống','Meals'],['Tiếp khách','Client entertainment'],
+['Số tiền (VND)','Amount (VND)'],['Khoản','Item'],['Số tiền','Amount'],
 // ---- bổ sung 13/08 đợt 5: định lượng theo loại mục tiêu ----
 ['Tham gia (trưng bày/diễn giả)','Exhibit (booth/speaker)'],
 ['Tham quan (khảo sát)','Visit (survey)'],
@@ -1169,6 +1179,9 @@ async function openKH(id){
       ${sv?`<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Σ kế hoạch ${sv} bộ VAV${p.chi_tieu_vav?' / chỉ tiêu '+p.chi_tieu_vav+(sv>=p.chi_tieu_vav?' ✔':' ('+Math.round(sv*100/p.chi_tieu_vav)+'%)'):''}</span>`:''}
       ${sg?`<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Σ dự bán ${sg.toLocaleString('vi')} đ</span>`:''}</div>`:''})()}
     ${p.trong_tam?`<div class="muted" style="margin-bottom:10px">⭐ ${esc(p.trong_tam)}</div>`:''}
+    ${(p.du_tru_kinh_phi||[]).length?`<details style="margin-bottom:10px"><summary style="cursor:pointer;font-size:13px"><b>🧳 Dự trù kinh phí công tác — Σ ${(p.du_tru_kinh_phi||[]).reduce((a,x)=>a+(+x.t||0),0).toLocaleString('vi')} đ</b> <span class="muted">(CFO duyệt riêng)</span></summary>
+      <table style="margin-top:6px"><tr><th>Khoản</th><th class="num">Số tiền</th><th>Ghi chú</th></tr>
+      ${(p.du_tru_kinh_phi||[]).map(x=>`<tr><td>${KP_LOAI[x.k]||x.k}</td><td class="num">${(+x.t).toLocaleString('vi')}</td><td class="muted">${esc(x.g||'')}</td></tr>`).join('')}</table></details>`:''}
     ${objs.length?`<h3 style="font-size:13px;margin:0 0 6px">🎯 Mục tiêu ưu tiên (${objs.length})</h3>
     ${['chinh','phu','khac'].map(u=>{const g=objs.filter(o=>o.uu_tien===u);if(!g.length)return'';
       return `<div style="border:1px solid var(--border);border-radius:8px;padding:6px 10px;margin-bottom:6px">
@@ -1200,7 +1213,9 @@ async function openKH(id){
     <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
     </table>
     ${nhipHTML(p,items)}
-    ${p.trang_thai==='cho_duyet'&&(ME?.quyen_admin||ME?.vai_tro==='ceo'||ME?.vai_tro==='manager')?`
+    ${(()=>{const nl=(window.NHANSU||[]).find(n=>n.ho_ten===p.nguoi_lap);
+      const capCan=(nl&&(nl.vai_tro==='staff'||nl.vai_tro==='bo'))?'manager':'ceo';
+      return p.trang_thai==='cho_duyet'&&coQuyenDuyet(capCan)&&p.nguoi_lap!==ME?.ho_ten})()?`
     <div style="background:var(--warn-bg);border:1px solid var(--warn);border-radius:8px;padding:10px;margin:10px 0">
       <b>Kế hoạch đang chờ duyệt</b>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
@@ -1407,6 +1422,13 @@ function moMauKH(){
         <div id="objList-${u}"></div>
       </div>`).join('')}
     </div>
+    <details style="margin:10px 0"><summary style="cursor:pointer;font-weight:600;font-size:13px">🧳 Dự trù kinh phí công tác (nếu kỳ này có đi công tác trong/ngoài nước)</summary>
+      <div id="kpList" style="margin-top:6px"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        <button class="btn" onclick="themKP()">+ Thêm khoản</button>
+        <b id="kpTong" style="margin-left:auto"></b>
+      </div>
+    </details>
     <div style="display:flex;gap:8px;align-items:center;margin:12px 0 6px">
       <h3 style="font-size:13px;margin:0">Tick chọn từ ${MAU_ROWS.length} dự án/tài khoản bạn phụ trách</h3>
       <input id="mLoc" placeholder="Lọc tên…" oninput="locMau()" style="margin-left:auto;width:200px">
@@ -1481,6 +1503,21 @@ function themObj(u){
   </div>`;
   document.getElementById('objList-'+u).appendChild(div);applyLang();
 }
+let KP_SEQ=0;
+const KP_LOAI={ve_may_bay:'Vé máy bay',tau_xe:'Tàu / xe',khach_san:'Khách sạn',an_uong:'Ăn uống',tiep_khach:'Tiếp khách',khac:'Khác'};
+function themKP(){
+  const i='k'+(KP_SEQ++);
+  const div=document.createElement('div');div.className='kprow';div.dataset.idx=i;
+  div.style.cssText='display:flex;gap:6px;margin-top:4px;flex-wrap:wrap';
+  div.innerHTML=`<select id="kpl-${i}">${Object.entries(KP_LOAI).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+    <input id="kpt-${i}" type="number" min="0" placeholder="Số tiền (VND)" style="width:140px" oninput="tinhKP()">
+    <input id="kpg-${i}" placeholder="Ghi chú — vd: HN–Seoul khứ hồi ×2 người" style="flex:1;min-width:180px">`;
+  document.getElementById('kpList').appendChild(div);applyLang();
+}
+function tinhKP(){
+  let t=0;document.querySelectorAll('.kprow input[type=number]').forEach(el=>t+=+el.value||0);
+  document.getElementById('kpTong').textContent=t?('Σ '+t.toLocaleString('vi')+' đ'):'';
+}
 function locMau(){
   const q=mLoc.value.trim().toLowerCase();
   document.querySelectorAll('#mDS .mrow').forEach(r=>{r.style.display=!q||r.dataset.ten.includes(q)?'':'none'});
@@ -1507,9 +1544,13 @@ function themDongMau(){
 async function luuMauKH(loai){
   const v=id=>document.getElementById(id)?.value?.trim()||'';
   if(!v('mTen')||!v('mTu')||!v('mDen')){alert('Thiếu tên hoặc kỳ');return}
+  const kpArr=[];
+  document.querySelectorAll('#kpList .kprow').forEach(row=>{const i=row.dataset.idx;
+    const t=+v('kpt-'+i);if(t)kpArr.push({k:v('kpl-'+i),t:t,g:v('kpg-'+i)||''})});
   const plan={ten:v('mTen'),nguoi_lap:ME?.ho_ten||'?',khu_vuc:MOD==='nd'?'noi_dia':'quoc_te',
     ky_loai:loai,ky_tu:v('mTu'),ky_den:v('mDen'),
     chi_tieu_vav:+v('mVAV')||null,chi_tieu_doanh_thu:+v('mDT')||null,chi_tieu_npp_moi:+v('mNPP')||null,
+    du_tru_kinh_phi:kpArr.length?kpArr:null,
     muc_tieu:v('mMT')||null,trong_tam:v('mTT')||null};
   const r=await sb.from('crm_plans').insert(plan).select();
   if(r.error){alert(r.error.message);return}
@@ -1617,10 +1658,15 @@ async function duyetKH(planId,tt){
 async function trinhKH(planId){
   const p=PLANS.find(x=>x.id===planId);
   await sb.from('crm_plans').update({trang_thai:'cho_duyet'}).eq('id',planId);
+  const cap=(ME?.vai_tro==='staff'||ME?.vai_tro==='bo')?'manager':'ceo';
+  const han14=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
   await sb.from('crm_approvals').insert({doi_tuong:'plan',doi_tuong_id:planId,
-    loai:'duyet_ke_hoach',cap_duyet:'ceo',nguoi_de_xuat:ME?.ho_ten||p.nguoi_lap,
-    noi_dung:t('Trình duyệt kế hoạch: ')+p.ten+' ('+p.ky_tu+' → '+p.ky_den+')',
-    han:new Date(Date.now()+14*864e5).toISOString().slice(0,10)});
+    loai:'duyet_ke_hoach',cap_duyet:cap,nguoi_de_xuat:ME?.ho_ten||p.nguoi_lap,
+    noi_dung:t('Trình duyệt kế hoạch: ')+p.ten+' ('+p.ky_tu+' → '+p.ky_den+')',han:han14});
+  const kp=(p.du_tru_kinh_phi||[]).reduce((a,x)=>a+(+x.t||0),0);
+  if(kp>0)await sb.from('crm_approvals').insert({doi_tuong:'plan',doi_tuong_id:planId,
+    loai:'ngan_sach_su_kien',cap_duyet:'cfo',nguoi_de_xuat:ME?.ho_ten||p.nguoi_lap,
+    noi_dung:t('Dự trù kinh phí công tác: ')+kp.toLocaleString('vi')+' đ — '+p.ten,han:han14});
   await loadPlans();await loadAll();dlgKH.close();
 }
 
@@ -1945,13 +1991,13 @@ async function openThread(dt,id,ten){
       ${a.y_kien_duyet?`<div class="muted" style="margin-top:4px">↳ <b>${esc(a.nguoi_duyet||'')}</b>: ${esc(a.y_kien_duyet)}</div>`:''}
       ${a.trang_thai==='cho_duyet'?`<div style="margin-top:8px;display:flex;gap:6px">
         <input id="ykd_${a.id}" placeholder="Ý kiến (bác thì bắt buộc)" style="flex:1;font-size:12px">
-        <button class="btn" style="color:var(--ok)" onclick="decideApr('${a.id}','da_duyet')">Duyệt</button>
-        <button class="btn" style="color:var(--bad)" onclick="decideApr('${a.id}','tu_choi')">Từ chối</button></div>`:''}
+        ${coQuyenDuyet(a.cap_duyet)?`<button class="btn" style="color:var(--ok)" onclick="decideApr('${a.id}','da_duyet')">Duyệt</button>
+        <button class="btn" style="color:var(--bad)" onclick="decideApr('${a.id}','tu_choi')">Từ chối</button>`:`<span class="muted" style="font-size:12px">chờ cấp ${a.cap_duyet.toUpperCase()} duyệt</span>`}</div>`:''}
     </div>`}).join('')||'<div class="muted" style="margin-bottom:8px">Chưa có đề xuất nào.</div>'}
   <div style="border:1px dashed var(--border);border-radius:8px;padding:10px 12px;margin-bottom:16px">
     <div class="grid g3" style="gap:8px">
       <select id="aprLoai">${Object.entries(APR_LOAI).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
-      <select id="aprCap"><option value="manager">Cấp duyệt: Manager</option><option value="ceo">Cấp duyệt: CEO</option></select>
+      <select id="aprCap"><option value="manager">Cấp duyệt: Manager</option><option value="ceo">Cấp duyệt: CEO</option><option value="cfo">Cấp duyệt: CFO (tài chính)</option></select>
       <input id="aprAi" placeholder="Người đề xuất *">
     </div>
     <textarea id="aprND" placeholder="Đề xuất gì, căn cứ gì… *" style="width:100%;min-height:44px;margin-top:8px"></textarea>
@@ -1995,6 +2041,14 @@ async function saveApr(){
     noi_dung:aprND.value.trim(),can_cu:aprCC.value.trim()||null,han});
   if(r.error){aprMsg.textContent=r.error.message;return}
   openThread(THR.dt,THR.id,THR.ten);
+}
+// Ai duyet cap nao: ceo -> CEO/super_admin · manager -> Truong PKD/admin tro len · cfo -> CFO/TCKT + CEO
+function coQuyenDuyet(cap){
+  if(!ME)return false;
+  if(ME.vai_tro==='ceo'||ME.quyen_admin==='super_admin')return true;
+  if(cap==='manager')return ME.vai_tro==='manager'||ME.quyen_admin==='admin';
+  if(cap==='cfo')return ME.bo_phan==='tckt';
+  return false;
 }
 async function decideApr(id,tt){
   const yk=document.getElementById('ykd_'+id).value.trim();
@@ -2068,7 +2122,7 @@ function renderTQ(){
 
   // Hàng chờ phê duyệt
   const oids=new Set(ORGS.map(o=>o.id)),didz=new Set(DEALS.map(d=>d.id));
-  const aq=(window.APRQ||[]).filter(a=>a.doi_tuong==='support'||oids.has(a.doi_tuong_id)||didz.has(a.doi_tuong_id));
+  const aq=(window.APRQ||[]).filter(a=>(a.doi_tuong==='support'||oids.has(a.doi_tuong_id)||didz.has(a.doi_tuong_id))&&coQuyenDuyet(a.cap_duyet));
   aprQueue.innerHTML=aq.length?'<table><tr><th>Chờ</th><th>Loại</th><th>Đối tượng</th><th>Đề xuất</th><th>Người đề xuất</th><th>Cấp</th><th></th></tr>'+
     aq.slice(0,15).map(a=>`<tr>
     <td><span class="pill ${a.so_ngay_cho>14?'p3':'p1'}"${a.so_ngay_cho>14?' style="background:var(--bad-bg);color:var(--bad)"':''}>${a.so_ngay_cho} ngày${a.so_ngay_cho>14?' ⚠':''}</span></td>
