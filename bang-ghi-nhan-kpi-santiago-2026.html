@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng ghi nhận KPI hợp đồng — Santiago 2026</title>
+<style>
+:root{
+  --bg:#f6f7f9; --surface:#fff; --border:#e3e6ea; --b400:#2563eb; --b50:#eff6ff;
+  --text-1:#111827; --text-2:#374151; --text-3:#6b7280;
+  --ok:#059669; --ok-bg:#ecfdf5; --warn:#d97706; --warn-bg:#fffbeb;
+  --bad:#dc2626; --bad-bg:#fef2f2; --neutral:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:var(--bg);color:var(--text-1);
+  font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--text-3);font-size:13px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px}
+.n{display:inline-flex;width:22px;height:22px;border-radius:6px;background:var(--b400);color:#fff;
+  align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:middle}
+th{font-weight:600;color:var(--text-2);background:#fafbfc;font-size:12px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+input[type=number],input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--border);
+  border-radius:6px;font:inherit;text-align:right;font-variant-numeric:tabular-nums;background:#fff}
+input[type=text]{text-align:left}
+input:focus{outline:2px solid var(--b400);outline-offset:-1px;border-color:var(--b400)}
+textarea{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font:inherit;min-height:58px}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-bad{background:var(--bad-bg);color:var(--bad)}
+.p-n{background:#f1f5f9;color:var(--neutral)}
+.rule{background:var(--b50);border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;font-size:13px}
+.rule b{color:var(--b400)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#fafbfc}
+.box h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.mini{font-size:12px;color:var(--text-3)}
+.res{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:6px}
+.note{font-size:12px;color:var(--text-3);margin-top:10px;line-height:1.6}
+.warnbox{background:var(--warn-bg);border:1px solid #fde68a;border-radius:8px;padding:12px 14px;font-size:13px}
+.badge{font-size:11px;padding:1px 7px;border-radius:4px;background:#f1f5f9;color:var(--neutral);font-weight:600}
+.bar{height:7px;background:#eef1f4;border-radius:4px;overflow:hidden;margin-top:5px}
+.bar>i{display:block;height:100%;background:var(--b400);border-radius:4px}
+.foot{font-size:12px;color:var(--text-3);text-align:center;padding:8px 0 0}
+@media(max-width:820px){.split,.res{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Bảng ghi nhận KPI hợp đồng — Santiago de los Reyes</h1>
+<div class="sub">Kỳ 2026 · Giai đoạn 2 "Triển khai thử nghiệm" · Người ghi nhận: BO Manager
+  · Cơ sở: Phụ lục I, II, III, IV, VI của HĐLĐ</div>
+
+<!-- 1 -->
+<div class="card">
+  <h2><span class="n">1</span> Quy tắc quy kết doanh thu</h2>
+  <div class="rule">
+    <b>Chỉ đạo CEO 11/08/2026:</b> Doanh thu chốt theo hợp đồng gắn với <b>các thị trường do
+    Santiago mở từ 2026</b>. Đây là quá trình <b>đầu tư của NSCA</b> để mở thị trường mới, kỳ vọng
+    tạo dòng doanh thu <b>bổ sung</b> vào doanh thu nội địa và xuất khẩu đã có trước
+    <b>01/01/2026</b> — thời điểm bắt đầu kế hoạch mở rộng ra các nước Asia.
+  </div>
+  <table style="margin-top:14px">
+    <tr><th style="width:46%">Nguồn doanh thu</th><th>Quy về</th><th>Vào KPI hợp đồng?</th></tr>
+    <tr><td>Thị trường / khách hàng xác lập <b>trước 01/01/2026</b><br>
+      <span class="mini">Mỹ (American Louver, Quiet Cool) · khách cũ ASEAN · NPP đã ký trước mốc</span></td>
+      <td>PKD mảng xuất khẩu</td><td><span class="pill p-n">Không</span></td></tr>
+    <tr><td>Thị trường xác lập <b>từ 01/01/2026</b> do Market Development mở</td>
+      <td>Santiago / Market Development</td><td><span class="pill p-ok">Có</span></td></tr>
+  </table>
+  <div class="warnbox" style="margin-top:12px">
+    <b>Cần xác nhận trước khi chốt số:</b> Mey Foong Technologies (HK/Macau/Taiwan) ký hợp đồng độc
+    quyền ngày nào? Nếu <b>trước 01/01/2026</b> thì doanh thu van ngăn cháy 2–3 tỷ năm 2026 là
+    <b>doanh thu nền, không vào KPI</b> — cùng nguyên tắc đã áp cho thị trường Mỹ.
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="card">
+  <h2><span class="n">2</span> Chỉ tiêu 2026 theo Phụ lục I &amp; tỷ giá</h2>
+  <div class="split">
+    <div class="box">
+      <h3>Chỉ tiêu Giai đoạn 2 (01–12/2026)</h3>
+      <table>
+        <tr><td>Doanh thu thị trường mới</td><td class="num"><b>≥ 300.000 USD</b></td></tr>
+        <tr><td>Mở thị trường</td><td class="num"><b>≥ 1</b></td></tr>
+        <tr><td>Ký hợp đồng OEM/ODM</td><td class="num"><b>1</b></td></tr>
+      </table>
+      <div class="mini" style="margin-top:8px">Nguồn: Phụ lục I. KPI tính từ 01/01/2026.</div>
+    </div>
+    <div class="box">
+      <h3>Tỷ giá quy đổi</h3>
+      <table>
+        <tr><td>USD/VND</td><td class="num" style="width:130px">
+          <input type="number" id="fx" value="26000" step="100" oninput="calc()"></td></tr>
+        <tr><td>Chỉ tiêu doanh thu quy ra VND</td>
+          <td class="num"><b id="tgtVnd">—</b></td></tr>
+      </table>
+      <div class="mini" style="margin-top:8px">Hợp đồng ghi bằng USD, kế hoạch công ty ghi bằng VND.
+        Cần chốt tỷ giá cố định cho cả kỳ để tránh tranh chấp.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="card">
+  <h2><span class="n">3</span> Ghi nhận thực hiện — BO nhập</h2>
+  <table>
+    <tr>
+      <th style="width:30%">Chỉ số (Phụ lục IV)</th>
+      <th class="num" style="width:9%">Trọng số</th>
+      <th class="num" style="width:16%">Chỉ tiêu 2026</th>
+      <th class="num" style="width:15%">H1 thực hiện</th>
+      <th class="num" style="width:15%">Chỉ tiêu H2</th>
+      <th class="num">Đạt cả năm</th>
+    </tr>
+    <tr>
+      <td><b>Doanh thu xuất khẩu</b><br><span class="mini">thị trường mới, triệu VND</span></td>
+      <td class="num">30%</td>
+      <td class="num" id="c1t">—</td>
+      <td class="num"><input type="number" id="h1_1" value="0" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h2_1" value="0" oninput="calc()"></td>
+      <td class="num" id="r1">—</td>
+    </tr>
+    <tr>
+      <td><b>Lợi nhuận ròng quốc tế</b><br><span class="mini">triệu VND</span></td>
+      <td class="num">25%</td>
+      <td class="num"><input type="number" id="c2t" value="0" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h1_2" value="0" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h2_2" value="0" oninput="calc()"></td>
+      <td class="num" id="r2">—</td>
+    </tr>
+    <tr>
+      <td><b>GPM quốc tế</b><br><span class="mini">%, chỉ tiêu ≥35%</span></td>
+      <td class="num">20%</td>
+      <td class="num">35,0</td>
+      <td class="num"><input type="number" id="h1_3" value="0" step="0.1" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h2_3" value="0" step="0.1" oninput="calc()"></td>
+      <td class="num" id="r3">—</td>
+    </tr>
+    <tr>
+      <td><b>Thị trường có doanh thu ổn định</b><br><span class="mini">≥2 quý liên tiếp</span></td>
+      <td class="num">15%</td>
+      <td class="num">1</td>
+      <td class="num"><input type="number" id="h1_4" value="0" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h2_4" value="0" oninput="calc()"></td>
+      <td class="num" id="r4">—</td>
+    </tr>
+    <tr>
+      <td><b>Đội ngũ bán hàng quốc tế</b><br><span class="mini">người, hoạt động thực tế</span></td>
+      <td class="num">10%</td>
+      <td class="num"><input type="number" id="c5t" value="3" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h1_5" value="0" oninput="calc()"></td>
+      <td class="num"><input type="number" id="h2_5" value="0" oninput="calc()"></td>
+      <td class="num" id="r5">—</td>
+    </tr>
+  </table>
+  <div class="note">
+    <b>Ghi chú về từng ô:</b><br>
+    · <b>Doanh thu</b> — chỉ tính thị trường mở từ 01/01/2026. H2 là số dự kiến để đặt chỉ tiêu.<br>
+    · <b>Lợi nhuận ròng &amp; GPM</b> — hợp đồng chưa ghi chỉ tiêu lợi nhuận cho riêng 2026;
+      Phụ lục II ghi mức ổn định ≥100.000 USD/năm. Ô chỉ tiêu để trống cho TCKT điền.<br>
+    · <b>Đội ngũ</b> — Điều IV.4 ghi "tối thiểu 3 người <b>từ năm thứ 2</b>". Cần xác nhận năm thứ 2
+      tính từ 07/2025 hay 01/2026 trước khi áp cho kỳ 2026.<br>
+    · Chỉ số nào <b>chưa có dữ liệu</b> thì để trống — hệ thống sẽ chia lại trọng số, không tính 0 điểm.
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="card">
+  <h2><span class="n">4</span> Kết quả &amp; bậc chi trả (Phụ lục IV)</h2>
+  <div class="res">
+    <div class="box"><h3>Mức hoàn thành</h3>
+      <div class="big" id="pct">—</div>
+      <div class="bar"><i id="bar" style="width:0"></i></div>
+      <div class="mini" id="cover">—</div></div>
+    <div class="box"><h3>Bậc chi trả</h3>
+      <div class="big" id="band">—</div>
+      <div class="mini">≥90%→100% · 75–90%→85% · 60–75%→70% · 50–60%→50% · &lt;50%→0</div></div>
+    <div class="box"><h3>Profit Sharing 2026</h3>
+      <div class="big" id="ps">—</div>
+      <div class="mini">Trần 20.000 USD (Phụ lục IV)</div></div>
+    <div class="box"><h3>Điều khoản 50%</h3>
+      <div class="big" id="term">—</div>
+      <div class="mini">Phụ lục III — xét sau 31/12/2026</div></div>
+  </div>
+  <div class="note" id="advice"></div>
+  <div class="rule" style="margin-top:14px">
+    <b>Nguyên tắc bắt buộc — CEO 11/08/2026:</b> khi phát triển thị trường mới, NSCA <b>chấp nhận
+    lỗ chi phí, thậm chí lỗ 2–3 năm đầu</b> trong hành trình 5 năm. Dù doanh thu 2026 đạt 300k USD
+    thì vẫn lỗ, <b>nhưng vẫn phải thưởng nếu đạt đủ các điều kiện của phụ lục</b>.
+    <br><br>
+    ⛔ <b>Không được thêm điều kiện "phải có lãi mới thưởng".</b> Hợp đồng không có điều khoản đó.
+    Điều kiện chi thưởng chỉ gồm: mức hoàn thành KPI so với chỉ tiêu của năm, tra bảng năm bậc ở
+    Phụ lục IV. Lỗ trong kỳ là <b>khoản đầu tư đã được duyệt</b>, không phải căn cứ để từ chối chi.
+  </div>
+</div>
+
+<!-- 4b -->
+<div class="card">
+  <h2><span class="n">4b</span> Bức tranh đầu tư 5 năm — cách nhìn đúng cho Market Development</h2>
+  <table>
+    <tr><th>Năm</th><th class="num">Lương</th><th class="num">Ngân sách</th>
+      <th class="num">KPI Bonus</th><th class="num">Profit Sharing</th><th class="num">Tổng chi</th>
+      <th class="num">Doanh thu KH</th><th class="num">Biên ĐG 42%</th><th class="num">Dòng ròng</th>
+      <th class="num">Luỹ kế</th></tr>
+    <tr><td>2025 <span class="mini">(6th)</span></td><td class="num">18.000</td><td class="num">47.500</td>
+      <td class="num">0</td><td class="num">0</td><td class="num"><b>65.500</b></td>
+      <td class="num">0</td><td class="num">0</td>
+      <td class="num" style="color:var(--bad)">−65.500</td><td class="num">−65.500</td></tr>
+    <tr style="background:var(--b50)"><td><b>2026</b></td><td class="num">42.000</td><td class="num">95.000</td>
+      <td class="num">10.000</td><td class="num">20.000</td><td class="num"><b>167.000</b></td>
+      <td class="num">300.000</td><td class="num">126.000</td>
+      <td class="num" style="color:var(--bad)">−41.000</td>
+      <td class="num" style="color:var(--bad)"><b>−106.500</b></td></tr>
+    <tr><td>2027</td><td class="num">48.000</td><td class="num">95.000</td>
+      <td class="num">15.000</td><td class="num">40.000</td><td class="num"><b>198.000</b></td>
+      <td class="num">750.000</td><td class="num">315.000</td>
+      <td class="num" style="color:var(--ok)">+117.000</td><td class="num">−10.500</td></tr>
+    <tr><td>2028</td><td class="num">60.000</td><td class="num">95.000</td>
+      <td class="num">15.000</td><td class="num">50.000</td><td class="num"><b>220.000</b></td>
+      <td class="num">1.500.000</td><td class="num">630.000</td>
+      <td class="num" style="color:var(--ok)">+410.000</td>
+      <td class="num" style="color:var(--ok)"><b>+399.500</b></td></tr>
+    <tr><td>2029–30</td><td class="num">120.000</td><td class="num">190.000</td>
+      <td class="num">15.000</td><td class="num">120.000</td><td class="num"><b>445.000</b></td>
+      <td class="num"><span class="badge">PL I chưa ghi</span></td><td class="num">—</td>
+      <td class="num">—</td><td class="num">—</td></tr>
+  </table>
+  <div class="note">
+    Đơn vị USD. Biên đóng góp 42% lấy theo KHDT 2026 cho VAV xuất khẩu.
+    <b>Điểm hoàn vốn rơi vào khoảng cuối 2027 – đầu 2028</b> — khớp nhận định "lỗ 2–3 năm đầu".
+    <br><br>
+    <b>Một lựa chọn kế toán quyết định bức tranh:</b> bảng này chỉ trừ biến phí, chưa gánh chi phí
+    chung. Nếu bắt doanh thu thị trường mới gánh thêm ~25% chi phí chung phân bổ thì điểm hoàn vốn
+    lùi sang <b>2028–2029</b>. Đề nghị dùng cách hiện tại, vì kế hoạch 2026 của công ty có dòng
+    <i>"chi phí mặt bằng chưa sử dụng 1,573 tỷ"</i> — nhà máy đang có năng lực nhàn rỗi, nên sản
+    lượng tăng thêm lấp chỗ trống chứ không tạo chi phí cố định mới. Dù chọn cách nào cũng phải
+    <b>chọn một lần và ghi vào quy chế</b>.
+  </div>
+  <div class="rule" style="margin-top:12px">
+    <b>CEO 11/08/2026:</b> "<b>100 ngàn bộ là tượng trưng cho 5% market share</b> đó."
+    ⇒ Quy mô thị trường VAV APAC ≈ <b>2.000.000 bộ/năm</b>. Từ mỏ neo này, bảng sản lượng Phụ lục VI
+    trở thành <b>thang thị phần kiểm chứng được từng năm</b>.
+  </div>
+</div>
+
+<!-- 4c -->
+<div class="card">
+  <h2><span class="n">4c</span> Thang thị phần APAC — kết quả cụ thể thay cho chỉ số hoạt động</h2>
+  <table>
+    <tr><th>Năm</th><th class="num">Sản lượng (bộ)</th><th class="num">Thị phần APAC</th>
+      <th class="num">Bội số năm trước</th><th class="num">Sản lượng/ngày</th><th>Ghi chú</th></tr>
+    <tr><td>2025</td><td class="num">5.000</td><td class="num">0,25%</td><td class="num">—</td>
+      <td class="num">20</td><td class="mini">Chủ yếu nội địa</td></tr>
+    <tr style="background:var(--b50)"><td><b>2026</b></td><td class="num"><b>7.000</b></td>
+      <td class="num"><b>0,35%</b></td><td class="num">1,4×</td><td class="num">28</td>
+      <td class="mini">VN 4.000 · Quốc tế 3.000</td></tr>
+    <tr><td>2027</td><td class="num">15.000</td><td class="num">0,75%</td><td class="num">2,1×</td>
+      <td class="num">60</td><td class="mini">Bắt đầu tập trung APAC</td></tr>
+    <tr style="background:var(--warn-bg)"><td><b>2028</b></td><td class="num"><b>50.000</b></td>
+      <td class="num"><b>2,50%</b></td>
+      <td class="num" style="color:var(--bad);font-weight:700">3,3×</td><td class="num">200</td>
+      <td class="mini"><b>Bước nhảy lớn nhất — năm quyết định thật</b></td></tr>
+    <tr><td>2029</td><td class="num">75.000</td><td class="num">3,75%</td><td class="num">1,5×</td>
+      <td class="num">300</td><td class="mini"></td></tr>
+    <tr><td><b>2030</b></td><td class="num"><b>100.000</b></td>
+      <td class="num" style="color:var(--ok);font-weight:700"><b>5,00%</b></td>
+      <td class="num">1,3×</td><td class="num">400</td>
+      <td class="mini">Mục tiêu mục II hợp đồng</td></tr>
+  </table>
+  <div class="note">
+    <b>Ba nguyên tắc đo:</b><br>
+    · <b>Đếm bằng SỐ BỘ, không bằng doanh thu</b> — doanh thu biến động theo giá và cơ cấu
+      có/không động cơ; sản lượng là thước đo thị phần trực tiếp.<br>
+    · <b>Phạm vi Phụ lục VI là của riêng Santiago</b> — CEO 11/08: "số lượng sản phẩm và doanh thu
+      cần đạt cho toàn bộ thị trường, <b>cả OEM và bán hàng thông qua các NPP do Santiago xây dựng
+      lên</b>". Nên thang 5% này là thang của kênh quốc tế, <b>không cộng VAV nội địa</b>.<br>
+    · <b>Số thị trường có doanh thu LẶP LẠI</b> (≥2 quý liên tiếp) là chỉ số chống "mơ hồ, kéo dài"
+      mạnh nhất — có mặt thì dễ, bán lặp lại được mới là thật.
+  </div>
+  <div class="warnbox" style="margin-top:12px">
+    <b>Hai rủi ro cần quyết sớm:</b><br><br>
+    <b>① Hợp đồng chỉ có một cổng chặn ở 18 tháng đầu.</b> Sau đó là 4 năm không mốc nào.
+    73% doanh thu 5 năm nằm ở 2029–2030, nhưng cả hai chỉ đến được nếu <b>2028 nhảy được 3,3 lần</b>.
+    Nếu 2028 hụt thì đã hết thời gian sửa. <b>Đề nghị thêm cổng chặn cuối 2027</b> — đạt &lt;50%
+    chỉ tiêu sản lượng 2027 (dưới 7.500 bộ) thì rà lại toàn bộ lộ trình và mức đầu tư.<br><br>
+    <b>② Thang sản lượng ngụ ý một thang đầu tư năng lực chưa có trong tài liệu nào.</b>
+    Từ 7.000 lên 100.000 bộ là <b>14,3 lần</b> — từ 28 bộ/ngày lên 400 bộ/ngày. VAV Line hiện tại
+    đầu tư 3,68 tỷ cho quy mô 7.000 bộ. <b>Cần gắn mỗi bậc sản lượng với một mốc quyết định đầu tư</b>,
+    đặc biệt trước khi vào 2028.
+  </div>
+  <div class="rule" style="margin-top:12px">
+    <b>✅ ĐÃ CHỐT — CEO 11/08/2026:</b> "KH bán hàng và chỉ tiêu bán VAV 2026 <b>toàn công ty là
+    7.000 bộ</b>, trong đó <b>Nội địa = 4.000, Int'n = 3.000</b>."
+    <br><br>
+    ⇒ Bảng Phụ lục VI là <b>kế hoạch sản lượng VAV toàn công ty</b>, không phải riêng kênh quốc tế.
+    Thang thị phần 5% APAC là <b>mục tiêu của cả dòng sản phẩm</b> — Việt Nam nằm trong APAC nên
+    sản lượng nội địa cũng tính vào. Phạm vi của Santiago là phần quốc tế trong đó.
+  </div>
+  <table style="margin-top:14px">
+    <tr><th>Năm</th><th class="num">Tổng công ty</th><th class="num">Nội địa</th>
+      <th class="num">Quốc tế</th><th class="num">Thị phần APAC</th><th>Ghi chú</th></tr>
+    <tr style="background:var(--b50)"><td><b>2026</b></td><td class="num"><b>7.000</b></td>
+      <td class="num">4.000</td><td class="num"><b>3.000</b></td><td class="num">0,35%</td>
+      <td class="mini">Đã chốt</td></tr>
+    <tr><td>2027</td><td class="num">15.000</td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num">0,75%</td><td class="mini">Bắt đầu tập trung APAC</td></tr>
+    <tr><td>2028</td><td class="num">50.000</td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num">2,50%</td><td class="mini">Bước nhảy 3,3×</td></tr>
+    <tr><td>2029</td><td class="num">75.000</td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num">3,75%</td><td class="mini"></td></tr>
+    <tr><td><b>2030</b></td><td class="num"><b>100.000</b></td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num"><span class="badge">chưa tách</span></td>
+      <td class="num" style="color:var(--ok);font-weight:700">5,00%</td>
+      <td class="mini">Mục tiêu mục II hợp đồng</td></tr>
+  </table>
+  <div class="rule" style="margin-top:12px">
+    <b>CEO 11/08/2026:</b> "Santiago chịu trách nhiệm phát triển thị trường cho VAV Box <b>nói
+    chung</b>, nhưng do Starduct <b>đã có sẵn thị trường nội địa</b> nên nó <b>gánh bớt một phần</b>
+    tổng sản lượng — 4.000/3.000 năm 2026. Nhiệm vụ của Santiago là tập trung phát triển thị trường
+    quốc tế <b>để nâng tổng sản lượng lên theo lộ trình</b>."
+    <br><br>
+    ⇒ Quy tắc đặt chỉ tiêu: <b>TỔNG</b> cố định theo lộ trình · <b>NỘI ĐỊA</b> là phần sẵn có gánh
+    được · <b>QUỐC TẾ = TỔNG − NỘI ĐỊA</b>, là phần còn lại.
+  </div>
+
+  <h3 style="font-size:13px;margin:18px 0 8px">
+    ⚠️ Hệ quả: nhịp tăng của quốc tế cao hơn nhịp tăng của lộ trình</h3>
+  <table>
+    <tr><th rowspan="2" style="vertical-align:bottom">Năm</th><th rowspan="2" class="num" style="vertical-align:bottom">Tổng</th>
+      <th colspan="3" style="text-align:center;background:#f1f5f9">Kịch bản A — nội địa giữ 4.000</th>
+      <th colspan="3" style="text-align:center;background:#f8fafc">Kịch bản B — nội địa tăng 50%/năm</th></tr>
+    <tr><th class="num">Nội địa</th><th class="num">Quốc tế</th><th class="num">Bội số</th>
+      <th class="num">Nội địa</th><th class="num">Quốc tế</th><th class="num">Bội số</th></tr>
+    <tr style="background:var(--b50)"><td><b>2026</b></td><td class="num">7.000</td>
+      <td class="num">4.000</td><td class="num"><b>3.000</b></td><td class="num">—</td>
+      <td class="num">4.000</td><td class="num"><b>3.000</b></td><td class="num">—</td></tr>
+    <tr><td>2027</td><td class="num">15.000</td>
+      <td class="num">4.000</td><td class="num"><b>11.000</b></td>
+      <td class="num" style="color:var(--warn);font-weight:700">3,7×</td>
+      <td class="num">6.000</td><td class="num"><b>9.000</b></td>
+      <td class="num" style="color:var(--warn);font-weight:700">3,0×</td></tr>
+    <tr style="background:var(--warn-bg)"><td><b>2028</b></td><td class="num">50.000</td>
+      <td class="num">4.000</td><td class="num"><b>46.000</b></td>
+      <td class="num" style="color:var(--bad);font-weight:700">4,2×</td>
+      <td class="num">9.000</td><td class="num"><b>41.000</b></td>
+      <td class="num" style="color:var(--bad);font-weight:700">4,6×</td></tr>
+    <tr><td>2029</td><td class="num">75.000</td>
+      <td class="num">4.000</td><td class="num">71.000</td><td class="num">1,5×</td>
+      <td class="num">13.500</td><td class="num">61.500</td><td class="num">1,5×</td></tr>
+    <tr><td><b>2030</b></td><td class="num">100.000</td>
+      <td class="num">4.000</td><td class="num">96.000</td><td class="num">1,4×</td>
+      <td class="num">20.250</td><td class="num">79.750</td><td class="num">1,3×</td></tr>
+  </table>
+  <div class="note">
+    <b>Kết luận vững ở cả hai kịch bản:</b> nhìn vào lộ trình tổng thì 2027→2028 là <b>3,3×</b>;
+    nhìn vào phần Santiago thực sự phải làm thì là <b>4,2–4,6×</b>. Và từ 2028, quốc tế phải gánh
+    <b>82–92%</b> tổng sản lượng.
+    <br><br>
+    <b>Nghịch lý đáng chú ý:</b> nội địa tăng cũng không làm nhẹ đi bao nhiêu — vì bước nhảy của
+    tổng ở 2028 quá lớn. Kịch bản B thậm chí đòi quốc tế tăng mạnh hơn ở đúng năm đó.
+  </div>
+  <div class="warnbox" style="margin-top:12px">
+    <b>Cần chốt: kế hoạch sản lượng VAV NỘI ĐỊA 2027–2030.</b> Vì quốc tế là phần còn lại, không thể
+    đặt chỉ tiêu cho Santiago nếu chưa biết nội địa gánh bao nhiêu. Hiện chỉ có số 2026 (4.000 bộ).
+    <br><br>
+    <b>Nguyên tắc cần giữ:</b> KPI của Santiago ở Phụ lục I là <b>con số tuyệt đối</b>
+    (300.000 USD · 1 thị trường · 1 OEM), <b>không phải phần dư</b> — nên rủi ro nội địa hụt không
+    đổ lên anh ấy. Giữ nguyên nguyên tắc này khi đặt chỉ tiêu 2027–2030.
+  </div>
+</div>
+
+<!-- 4d -->
+<div class="card">
+  <h2><span class="n">4d</span> Quy tắc đếm sản lượng &amp; chỉ tiêu OEM/ODM</h2>
+
+  <div class="rule">
+    <b>✅ CEO 11/08/2026:</b> "Có động cơ hay không có động cơ <b>đều tính chung</b>.
+    Số lượng cung cấp cho OEM/ODM hay NPP <b>đều tính chung chỉ tiêu</b>."
+  </div>
+
+  <table style="margin-top:14px">
+    <tr><th style="width:22%">Chiều</th><th style="width:14%">Dùng để chấm?</th><th>Vì sao vẫn theo dõi</th></tr>
+    <tr><td><b>Tổng số bộ</b></td><td><span class="pill p-ok">Có — là chỉ tiêu</span></td>
+      <td class="mini">Thước đo thị phần APAC</td></tr>
+    <tr><td><b>Thị trường</b> (mã ISO)</td><td><span class="pill p-ok">Có</span></td>
+      <td class="mini">Quy kết theo mốc 01/01/2026 · đếm thị trường có doanh thu ổn định ≥2 quý</td></tr>
+    <tr><td><b>Kênh</b> (OEM / NPP)</td><td><span class="pill p-n">Không cho sản lượng</span></td>
+      <td class="mini"><b>Bắt buộc</b> để đếm chỉ tiêu "≥3 hợp đồng OEM/ODM" — 20% trọng số</td></tr>
+    <tr><td><b>Loại</b> (có/không động cơ)</td><td><span class="pill p-n">Không</span></td>
+      <td class="mini">Cần để dự báo doanh thu — xem cảnh báo dưới</td></tr>
+  </table>
+
+  <h3 style="font-size:13px;margin:18px 0 8px">Chỉ tiêu OEM/ODM: ≥3 là LUỸ KẾ 5 NĂM, 2026 chỉ cần 1</h3>
+  <table>
+    <tr><th style="width:16%">Năm</th><th style="width:34%">Chỉ tiêu (Phụ lục I)</th>
+      <th style="width:16%">Trạng thái</th><th>Điều kiện công nhận</th></tr>
+    <tr style="background:var(--b50)"><td><b>2026</b></td><td><b>ký 1 OEM/ODM</b></td>
+      <td><span class="pill p-n">Đã ký</span></td>
+      <td class="mini">Có hợp đồng, chữ ký, lãnh thổ và dòng sản phẩm</td></tr>
+    <tr><td>2027</td><td>2–3 OEM <b>hoạt động</b></td>
+      <td><span class="pill p-warn">Hoạt động</span></td>
+      <td class="mini">Đã phát sinh đơn hàng — dùng chuẩn 90 ngày như NPP kích hoạt</td></tr>
+    <tr><td>2029–2030</td><td>≥3 OEM <b>mạnh</b></td>
+      <td><span class="pill p-ok">Mạnh</span></td>
+      <td class="mini">Doanh thu lặp lại ≥2 quý liên tiếp</td></tr>
+    <tr><td><b>Luỹ kế 5 năm</b></td><td colspan="3"><b>≥3 hợp đồng OEM/ODM</b>, Phụ lục II bổ sung
+      điều kiện <i>"có giá trị thương mại thực tế"</i> — đã ký mà không phát sinh đơn hàng thì không tính</td></tr>
+  </table>
+  <div class="note">
+    <b>Bốn căn cứ xác định đây là chỉ tiêu 5 năm:</b> Phụ lục I ghi 2026 chỉ cần "ký 1" ·
+    Phụ lục II mục 2 ghi giai đoạn áp dụng 01/01/2026 – 31/12/2030 với quỹ 50.000 USD cho 5 năm ·
+    Mục VII mở đầu bằng "Giai đoạn 2026–2030" · Phụ lục V liệt kê ≥3 trong điều kiện xét
+    Phantom Equity đến 2030.
+  </div>
+
+  <div class="rule" style="margin-top:12px">
+    <b>✅ CEO 11/08/2026:</b> "Mỗi thị trường sẽ có đơn giá khác nhau, loại <b>full controller /
+    Box only</b>… có đơn giá khác nhau. Nên bán giá nào nó sẽ <b>tự kết doanh thu</b>.
+    <b>Quan trọng là số lượng bao nhiêu bộ</b>."
+    <br><br>
+    ⇒ <b>SỐ BỘ là chỉ tiêu. DOANH THU là kết quả.</b> Đơn giá không đặt chỉ tiêu được vì phụ thuộc
+    thị trường và cấu hình. Chỉ tiêu chính cần theo dõi là số bộ theo thị trường; doanh thu là đầu ra
+    dùng cho báo cáo tài chính.
+  </div>
+
+  <h3 style="font-size:13px;margin:18px 0 8px">Đơn giá ngầm định — con số cần đối chiếu khi chốt chỉ tiêu</h3>
+  <table>
+    <tr><th style="width:44%">Nguồn</th><th class="num">Đơn giá bình quân</th>
+      <th class="num">Chênh so với ngầm định</th></tr>
+    <tr style="background:var(--b50)"><td><b>Hợp đồng ngầm định</b> — 300.000 USD ÷ 3.000 bộ</td>
+      <td class="num"><b>100 USD/bộ</b></td><td class="num">—</td></tr>
+    <tr><td><b>KHDT 2026 — VAV quốc tế</b> (5,5 tỷ ÷ 3.000 bộ)</td>
+      <td class="num"><b>70 USD/bộ</b></td>
+      <td class="num" style="color:var(--bad)">−30%</td></tr>
+    <tr><td>KHDT 2026 — VAV nội địa (13 tỷ ÷ 4.000 bộ)</td>
+      <td class="num">125 USD/bộ</td><td class="num" style="color:var(--ok)">+25%</td></tr>
+    <tr><td>Phụ lục VI (29,23 tỷ ÷ 7.000 bộ)</td>
+      <td class="num">161 USD/bộ</td><td class="num" style="color:var(--ok)">+61%</td></tr>
+  </table>
+  <div class="warnbox" style="margin-top:12px">
+    <b>Ở mức giá quốc tế công ty đang lập kế hoạch (70 USD/bộ), 3.000 bộ chỉ ra 211.000 USD</b> —
+    tức 70% của chỉ tiêu 300.000 USD. Muốn đủ 300.000 USD cần <b>~4.300 bộ</b>.<br><br>
+    Đây không phải mâu thuẫn cần sửa hợp đồng, mà là điều cần <b>ghi rõ khi chốt chỉ tiêu năm</b>.
+    Ba cách đều hợp lý, chỉ cần chọn một:<br>
+    · <b>Chốt theo sản lượng</b> (cách CEO chỉ đạo) → 3.000 bộ, doanh thu tự kết ~211.000 USD<br>
+    · <b>Chốt theo doanh thu</b> (chữ trong hợp đồng) → 300.000 USD, cần ~4.300 bộ ở giá hiện tại<br>
+    · <b>Doanh thu tính cả ngành hàng kéo theo</b> (cửa gió XK, VCD XK — kế hoạch ghi rõ "kèm VAV")
+      → 3.000 bộ VAV cộng phần kéo theo hoàn toàn có thể vượt 300.000 USD
+  </div>
+
+  <h3 style="font-size:13px;margin:18px 0 8px">Cần chốt danh mục cấu hình sản phẩm — vì nó quyết định giá</h3>
+  <table>
+    <tr><th style="width:22%">Cấu hình</th><th style="width:44%">Gồm</th><th>Vị thế giá</th></tr>
+    <tr><td><b>Box only</b></td><td class="mini">Chỉ thân hộp cơ khí</td><td class="mini">Thấp nhất</td></tr>
+    <tr><td><b>Có động cơ</b></td><td class="mini">Hộp + actuator</td><td class="mini">Trung bình</td></tr>
+    <tr><td><b>Full controller</b></td><td class="mini">Hộp + actuator + bộ điều khiển + cảm biến</td>
+      <td class="mini">Cao nhất</td></tr>
+  </table>
+  <div class="note">
+    Ba cấu hình này <b>không đặt chỉ tiêu riêng</b> — chỉ tiêu vẫn là tổng số bộ. Nhưng phải
+    <b>ghi nhận được</b>, vì đó là cách duy nhất giải thích tại sao cùng 3.000 bộ mà doanh thu năm
+    nay khác năm trước.
+    <br><br>
+    Và nó có ý nghĩa chiến lược: <b>cùng một số bộ, bán full controller mang lại doanh thu và biên
+    cao hơn nhiều</b>. Nếu về lâu dài muốn nâng giá trị chứ không chỉ nâng sản lượng thì tỷ trọng
+    full controller là chỉ số cần theo dõi — dù không đưa vào chỉ tiêu.
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="card">
+  <h2><span class="n">5</span> Sổ ghi nhận yếu tố khách quan</h2>
+  <div class="mini" style="margin-bottom:10px">
+    Phụ lục II mục 4 và Phụ lục IV mục 4 cho phép Hội đồng đánh giá lại KPI khi có yếu tố khách quan
+    — <i>"chậm vận hành dây chuyền, thiếu chứng nhận kỹ thuật, khủng hoảng thị trường"</i>.
+    Yếu tố chỉ có giá trị nếu được <b>ghi nhận tại thời điểm xảy ra</b>, không phải nêu lúc đánh giá.
+  </div>
+  <table>
+    <tr><th style="width:26%">Yếu tố</th><th style="width:34%">Bằng chứng</th>
+      <th style="width:14%">Thời điểm</th><th>Ảnh hưởng tới chỉ số nào</th></tr>
+    <tr><td><b>Dây chuyền VAV Line chưa vận hành</b></td>
+      <td class="mini">BCTC 2025 thuyết minh 8.2: "VAV Line dự kiến giải ngân ~3,68 tỷ vào Quý 1/2026"</td>
+      <td>Q1/2026</td><td class="mini">Doanh thu · GPM</td></tr>
+    <tr><td><b>Độc quyền Mey Foong khoá 3 thị trường</b></td>
+      <td class="mini">HK/Macau/Taiwan — 178 công ty, 81 dự án = 44% pipeline phạm vi KPI.
+        Đàm phán gỡ VAV hạn 31/08/2026</td>
+      <td>Cả kỳ</td><td class="mini">Doanh thu · Thị trường · OEM</td></tr>
+    <tr><td><input type="text" placeholder="Yếu tố khác…"></td>
+      <td><input type="text" placeholder="Bằng chứng, số văn bản…"></td>
+      <td><input type="text" placeholder="mm/yyyy"></td>
+      <td><input type="text" placeholder="Chỉ số bị ảnh hưởng"></td></tr>
+  </table>
+  <div style="margin-top:12px"><textarea placeholder="Kết luận của Hội đồng về mức điều chỉnh (nếu có)…"></textarea></div>
+</div>
+
+<!-- 6 -->
+<div class="card">
+  <h2><span class="n">6</span> Lịch bắt buộc theo Phụ lục II mục 5</h2>
+  <table>
+    <tr><th style="width:20%">Mốc</th><th style="width:40%">Việc</th><th>Trạng thái</th></tr>
+    <tr><td><b>Tháng 7/2026</b></td><td>Báo cáo tiến độ KPI giữa kỳ</td>
+      <td><span class="pill p-warn">Đã qua — cần xác nhận đã lập biên bản chưa</span></td></tr>
+    <tr><td><b>Tháng 12/2026</b></td><td>Báo cáo tiến độ KPI cuối kỳ</td>
+      <td><span class="pill p-n">Chưa đến</span></td></tr>
+    <tr><td><b>Tháng 1/2027</b></td><td>Họp đánh giá KPI, có biên bản &amp; xác nhận hai bên</td>
+      <td><span class="pill p-n">Chưa đến</span></td></tr>
+    <tr><td><b>Sau 31/12/2026</b></td><td>Xét điều khoản chấm dứt nếu &lt;50% KPI (Phụ lục III)</td>
+      <td><span class="pill p-n">Chưa đến</span></td></tr>
+  </table>
+</div>
+
+<div class="foot">Bảng ghi nhận nội bộ · lập 11/08/2026 · số liệu do BO Manager ghi nhận và chịu trách nhiệm</div>
+</div>
+
+<script>
+const F = id => parseFloat(document.getElementById(id).value) || 0;
+const fmt = n => n.toLocaleString('vi-VN',{maximumFractionDigits:0});
+const fmt1 = n => n.toLocaleString('vi-VN',{minimumFractionDigits:1,maximumFractionDigits:1});
+
+function calc(){
+  const fx = F('fx');
+  const tgtRev = 300000 * fx / 1e6;               // triệu VND
+  document.getElementById('tgtVnd').textContent = fmt(tgtRev) + ' tr';
+  document.getElementById('c1t').textContent = fmt(tgtRev);
+
+  const rows = [
+    {w:30, t:tgtRev,        a:F('h1_1')+F('h2_1'), el:'r1'},
+    {w:25, t:F('c2t'),      a:F('h1_2')+F('h2_2'), el:'r2'},
+    {w:20, t:35,            a:Math.max(F('h1_3'),F('h2_3')), el:'r3'},
+    {w:15, t:1,             a:Math.max(F('h1_4'),F('h2_4')), el:'r4'},
+    {w:10, t:F('c5t'),      a:Math.max(F('h1_5'),F('h2_5')), el:'r5'}
+  ];
+
+  let wSum = 0, score = 0;
+  rows.forEach(r => {
+    const cell = document.getElementById(r.el);
+    if (!r.t) { cell.innerHTML = '<span class="badge">chưa có chỉ tiêu</span>'; return; }
+    const p = Math.min(r.a / r.t, 1.2);
+    wSum += r.w; score += r.w * p;
+    const cls = p >= .9 ? 'p-ok' : p >= .5 ? 'p-warn' : 'p-bad';
+    cell.innerHTML = '<span class="pill '+cls+'">'+fmt1(p*100)+'%</span>';
+  });
+
+  const pctEl = document.getElementById('pct');
+  if (!wSum) {
+    pctEl.textContent = '—';
+    document.getElementById('cover').textContent = 'Chưa có chỉ tiêu nào được đặt';
+    document.getElementById('band').textContent = '—';
+    document.getElementById('ps').textContent = '—';
+    document.getElementById('term').textContent = '—';
+    document.getElementById('bar').style.width = '0';
+    document.getElementById('advice').textContent = '';
+    return;
+  }
+
+  const pct = score / wSum * 100;
+  pctEl.textContent = fmt1(pct) + '%';
+  document.getElementById('bar').style.width = Math.min(pct,100) + '%';
+  document.getElementById('cover').textContent =
+    'Đã chấm trên ' + wSum + '% trọng số' + (wSum < 100 ? ' · ' + (100-wSum) + '% chưa đủ dữ liệu' : '');
+
+  let rate = 0;
+  if (pct >= 90) rate = 100; else if (pct >= 75) rate = 85;
+  else if (pct >= 60) rate = 70; else if (pct >= 50) rate = 50;
+
+  const bandEl = document.getElementById('band');
+  bandEl.textContent = rate + '%';
+  bandEl.style.color = rate >= 85 ? 'var(--ok)' : rate >= 50 ? 'var(--warn)' : 'var(--bad)';
+  document.getElementById('ps').textContent = fmt(20000 * rate / 100) + ' USD';
+
+  const tEl = document.getElementById('term');
+  tEl.textContent = pct >= 50 ? 'Đạt' : 'Chưa đạt';
+  tEl.style.color = pct >= 50 ? 'var(--ok)' : 'var(--bad)';
+
+  // Doanh thu H2 cần để chạm các mốc
+  const need50 = Math.max(0, tgtRev*0.5 - F('h1_1'));
+  const need90 = Math.max(0, tgtRev*0.9 - F('h1_1'));
+  document.getElementById('advice').innerHTML =
+    '<b>Đặt chỉ tiêu H2 — riêng chỉ số doanh thu:</b><br>' +
+    '· Để vượt ngưỡng 50% (thoát điều khoản chấm dứt): H2 cần <b>' + fmt(need50) + ' tr VND</b><br>' +
+    '· Để đạt bậc chi trả 100% (≥90%): H2 cần <b>' + fmt(need90) + ' tr VND</b><br>' +
+    '<span class="mini">Lưu ý: mức hoàn thành tổng thể là bình quân có trọng số của cả 5 chỉ số, ' +
+    'nên doanh thu không phải yếu tố duy nhất quyết định bậc chi trả.</span>';
+}
+calc();
+</script>
+</body>
+</html>

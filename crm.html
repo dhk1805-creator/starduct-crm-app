@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM — NSCA / Starduct</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#f6f7f9;--surface:#fff;--border:#e3e6ea;--b400:#2563eb;--b50:#eff6ff;
+--text-1:#111827;--text-2:#374151;--text-3:#6b7280;--ok:#059669;--ok-bg:#ecfdf5;
+--warn:#d97706;--warn-bg:#fffbeb;--bad:#dc2626;--bad-bg:#fef2f2}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-1);
+font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;
+display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10}
+header h1{font-size:17px;margin:0}
+header .sub{font-size:12px;color:var(--text-3)}
+.conn{margin-left:auto;font-size:12px;display:flex;gap:8px;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--bad)}
+.dot.on{background:var(--ok)}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:2px}
+nav button{border:0;background:none;padding:11px 15px;font:inherit;font-size:13px;font-weight:600;
+color:var(--text-3);cursor:pointer;border-bottom:2px solid transparent}
+nav button.act{color:var(--b400);border-bottom-color:var(--b400)}
+main{max-width:1280px;margin:0 auto;padding:18px 20px 60px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.card h2{font-size:14px;margin:0 0 12px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:1fr 1fr}
+.kpi{border:1px solid var(--border);border-radius:8px;padding:12px 14px;background:#fafbfc}
+.kpi h3{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .m{font-size:11px;color:var(--text-3)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 9px;text-align:left;border-bottom:1px solid var(--border);vertical-align:middle}
+th{font-weight:600;color:var(--text-2);background:#fafbfc;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.row{cursor:pointer}tr.row:hover{background:var(--b50)}
+input,select,textarea{padding:7px 9px;border:1px solid var(--border);border-radius:6px;font:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--b400);outline-offset:-1px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{font-size:13px}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:7px;padding:8px 14px;
+font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--b400);color:var(--b400)}
+.btn.pri{background:var(--b400);border-color:var(--b400);color:#fff}
+.btn.pri:hover{opacity:.9;color:#fff}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.p0{background:#f1f5f9;color:#64748b}.p1{background:#e0f2fe;color:#0369a1}
+.p2{background:#dbeafe;color:#1d4ed8}.p3{background:#fef9c3;color:#a16207}
+.p4{background:#dcfce7;color:#15803d}.p5{background:#bbf7d0;color:#166534}
+.tag{font-size:11px;padding:1px 7px;border-radius:4px;background:#f1f5f9;color:#64748b;font-weight:600}
+.tag.tb{background:#fdf2f8;color:#be185d}
+.muted{color:var(--text-3);font-size:12px}
+.bar{height:6px;background:#eef1f4;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--b400)}
+dialog{border:1px solid var(--border);border-radius:12px;padding:0;max-width:640px;width:94%;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+dialog::backdrop{background:rgba(15,23,42,.35)}
+.dhead{padding:14px 18px;border-bottom:1px solid var(--border);font-weight:700;display:flex;justify-content:space-between}
+.dbody{padding:16px 18px;max-height:70vh;overflow:auto}
+.frow{display:grid;grid-template-columns:130px 1fr;gap:8px;align-items:center;margin-bottom:9px}
+.frow label{font-size:12px;color:var(--text-3);font-weight:600}
+.log{font:12px/1.5 ui-monospace,monospace;background:#0f172a;color:#a5f3fc;border-radius:8px;
+padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
+.notice{background:var(--b50);border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px}
+.warn{background:var(--warn-bg);border-color:#fde68a}
+@media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CRM — NSCA / Starduct</h1>
+  <select id="modSel" onchange="setMod(this.value)"
+    style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
+    <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
+    <option value="qt">🌏 THỊ TRƯỜNG QUỐC TẾ</option>
+  </select>
+  <span class="sub">Đối tác · Dự án · Tiếp xúc · Thị trường</span>
+  <div class="conn">
+    <span id="whoami" class="tag" style="display:none;font-size:12px;padding:4px 10px"></span>
+    <button class="btn" id="logoutBtn" style="display:none" onclick="logout()">Đăng xuất</button>
+    <button class="btn" id="langBtn" onclick="setLang(LANG==='vi'?'en':'vi')"
+      style="font-weight:700;min-width:44px">EN</button>
+    <span class="dot" id="dot"></span><span id="connTxt">Chưa kết nối</span>
+    <button class="btn" onclick="dlgCfg.showModal()">Cấu hình</button>
+  </div>
+</header>
+
+<nav id="nav">
+  <button data-t="tq" class="act">Tổng quan</button>
+  <button data-t="dt">Đối tác</button>
+  <button data-t="da">Dự án</button>
+  <button data-t="dt2">Doanh thu</button>
+  <button data-t="kh">Kế hoạch</button>
+  <button data-t="kpi">KPI kỳ</button>
+  <button data-t="tx">Tiếp xúc</button>
+  <button data-t="ht">Hỗ trợ</button>
+  <button data-t="sk">Sự kiện</button>
+  <button data-t="ns">Nhân sự</button>
+  <button data-t="im">Nhập dữ liệu</button>
+</nav>
+
+<main>
+
+<!-- ============ TỔNG QUAN ============ -->
+<section id="tab-tq">
+  <div class="grid g4" id="kpis"></div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h2>Độ phủ theo trạng thái (0→5)</h2><div id="phuChart"></div></div>
+    <div class="card"><h2>Theo thị trường</h2><div id="qgChart" style="max-height:340px;overflow:auto"></div></div>
+  </div>
+  <div class="card"><h2>Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng</h2><div id="qhChart"></div></div>
+  <div class="card"><h2>Bước tiếp theo quá hạn / sắp đến hạn</h2><div id="dueList"></div></div>
+  <div class="card"><h2>⏳ Hàng chờ phê duyệt</h2><div id="aprQueue"></div></div>
+</section>
+
+<!-- ============ ĐỐI TÁC ============ -->
+<section id="tab-dt" hidden>
+  <div class="card">
+    <div class="filters">
+      <input id="fdtQ" placeholder="Tìm tên công ty…" style="flex:1;min-width:180px">
+      <select id="fdtPL"><option value="">— Phân loại —</option>
+        <option value="cdt">CĐT</option><option value="tvtk">TVTK</option>
+        <option value="thau">Tổng thầu-MEP</option><option value="npp">Nhà phân phối</option></select>
+      <select id="fdtQG"><option value="">— Thị trường —</option></select>
+      <select id="fdtTP"><option value="">— Thành phố —</option></select>
+      <select id="fdtPhu"><option value="">— Kết quả (trạng thái phủ) —</option>
+        <option value="0">0 · Chưa tiếp cận</option><option value="1">1 · Đã tiếp cận</option>
+        <option value="2">2 · Quan hệ làm việc</option><option value="3">3 · Spec-in</option>
+        <option value="4">4 · Đã bán</option><option value="5">5 · Khách thường xuyên</option></select>
+      <select id="fdtLBG"><option value="">— Loại —</option>
+        <option value="muc_tieu">Mục tiêu</option><option value="tinh_bao">Tình báo</option></select>
+      <select id="fdtChu"><option value="">— Người phụ trách —</option>
+        <option value="co">Đã gán</option><option value="khong">Chưa gán</option></select>
+      <select id="fdtQH"><option value="">— Nhóm quan hệ —</option>
+        <option value="npp_hien_huu">NPP hiện hữu</option><option value="npp_moi">NPP mới</option>
+        <option value="kh_truc_tiep">KH trực tiếp</option><option value="kh_tiem_nang">KH tiềm năng</option>
+        <option value="doi_tac_chien_luoc">ĐT chiến lược</option><option value="doi_tac_phan_phoi">Broker/Agent</option>
+        <option value="chua">Chưa phân loại</option></select>
+      <button class="btn pri" onclick="openOrg()">+ Thêm đối tác</button>
+    </div>
+    <div id="dtList"></div>
+  </div>
+</section>
+
+<!-- ============ DỰ ÁN ============ -->
+<section id="tab-da" hidden>
+  <div class="card">
+    <div class="filters">
+      <input id="fdaQ" placeholder="Tìm tên dự án…" style="flex:1;min-width:180px">
+      <select id="fdaQG"><option value="">— Thị trường —</option></select>
+      <select id="fdaUT"><option value="">— Ưu tiên —</option>
+        <option value="1">1 · Cao</option><option value="3">3 · Trung bình</option>
+        <option value="4">4 · Thấp</option><option value="5">5 · Theo dõi</option></select>
+      <select id="fdaSt"><option value="">— Stage —</option>
+        <option value="tiep_can">Tiếp cận</option><option value="spec_in">Spec-in</option>
+        <option value="chao_gia">Chào giá</option><option value="dam_phan">Đàm phán</option>
+        <option value="po">PO</option><option value="dong">Đóng</option></select>
+      <input id="fdaTP" placeholder="Địa điểm / thành phố…" style="width:150px">
+      <input id="fdaHM" placeholder="Chủ đề: VAV, EI, ERV…" style="width:140px">
+      <select id="fdaNPP"><option value="">— NPP —</option></select>
+      <label style="font-size:12px;display:flex;align-items:center;gap:5px">
+        <input type="checkbox" id="fdaTVTK" style="width:auto"> thiếu TVTK</label>
+      <button class="btn pri" onclick="openDeal()">+ Thêm dự án</button>
+    </div>
+    <div id="daList"></div>
+  </div>
+</section>
+
+<!-- ============ DOANH THU ============ -->
+<section id="tab-dt2" hidden>
+  <div class="card">
+    <div class="filters">
+      <select id="frvNam"></select>
+      <select id="frvXem"><option value="all">👑 Toàn cảnh (Manager/CEO)</option></select>
+      <select id="frvKenh"><option value="">— Kênh —</option>
+        <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
+        <option value="truc_tiep">Trực tiếp</option><option value="oem">OEM</option></select>
+      <span class="muted" style="align-self:center">Chọn tên mình để xem dashboard cá nhân</span>
+    </div>
+    <div class="grid g4" id="rvKpis"></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>Theo đối tác (NPP · Agent · Broker · Trực tiếp)</h2><div id="rvOrg" style="max-height:380px;overflow:auto"></div></div>
+    <div class="card"><h2>Theo thị trường / vùng</h2><div id="rvQG" style="max-height:380px;overflow:auto"></div></div>
+  </div>
+  <div class="card"><h2>Theo tháng × ngành hàng</h2><div id="rvThang" style="overflow:auto"></div></div>
+  <div class="card">
+    <h2>Ghi nhận doanh thu (BO nhập hoặc import)</h2>
+    <div class="grid g4">
+      <div><label class="muted">Tháng *</label><br><input type="month" id="rvT" style="width:100%"></div>
+      <div><label class="muted">Đối tác *</label><br><input id="rvO" list="orgListAll" style="width:100%" placeholder="NPP / Agent / KH…"></div>
+      <div><label class="muted">Ngành hàng *</label><br><select id="rvN" style="width:100%">
+        <option value="CG">Cửa gió</option><option value="EI">Van EI</option>
+        <option value="VCK">Van cơ khí</option><option value="VAV_CAV">VAV/CAV</option>
+        <option value="TAM_NAN">Tấm nan sọt trứng</option><option value="TMC">Thang máng cáp</option>
+        <option value="SWAY">Sway Bracing</option><option value="ERV">ERV</option>
+        <option value="KHAC">Khác</option></select></div>
+      <div><label class="muted">Kênh *</label><br><select id="rvK" style="width:100%">
+        <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
+        <option value="truc_tiep">Trực tiếp</option><option value="oem">OEM</option></select></div>
+      <div><label class="muted">Số tiền (VND) *</label><br><input type="number" id="rvS" style="width:100%"></div>
+      <div><label class="muted">Số bộ VAV</label><br><input type="number" id="rvB" style="width:100%" placeholder="chỉ khi VAV/CAV"></div>
+      <div><label class="muted">Vùng (nội địa)</label><br><select id="rvV" style="width:100%">
+        <option value="">—</option><option>Bắc</option><option>Trung</option><option>Nam</option></select></div>
+      <div><label class="muted">Người nhập</label><br><input id="rvAi" list="nsList" style="width:100%"></div>
+    </div>
+    <div style="margin-top:10px"><button class="btn pri" onclick="saveRev()">Lưu (upsert theo tháng+đối tác+ngành+kênh)</button>
+      <span class="muted" id="rvMsg"></span></div>
+    <datalist id="orgListAll"></datalist>
+  </div>
+</section>
+
+<!-- ============ KẾ HOẠCH ============ -->
+<section id="tab-kh" hidden>
+  <div class="card">
+    <h2>Lập kế hoạch từ CSDL thị trường mình phụ trách → trình CEO → triển khai</h2>
+    <div class="notice">Quy trình: ① lọc dự án/đối tác của mình ở tab Dự án & Đối tác → ② tạo kế hoạch,
+      gắn từng dự án với hành động + chỉ tiêu + hạn → ③ bấm <b>Trình CEO</b> → ④ CEO duyệt trong
+      Hàng chờ phê duyệt → hệ thống <b>tự đổ hành động vào cột "Việc tiếp theo"</b> của từng dự án
+      và gán owner — kế hoạch thành việc chạy, không nằm trên giấy.</div>
+    <div class="grid g4" style="margin-bottom:12px">
+      <input id="khTen" placeholder="Tên kế hoạch * — vd: KH thâm nhập Hàn Quốc Q4">
+      <input id="khTu" type="date"><input id="khDen" type="date">
+      <button class="btn pri" onclick="taoKH()">+ Tạo kế hoạch</button>
+    </div>
+    <textarea id="khMT" placeholder="Mục tiêu tổng quát…" style="width:100%;min-height:40px"></textarea>
+    <div id="khList" style="margin-top:14px"></div>
+  </div>
+</section>
+
+<dialog id="dlgKH" style="max-width:760px">
+  <div class="dhead"><span id="khTitle">Kế hoạch</span><button class="btn" onclick="dlgKH.close()">✕</button></div>
+  <div class="dbody" id="khBody"></div>
+</dialog>
+
+<!-- ============ KPI KỲ ============ -->
+<section id="tab-kpi" hidden>
+  <div class="card">
+    <div class="filters">
+      <select id="kpiKy" onchange="setKy()"><option value="tuan">Tuần</option>
+        <option value="thang" selected>Tháng</option><option value="quy">Quý</option>
+        <option value="6thang">6 tháng</option><option value="nam">Năm</option></select>
+      <input type="date" id="kpiTu"><input type="date" id="kpiDen">
+      <button class="btn" onclick="renderKPI()">Tính</button>
+      <button class="btn pri" onclick="lapBaoCao()">📋 Lập & lưu báo cáo kỳ</button>
+      <button class="btn" onclick="window.print()">🖨 In</button>
+      <span class="muted" style="align-self:center" id="bcMsg">Tự động: pg_cron lập tuần (T7 18:05) & tháng (mùng 1) nếu được bật</span>
+    </div>
+    <div id="kpiBody"></div>
+  </div>
+  <div class="card"><h2>Tốc độ phản hồi case theo bộ phận (trong kỳ)</h2><div id="kpiCase"></div></div>
+  <div class="card"><h2>Nhận xét tự động theo nhân sự</h2><div id="kpiNX"></div></div>
+</section>
+
+<!-- ============ TIẾP XÚC ============ -->
+<section id="tab-tx" hidden>
+  <div class="card">
+    <h2>Ghi tiếp xúc mới</h2>
+    <div class="grid g3">
+      <div><label class="muted">Đối tác *</label><br>
+        <input id="txOrg" list="orgList" placeholder="Gõ tên để chọn…" style="width:100%"></div>
+      <div><label class="muted">Ngày</label><br><input type="date" id="txNgay" style="width:100%"></div>
+      <div><label class="muted">Loại</label><br>
+        <select id="txLoai" style="width:100%"><option value="gap_truc_tiep">Gặp trực tiếp</option>
+        <option value="online">Online</option><option value="email">Email</option>
+        <option value="dien_thoai">Điện thoại</option><option value="su_kien">Sự kiện</option>
+        <option value="gui_mau">Gửi mẫu</option><option value="khac">Khác</option></select></div>
+      <div><label class="muted">Người thực hiện *</label><br><input id="txAi" list="nsList" style="width:100%"></div>
+      <div><label class="muted">Người gặp / chức danh</label><br><input id="txGap" style="width:100%"></div>
+      <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
+        <input type="checkbox" id="txQD" style="width:auto"><label class="muted">Cấp ra quyết định</label></div>
+      <div style="grid-column:1/-1"><label class="muted">Nội dung</label><br>
+        <textarea id="txND" style="width:100%;min-height:50px"></textarea></div>
+      <div><label class="muted">Bước tiếp theo</label><br><input id="txBTT" style="width:100%"></div>
+      <div><label class="muted">Hạn bước tiếp theo</label><br><input type="date" id="txHan" style="width:100%"></div>
+      <div><label class="muted">Nâng trạng thái phủ lên</label><br>
+        <select id="txNang" style="width:100%"><option value="">— giữ nguyên —</option>
+        <option value="1">1 · Đã tiếp cận</option><option value="2">2 · Quan hệ làm việc</option>
+        <option value="3">3 · Spec-in</option><option value="4">4 · Đã bán</option>
+        <option value="5">5 · Khách thường xuyên</option></select></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn pri" onclick="saveTx()">Lưu tiếp xúc</button>
+      <span class="muted" id="txMsg"></span></div>
+    <datalist id="orgList"></datalist>
+<datalist id="nsList"></datalist>
+  </div>
+  <div class="card"><h2>Tiếp xúc gần đây</h2><div id="txList"></div></div>
+</section>
+
+<!-- ============ HỖ TRỢ LIÊN PHÒNG BAN ============ -->
+<section id="tab-ht" hidden>
+  <div class="card">
+    <h2>Điểm nghẽn theo bộ phận</h2>
+    <div class="grid g4" id="htBottleneck"></div>
+  </div>
+  <div class="card">
+    <h2>Tạo yêu cầu hỗ trợ — thay cho hỏi qua Zalo</h2>
+    <div class="grid g3">
+      <div><label class="muted">Dự án (tuỳ chọn)</label><br>
+        <input id="htDeal" list="dealList" placeholder="Gõ tên dự án…" style="width:100%"></div>
+      <div><label class="muted">Bộ phận nhận *</label><br>
+        <select id="htBP" style="width:100%"><option value="rd">R&D</option>
+        <option value="qlsx">Sản xuất</option><option value="bo">BO</option>
+        <option value="tckt">TCKT</option><option value="kcs">KCS</option>
+        <option value="khac">Khác</option></select></div>
+      <div><label class="muted">Loại</label><br>
+        <select id="htLoai" style="width:100%"><option value="bao_gia">Báo giá</option>
+        <option value="ban_ve">Bản vẽ</option><option value="gia_san_pham_moi">Giá SP mới/phi tiêu chuẩn</option>
+        <option value="tien_do_sx">Tiến độ SX</option><option value="fat">FAT/thử nghiệm</option>
+        <option value="cong_no">Công nợ</option><option value="claim">Claim</option>
+        <option value="khac">Khác</option></select></div>
+      <div><label class="muted">Người yêu cầu *</label><br><input id="htAi" list="nsList" style="width:100%"></div>
+      <div><label class="muted">Ưu tiên</label><br>
+        <select id="htUT" style="width:100%"><option value="cao">Cao</option>
+        <option value="trung_binh" selected>Trung bình</option><option value="thap">Thấp</option></select></div>
+      <div><label class="muted">Hạn phản hồi</label><br><input type="date" id="htHan" style="width:100%"></div>
+      <div style="grid-column:1/-1"><label class="muted">Nội dung *</label><br>
+        <textarea id="htND" style="width:100%;min-height:50px"
+        placeholder="VD: Van MD thân L120 khẩu độ cánh 100mm chưa có đơn giá — Galaxy đang chờ để gửi báo giá"></textarea></div>
+    </div>
+    <div style="margin-top:10px"><button class="btn pri" onclick="saveHT()">Gửi yêu cầu</button>
+      <span class="muted" id="htMsg"></span></div>
+    <datalist id="dealList"></datalist>
+  </div>
+  <div class="card"><h2>Danh sách yêu cầu</h2>
+    <div class="filters">
+      <select id="fhtBP" onchange="renderHT()"><option value="">— Bộ phận —</option>
+        <option value="rd">R&D</option><option value="qlsx">SX</option><option value="bo">BO</option>
+        <option value="tckt">TCKT</option><option value="kcs">KCS</option></select>
+      <select id="fhtTT" onchange="renderHT()"><option value="">— Trạng thái —</option>
+        <option value="mo">Mở</option><option value="dang_xu_ly">Đang xử lý</option>
+        <option value="da_xong">Đã xong</option><option value="tu_choi">Từ chối</option></select>
+    </div>
+    <div id="htList"></div></div>
+</section>
+
+<!-- ============ SỰ KIỆN ============ -->
+<section id="tab-sk" hidden>
+  <div class="card"><div id="skList"></div></div>
+</section>
+
+<!-- ============ NHÂN SỰ ============ -->
+<section id="tab-ns" hidden>
+  <div class="card">
+    <h2>Đội ngũ & mô tả công việc trong module</h2>
+    <div class="notice">Mô tả viết sẵn từ tài liệu đã đối soát (quy chế, KPI SMART, hợp đồng, báo cáo).
+      Trường <b>Email · Chỉ tiêu kỳ · Ghi chú admin</b> để trống có chủ đích — admin bổ sung dần.</div>
+    <div id="nsBody"></div>
+  </div>
+</section>
+
+<!-- ============ NHẬP DỮ LIỆU ============ -->
+<section id="tab-im" hidden>
+  <div class="card">
+    <h2>Nhập từ file Excel kế hoạch quốc tế</h2>
+    <div class="notice">Chọn file <b>Ke_hoach_Phat_trien_Thi_truong_Quoc_te_H2-2026_H1-2027.xlsx</b>
+      — hệ thống đọc 3 sheet (Đối tác · Pipeline · Sự kiện), tự chuẩn hoá tên quốc gia về mã ISO,
+      tách trạng thái quan hệ, gộp 2 lớp tên Hàn/Nhật, và nạp theo lô.</div>
+    <div class="notice warn">Dữ liệu nguồn là <b>tài liệu tham khảo (Tầng 3)</b> — sau khi nạp,
+      mọi bản ghi mang <code>nguon = 'kh_qt_v22'</code>. Danh mục chính thức do CEO duyệt bằng cách
+      gán <b>người phụ trách</b> cho từng tài khoản.</div>
+    <input type="file" id="impFile" accept=".xlsx">
+    <button class="btn pri" onclick="runImport()" style="margin-left:8px">Nạp vào CRM</button>
+    <div style="margin-top:12px" class="log" id="impLog">Chưa chạy.</div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ DIALOG CẤU HÌNH ============ -->
+<dialog id="dlgCfg">
+  <div class="dhead">Kết nối Supabase<button class="btn" onclick="dlgCfg.close()">✕</button></div>
+  <div class="dbody">
+    <div class="frow"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+    <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOi…"></div>
+    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="đăng nhập tài khoản ERP"></div>
+    <div class="frow"><label>Mật khẩu</label><input id="cfgPass" type="password"></div>
+    <button class="btn pri" onclick="connect()">Kết nối & đăng nhập</button>
+    <span class="muted" id="cfgMsg"></span>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG ĐỐI TÁC ============ -->
+<dialog id="dlgOrg">
+  <div class="dhead"><span id="orgTitle">Đối tác</span><button class="btn" onclick="dlgOrg.close()">✕</button></div>
+  <div class="dbody" id="orgBody"></div>
+</dialog>
+
+<!-- ============ DIALOG DỰ ÁN ============ -->
+<dialog id="dlgDeal">
+  <div class="dhead"><span id="dealTitle">Dự án</span><button class="btn" onclick="dlgDeal.close()">✕</button></div>
+  <div class="dbody" id="dealBody"></div>
+</dialog>
+
+<!-- ============ DIALOG LOGIN CÁ NHÂN ============ -->
+<dialog id="dlgLogin">
+  <div class="dhead">👤 Đăng nhập cá nhân</div>
+  <div class="dbody">
+    <div class="frow"><label>User name</label><input id="lgU" placeholder="vd: santiago, tam, duc…"></div>
+    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="mặc định: Nsca@2026"></div>
+    <button class="btn pri" onclick="doLogin()">Đăng nhập</button>
+    <span class="muted" id="lgMsg"></span>
+    <div class="notice" style="margin-top:12px">Lần đầu đăng nhập bằng mật khẩu mặc định
+      <b>Nsca@2026</b> — hệ thống sẽ yêu cầu đổi ngay.</div>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG ĐỔI MẬT KHẨU ============ -->
+<dialog id="dlgDoiMK">
+  <div class="dhead">🔑 Đổi mật khẩu</div>
+  <div class="dbody">
+    <div class="frow"><label>Mật khẩu cũ</label><input id="mkCu" type="password"></div>
+    <div class="frow"><label>Mật khẩu mới</label><input id="mkMoi" type="password" placeholder="tối thiểu 8 ký tự"></div>
+    <button class="btn pri" onclick="doDoiMK()">Đổi mật khẩu</button>
+    <span class="muted" id="mkMsg"></span>
+  </div>
+</dialog>
+
+<!-- ============ DIALOG HỒ SƠ NHÂN SỰ ============ -->
+<dialog id="dlgNS" style="max-width:700px">
+  <div class="dhead"><span id="nsTitle">Hồ sơ</span><button class="btn" onclick="dlgNS.close()">✕</button></div>
+  <div class="dbody" id="nsDlgBody"></div>
+</dialog>
+
+<!-- ============ DIALOG THẢO LUẬN & PHÊ DUYỆT ============ -->
+<dialog id="dlgThread" style="max-width:720px">
+  <div class="dhead"><span id="thrTitle">Thảo luận & phê duyệt</span>
+    <button class="btn" onclick="dlgThread.close()">✕</button></div>
+  <div class="dbody" id="thrBody"></div>
+</dialog>
+
+<script>
+/* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
+let LANG=localStorage.getItem('crm_lang')||'vi';
+const FRAG=[
+// ---- câu dài trước (tự sắp theo độ dài lúc chạy) ----
+['Chọn tên mình để xem dashboard cá nhân','Pick your name for your personal dashboard'],
+['Tổng hợp tự động từ tiếp xúc · dự án · doanh thu · case hỗ trợ trong kỳ','Auto-compiled from touchpoints · projects · revenue · support cases in period'],
+['Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng','Results by relationship group — farming ≠ development ≠ prospecting'],
+['Tạo yêu cầu hỗ trợ — thay cho hỏi qua Zalo','Create support request — replaces Zalo asks'],
+['Tốc độ phản hồi case theo bộ phận (trong kỳ)','Case response speed by department (period)'],
+['Ghi nhận doanh thu (BO nhập hoặc import)','Record revenue (BO entry or import)'],
+['Theo đối tác (NPP · Agent · Broker · Trực tiếp)','By account (Distributor · Agent · Broker · Direct)'],
+['Bước tiếp theo quá hạn / sắp đến hạn','Next steps overdue / due soon'],
+['Chưa có bước tiếp theo nào được ghi. Mọi tiếp xúc nên kết thúc bằng một bước tiếp theo có hạn.','No next steps recorded yet. Every touchpoint should end with a dated next step.'],
+['Không có đề xuất nào chờ duyệt. ✓','No pending approvals. ✓'],
+['Chưa có yêu cầu nào.','No requests yet.'],['Không có yêu cầu khớp bộ lọc.','No requests match the filter.'],
+['Chưa có tiếp xúc nào.','No touchpoints yet.'],['Chưa có thảo luận.','No discussion yet.'],
+['Chưa có đề xuất nào.','No proposals yet.'],['Chưa có case nào trong kỳ.','No cases in period.'],
+['Chưa có dữ liệu — nhập ở form dưới.','No data yet — use the form below.'],['Chưa có dữ liệu.','No data yet.'],
+['Chưa có sự kiện — nạp từ tab Nhập dữ liệu.','No events — load from the Import tab.'],
+['Chưa có hoạt động nào trong kỳ. Dữ liệu KPI sinh ra tự động khi đội ngũ ghi tiếp xúc, cập nhật dự án, nhập doanh thu và xử lý case — không ai phải nộp báo cáo riêng.','No activity in this period. KPI data is generated automatically as the team logs touchpoints, updates projects, records revenue and resolves cases — nobody files a separate report.'],
+['Điểm tham khảo = action 25% · nâng phủ 35% · doanh thu 30% · case 10%, chuẩn hoá theo giá trị cao nhất trong kỳ.','Reference score = actions 25% · coverage raised 35% · revenue 30% · cases 10%, normalized to the period maximum.'],
+['Không thay thế bảng KPI chính thức','Does not replace the official KPI sheet'],
+['(mẫu số là chỉ tiêu được giao) — đây là thước nhịp làm việc để Manager điều phối hằng tuần.','(denominator = assigned targets) — this is a work-rhythm gauge for weekly coordination.'],
+['Lưu (upsert theo tháng+đối tác+ngành+kênh)','Save (upsert by month+account+line+channel)'],
+['Hiển thị 300 đầu — thu hẹp bộ lọc để xem thêm.','Showing first 300 — narrow the filter.'],
+['Hiển thị 300 đầu.','Showing first 300.'],
+['tài khoản chưa phân nhóm quan hệ — mở từng tài khoản để gán, hoặc lọc "Chưa phân loại" ở tab Đối tác.','accounts not yet grouped — open each to assign, or filter "Unclassified" in Accounts tab.'],
+['Chưa có — đây là lớp dữ liệu cần bổ sung nhất (13,6%)','None yet — the most-needed data layer (13.6%)'],
+['Nâng lên mức ≥2 đòi hỏi tiếp xúc với CẤP RA QUYẾT ĐỊNH','Raising to ≥2 requires a DECISION-MAKER touchpoint'],
+['Nâng trạng thái phải kèm bước tiếp theo có hạn','Raising coverage requires a dated next step'],
+['Chọn đúng tên đối tác trong danh sách','Pick an account from the list'],
+['Thiếu người thực hiện','Missing person'],['Thiếu người yêu cầu hoặc nội dung','Missing requester or content'],
+['Thiếu người viết hoặc nội dung','Missing author or content'],
+['Thiếu người đề xuất hoặc nội dung','Missing proposer or content'],
+['Thiếu tháng, đối tác hoặc số tiền','Missing month, account or amount'],
+['Từ chối bắt buộc ghi lý do — quy tắc L4','Rejection requires a reason — rule L4'],
+['Tên người duyệt:','Approver name:'],['Ý kiến (bác thì bắt buộc)','Comment (required if rejecting)'],
+['Đề xuất gì, căn cứ gì… *','What is proposed, on what basis… *'],
+['Link căn cứ / bằng chứng (tuỳ chọn)','Evidence link (optional)'],
+['Gửi tới ai (tuỳ chọn)','Send to (optional)'],['Nội dung… *','Message… *'],['Người viết *','Author *'],
+['VD: gửi mẫu VAV cho TVTK trước khi chốt spec','e.g., send VAV sample to consultant before spec freeze'],
+['VD: Van MD thân L120 khẩu độ cánh 100mm chưa có đơn giá — Galaxy đang chờ để gửi báo giá','e.g., MD damper L120 body 100mm blade has no unit price — Galaxy waiting to quote'],
+['nơi quyết định spec-in','where spec-in is decided'],['chỉ khi VAV/CAV','VAV/CAV only'],
+['NPP / Agent / KH…','Distributor / Agent / Customer…'],['Gõ tên dự án…','Type project name…'],
+['Gõ tên để chọn…','Type to select…'],['Tìm tên công ty…','Search company…'],['Tìm tên dự án…','Search project…'],
+['Địa điểm / thành phố…','Location / city…'],['Chủ đề: VAV, EI, ERV…','Topic: VAV, EI, ERV…'],
+['mã ISO: VN, HK, KR…','ISO code: VN, HK, KR…'],['đăng nhập tài khoản ERP','sign in with ERP account'],
+['Kết nối & đăng nhập','Connect & sign in'],['Kết nối Supabase','Connect Supabase'],
+['Đăng nhập lỗi: ','Sign-in error: '],['Thiếu URL hoặc key','Missing URL or key'],
+['Thảo luận & phê duyệt','Discussion & approvals'],['Đề xuất & phê duyệt','Proposals & approvals'],
+['💬 Thảo luận & phê duyệt','💬 Discussion & approvals'],
+['Thảo luận & duyệt ngân sách','Discuss & approve budget'],
+['Điểm nghẽn theo bộ phận','Bottlenecks by department'],['Danh sách yêu cầu','Requests'],
+['Ghi tiếp xúc mới','New touchpoint'],['Tiếp xúc gần đây','Recent touchpoints'],
+['Theo tháng × ngành hàng','By month × product line'],['Theo thị trường / vùng','By market / region'],
+['Độ phủ theo trạng thái (0→5)','Coverage by status (0→5)'],['⏳ Hàng chờ phê duyệt','⏳ Approval queue'],
+['thước đo thị phần APAC','APAC market-share yardstick'],['danh mục CEO duyệt','CEO-approved list'],
+['Đã chấm trên','Scored on'],['trọng số','of weights'],['chưa đủ dữ liệu','insufficient data'],
+// ---- nhóm quan hệ / trạng thái ----
+['🌾 NPP hiện hữu (chăm sóc)','🌾 Existing distributor (farming)'],
+['🌱 NPP mới (phát triển)','🌱 New distributor (developing)'],
+['🛒 Khách hàng trực tiếp','🛒 Direct customer'],['🎯 Khách hàng tiềm năng','🎯 Prospect'],
+['🤝 Đối tác chiến lược (OEM/ODM)','🤝 Strategic partner (OEM/ODM)'],
+['🔗 Đối tác phân phối (Broker/Agent)','🔗 Channel partner (Broker/Agent)'],
+['⬜ Chưa phân loại','⬜ Unclassified'],['Chưa phân loại','Unclassified'],
+['NPP hiện hữu (chăm sóc)','Existing distributor (farming)'],['NPP mới (phát triển)','New distributor (developing)'],
+['Khách hàng trực tiếp','Direct customer'],['Khách hàng tiềm năng','Prospect'],
+['Đối tác chiến lược (OEM/ODM)','Strategic partner (OEM/ODM)'],['Đối tác phân phối (Broker/Agent)','Channel partner (Broker/Agent)'],
+['NPP hiện hữu','Existing distributor'],['NPP mới','New distributor'],
+['KH trực tiếp','Direct cust.'],['KH tiềm năng','Prospect'],['ĐT chiến lược','Strategic'],
+['0 · Chưa tiếp cận','0 · Not contacted'],['1 · Đã tiếp cận','1 · Contacted'],
+['2 · Quan hệ làm việc','2 · Working relationship'],['3 · Spec-in','3 · Spec-in'],
+['4 · Đã bán','4 · Sold'],['5 · Khách thường xuyên','5 · Repeat customer'],
+['Quan hệ thực (≥2)','Real relationships (≥2)'],['Tiếp xúc 30 ngày','Touches 30d'],
+['🇻🇳 THỊ TRƯỜNG NỘI ĐỊA','🇻🇳 DOMESTIC MARKET'],['🌏 THỊ TRƯỜNG QUỐC TẾ','🌏 INTERNATIONAL MARKET'],
+['Nâng trạng thái phủ lên','Raise coverage to'],['Nâng trạng thái phủ','Raise coverage'],
+['Trạng thái phủ','Coverage'],['— giữ nguyên —','— keep —'],
+['Duyệt vào danh mục chính thức','Approve into official list'],['Gán người phụ trách','Assign owner'],
+['Chuyển stage','Change stage'],['Đóng dự án','Close project'],['Ngân sách sự kiện','Event budget'],
+['Đề xuất chính sách','Policy proposal'],
+// ---- loại / kênh / bộ phận / trạng thái case ----
+['Giá SP mới/phi tiêu chuẩn','New/non-standard product price'],['Tiến độ SX','Production schedule'],
+['FAT/thử nghiệm','FAT/testing'],['Bản vẽ','Drawing'],['Báo giá','Quotation'],['Công nợ','Receivables'],
+['Sản xuất','Production'],['Đang xử lý','In progress'],['Đã xong','Done'],['Từ chối','Rejected'],
+['Đã duyệt','Approved'],['Chờ duyệt','Pending'],['Trung bình','Medium'],
+['Gặp trực tiếp','In person'],['Điện thoại','Phone'],['Gửi mẫu','Sample sent'],
+['Agent/Broker','Agent/Broker'],['Trực tiếp','Direct'],
+['Cửa gió','Air grilles'],['Van EI','Fire damper EI'],['Van cơ khí','Mech. damper'],
+['Tấm nan','Eggcrate'],['Thang máng cáp','Cable tray'],
+// ---- nhãn form / bảng ----
+['Người thực hiện *','Done by *'],['Người gặp / chức danh','Met with / title'],
+['Cấp ra quyết định','Decision-maker'],['Cấp QĐ','Dec-maker'],['Bước tiếp theo','Next step'],
+['Hạn bước tiếp theo','Next step due'],['Hạn phản hồi','Response due'],['Hạn việc đó','That step due'],
+['Việc tiếp theo','Next action'],['Người yêu cầu *','Requester *'],['Người đề xuất','Proposed by'],
+['Người phụ trách','Owner'],['Người nhập','Entered by'],['Người liên hệ','Contacts'],
+['Đối tác mục tiêu','Target accounts'],['Đối tác có doanh thu','Accounts with revenue'],
+['Đối tượng','Subject'],['Đối tác *','Account *'],['Đối tác','Accounts'],
+['Số tiền (VND) *','Amount (VND) *'],['Số bộ VAV','VAV units'],['Số bộ VAV ước','Est. VAV units'],
+['Vùng (nội địa)','Region (domestic)'],['Ngành hàng *','Product line *'],['Ngành hàng','Product line'],
+['Bộ phận nhận *','To department *'],['Bộ phận','Department'],['Ưu tiên','Priority'],
+['Dự án ưu tiên cao','High-priority projects'],['Dự án (tuỳ chọn)','Project (optional)'],
+['Dự án cá nhân','My projects'],['Dự án','Projects'],
+['Doanh thu kỳ','Revenue (period)'],['Doanh thu','Revenue'],
+['Tổng quan','Overview'],['Tiếp xúc cuối','Last touch'],['Tiếp xúc','Touchpoints'],
+['Nhập dữ liệu','Import'],['Nhóm quan hệ','Relationship group'],['Nhóm','Group'],
+['Sự kiện','Events'],['Hỗ trợ','Support'],['KPI kỳ','KPI Period'],
+['Thị trường / vùng','Market / region'],['Thị trường','Market'],
+['Chức danh','Title'],['Họ tên','Full name'],['Mật khẩu','Password'],
+['Thành phố','City'],['Quốc gia','Country'],['Theo quốc gia','By country'],
+['Trạng thái quan hệ','Relationship status'],['Trạng thái','Status'],
+['Đến hạn','Due'],['Hạn','Due'],['Ngày','Date'],['Loại','Type'],['Tên *','Name *'],['Tên','Name'],
+['Nội dung *','Content *'],['Nội dung','Content'],['Ghi chú','Notes'],['Giá trị','Value'],
+['Mô tả / Quy mô','Description / Size'],['Phân loại','Category'],['Cấp duyệt: Manager','Approver: Manager'],
+['Cấp duyệt: CEO','Approver: CEO'],['Cấp','Level'],['Chờ','Wait'],
+['Tổng thầu-MEP','Contractor-MEP'],['Tổng CTY','Company total'],
+['Nhận trong kỳ','Received'],['TG phản hồi TB (ngày)','Avg response (days)'],
+['Đang quá hạn','Overdue now'],['quá hạn','overdue'],['Quá hạn','Overdue'],
+['Nhân sự','Person'],['Tài khoản','Accounts'],['Thời gian','Time'],['Địa điểm','Venue'],
+['Đã tham dự','Attended'],['Sẽ tham dự','Will attend'],['Bỏ qua','Skip'],['Chưa quyết','Undecided'],
+['Có bước tiếp','Has next step'],['Nâng phủ','Cov. raised'],['NA quá hạn','NA overdue'],
+['Điểm TK','Ref. score'],['Case tạo/xong','Cases opened/done'],
+['Tháng hiện tại','Current month'],['Tháng *','Month *'],['Tháng','Month'],
+['Luỹ kế','YTD'],['Năm','Year'],['Kỳ:','Period:'],['Kênh','Channel'],
+['👑 Toàn cảnh (Manager/CEO)','👑 Full view (Manager/CEO)'],
+['Độ phủ ≥1 / ≥2','Coverage ≥1 / ≥2'],['Có người phụ trách','Has owner'],
+['Phụ trách','Owner'],['dòng ghi nhận','entries'],['bản ghi','records'],
+['toàn module','whole module'],['của','of'],['trên','of'],['dự án','projects'],['Mốc spec-in','Spec-in window'],
+['tình báo','intel'],['thiếu','missing'],['— chưa gán','— unassigned'],['— Chưa phân loại —','— Unclassified —'],
+['ngày','days'],['tỷ','bn'],[' tr.',' m.'],
+// ---- nav & nút ----
+['+ Thêm đối tác','+ Add account'],['+ Thêm dự án','+ Add project'],['+ Thêm','+ Add'],
+['Lưu tiếp xúc','Save touchpoint'],['Gửi yêu cầu','Send request'],['Gửi đề xuất','Submit proposal'],
+['Nạp vào CRM','Load into CRM'],['Cấu hình','Settings'],['Chưa kết nối','Not connected'],
+['Đã kết nối','Connected'],['Đã lưu','Saved'],['Đã gửi — hạn','Sent — due'],['Đã gửi','Sent'],
+['Duyệt','Approve'],['Tính','Compute'],['Lưu','Save'],['Gửi','Send'],['Mở','Open'],
+['Đối tác · Dự án · Tiếp xúc · Thị trường','Accounts · Projects · Touchpoints · Markets'],
+['Hàn Quốc','South Korea'],['Nhật Bản','Japan'],['Việt Nam','Vietnam'],['Thái Lan','Thailand'],
+['Campuchia','Cambodia'],['Úc','Australia'],['Khác','Other'],['CĐT','Developer'],
+['chưa rõ vùng','region n/a'],['Bắc','North'],['Trung','Central'],['Nam','South']
+];
+const _legacyVI2EN={
+'Tổng quan':'Overview','Đối tác':'Accounts','Dự án':'Projects','Doanh thu':'Revenue',
+'KPI kỳ':'KPI Period','Tiếp xúc':'Touchpoints','Hỗ trợ':'Support','Sự kiện':'Events',
+'Nhập dữ liệu':'Import','Đối tác · Dự án · Tiếp xúc · Thị trường':'Accounts · Projects · Touchpoints · Markets',
+'Chưa kết nối':'Not connected','Đã kết nối':'Connected','Cấu hình':'Settings',
+'🇻🇳 THỊ TRƯỜNG NỘI ĐỊA':'🇻🇳 DOMESTIC MARKET','🌏 THỊ TRƯỜNG QUỐC TẾ':'🌏 INTERNATIONAL MARKET',
+'Độ phủ theo trạng thái (0→5)':'Coverage by status (0→5)','Theo thị trường':'By market',
+'Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng':'Results by relationship group — farming ≠ development ≠ prospecting',
+'Bước tiếp theo quá hạn / sắp đến hạn':'Next steps overdue / due soon','⏳ Hàng chờ phê duyệt':'⏳ Approval queue',
+'Đối tác mục tiêu':'Target accounts','Độ phủ ≥1 / ≥2':'Coverage ≥1 / ≥2','Có người phụ trách':'Has owner',
+'Dự án ưu tiên cao':'High-priority projects','Nhóm quan hệ':'Relationship group',
+'0 · Chưa tiếp cận':'0 · Not contacted','1 · Đã tiếp cận':'1 · Contacted',
+'2 · Quan hệ làm việc':'2 · Working relationship','3 · Spec-in':'3 · Spec-in',
+'4 · Đã bán':'4 · Sold','5 · Khách thường xuyên':'5 · Repeat customer',
+'🌾 NPP hiện hữu (chăm sóc)':'🌾 Existing distributor (farming)',
+'🌱 NPP mới (phát triển)':'🌱 New distributor (developing)',
+'🛒 Khách hàng trực tiếp':'🛒 Direct customer','🎯 Khách hàng tiềm năng':'🎯 Prospect',
+'🤝 Đối tác chiến lược (OEM/ODM)':'🤝 Strategic partner (OEM/ODM)',
+'🔗 Đối tác phân phối (Broker/Agent)':'🔗 Channel partner (Broker/Agent)','⬜ Chưa phân loại':'⬜ Unclassified',
+'Tên':'Name','Loại':'Type','Trạng thái phủ':'Coverage','Người phụ trách':'Owner',
+'Tiếp xúc cuối':'Last touch','Thị trường':'Market','Tài khoản':'Accounts','TT':'Mkt',
+'Quan hệ thực (≥2)':'Real relationships (≥2)','Tiếp xúc 30 ngày':'Touches 30d','Theo quốc gia':'By country',
+'CĐT':'Developer','TVTK':'MEP Consultant','Tổng thầu-MEP':'Contractor-MEP','NPP':'Distributor','Khác':'Other',
+'Stage':'Stage','Việc tiếp theo':'Next action','Giá trị':'Value','Ngày':'Date','Nội dung':'Content',
+'Bộ phận':'Department','Hạn':'Due','Trạng thái':'Status','Đề xuất':'Proposal','Người đề xuất':'Proposed by',
+'Cấp':'Level','Chờ':'Wait','Đối tượng':'Subject','Nhân sự':'Person','Thời gian':'Time','Địa điểm':'Venue',
+'+ Thêm đối tác':'+ Add account','+ Thêm dự án':'+ Add project','Lưu':'Save','Gửi':'Send',
+'Gửi yêu cầu':'Send request','Gửi đề xuất':'Submit proposal','Lưu tiếp xúc':'Save touchpoint',
+'Kết nối & đăng nhập':'Connect & sign in','Nạp vào CRM':'Load into CRM','Duyệt':'Approve',
+'Từ chối':'Reject','Tính':'Compute','Mở':'Open','💬 Thảo luận & phê duyệt':'💬 Discussion & approvals',
+'Tìm tên công ty…':'Search company…','Tìm tên dự án…':'Search project…','Gõ tên để chọn…':'Type to select…',
+'Ghi tiếp xúc mới':'New touchpoint','Tiếp xúc gần đây':'Recent touchpoints',
+'Người thực hiện *':'Done by *','Người gặp / chức danh':'Met with / title','Cấp ra quyết định':'Decision-maker',
+'Bước tiếp theo':'Next step','Hạn bước tiếp theo':'Next step due','Nâng trạng thái phủ lên':'Raise coverage to',
+'— giữ nguyên —':'— keep —','Điểm nghẽn theo bộ phận':'Bottlenecks by department',
+'Tạo yêu cầu hỗ trợ — thay cho hỏi qua Zalo':'Create support request — replaces Zalo asks',
+'Danh sách yêu cầu':'Requests','Sản xuất':'Production','Người yêu cầu *':'Requester *',
+'Ưu tiên':'Priority','Hạn phản hồi':'Response due','Mở':'Open','Đang xử lý':'In progress',
+'Đã xong':'Done','Cao':'High','Trung bình':'Medium','Thấp':'Low',
+'Theo đối tác (NPP · Agent · Broker · Trực tiếp)':'By account (Distributor · Agent · Broker · Direct)',
+'Theo thị trường / vùng':'By market / region','Theo tháng × ngành hàng':'By month × product line',
+'Ghi nhận doanh thu (BO nhập hoặc import)':'Record revenue (BO entry or import)',
+'👑 Toàn cảnh (Manager/CEO)':'👑 Full view (Manager/CEO)','Số bộ VAV':'VAV units',
+'Tháng hiện tại':'Current month','Đối tác có doanh thu':'Accounts with revenue',
+'thước đo thị phần APAC':'APAC market-share yardstick','Nhóm':'Group','Phụ trách':'Owner',
+'Ngành hàng':'Product line','Kênh':'Channel','Số tiền (VND) *':'Amount (VND) *',
+'Vùng (nội địa)':'Region (domestic)','Người nhập':'Entered by','Tháng *':'Month *',
+'Cửa gió':'Air grilles','Van EI':'Fire damper EI','Van cơ khí':'Mech. damper','Tấm nan':'Eggcrate',
+'Trực tiếp':'Direct','Kỳ:':'Period:','Tốc độ phản hồi case theo bộ phận (trong kỳ)':'Case response speed by department (period)',
+'Nhận trong kỳ':'Received','TG phản hồi TB (ngày)':'Avg response (days)','Đang quá hạn':'Overdue',
+'Chọn tên mình để xem dashboard cá nhân':'Pick your name for your personal dashboard',
+'Nâng trạng thái phủ':'Raise coverage','Chuyển stage':'Change stage','Đóng dự án':'Close project',
+'Gán người phụ trách':'Assign owner','Duyệt vào danh mục chính thức':'Approve into official list',
+'Ngân sách sự kiện':'Event budget','Đề xuất chính sách':'Policy proposal',
+'thiếu':'missing','tình báo':'intel','— chưa gán':'— unassigned','Ghi chú':'Notes',
+'Thảo luận':'Discussion','Đề xuất & phê duyệt':'Proposals & approvals',
+'Không có đề xuất nào chờ duyệt. ✓':'No pending approvals. ✓'};
+// ===== BỔ SUNG các mảnh phát hiện thiếu khi rà soát (login, nhân sự, báo cáo kỳ, import, stage…) =====
+FRAG.push(
+['Đội ngũ & mô tả công việc trong module','Team & job descriptions in this module'],['Đội ngũ','Team'],
+['Mô tả viết sẵn từ tài liệu đã đối soát (quy chế, KPI SMART, hợp đồng, báo cáo).','Descriptions pre-written from verified documents (regulations, SMART KPIs, contract, reports).'],
+['để trống có chủ đích — admin bổ sung dần.','left blank on purpose — admin fills in over time.'],
+['Email · Chỉ tiêu kỳ · Ghi chú admin','Email · Period targets · Admin notes'],
+['trống — admin bổ sung','blank — admin to fill'],
+['Chế độ xem — chỉ Admin/Super Admin sửa được hồ sơ.','View mode — only Admin/Super Admin can edit profiles.'],
+['Mô tả công việc trong module (viết từ tài liệu đã đối soát)','Job description in this module (from verified documents)'],
+['KPI chính','Key KPIs'],['Chỉ tiêu kỳ (trống — chờ DL-02)','Period target (blank — awaiting DL-02)'],
+['Email (trống — admin bổ sung)','Email (blank — admin to fill)'],['Ghi chú admin','Admin notes'],
+['🔑 Reset mật khẩu về mặc định','🔑 Reset password to default'],['Hồ sơ','Profile'],
+['👤 Đăng nhập cá nhân','👤 Personal sign-in'],['Đăng nhập cá nhân','Personal sign-in'],
+['Đăng xuất','Sign out'],['Đăng nhập','Sign in'],['Mật khẩu cũ','Old password'],
+['Mật khẩu mới','New password'],['tối thiểu 8 ký tự','minimum 8 characters'],
+['🔑 Đổi mật khẩu','🔑 Change password'],['Đổi mật khẩu','Change password'],
+['mặc định: Nsca@2026','default: Nsca@2026'],
+['Lần đầu đăng nhập bằng mật khẩu mặc định','First sign-in uses the default password'],
+['hệ thống sẽ yêu cầu đổi ngay.','the system will require a change immediately.'],
+['Sai user name hoặc mật khẩu','Wrong user name or password'],
+['Mật khẩu cũ không đúng','Old password incorrect'],['Đã đổi','Changed'],
+['Đã reset về Nsca@2026 — buộc đổi khi đăng nhập','Reset to Nsca@2026 — change forced at sign-in'],
+['Người này chưa có user name','This person has no user name yet'],['Không tìm thấy user','User not found'],
+['Xác nhận mật khẩu Super Admin của bạn:','Confirm your Super Admin password:'],
+['Chỉ Super Admin được reset mật khẩu','Only Super Admin can reset passwords'],
+['📋 Lập & lưu báo cáo kỳ','📋 Generate & save period report'],['🖨 In','🖨 Print'],
+['Tự động: pg_cron lập tuần (T7 18:05) & tháng (mùng 1) nếu được bật','Automatic: pg_cron runs weekly (Sat 18:05) & monthly (1st) when enabled'],
+['Nhận xét tự động theo nhân sự','Auto commentary per person'],
+['Nhận xét sinh tự động theo luật, làm nền cho phần','Commentary is rule-generated, forming the base for'],
+['phân tích của Manager/BO trong báo cáo kỳ — người đánh giá bổ sung ý kiến định tính khi lập báo cáo chính thức.','Manager/BO analysis in the period report — evaluators add qualitative input in the official report.'],
+['chưa ghi nhận hoạt động nào trong kỳ','no activity recorded this period'],
+['nâng được','raised'],['quan hệ','relationships'],['(1 đạt spec-in)','(1 reached spec-in)'],
+['— hiệu quả thật','— real progress'],['đạt spec-in','reached spec-in'],
+['tiếp xúc nhưng chưa nâng được quan hệ nào — cần xem chất lượng tiếp cận','touchpoints but no relationship raised — review approach quality'],
+['chưa chạm cấp ra quyết định','no decision-maker reached'],
+['quá nửa tiếp xúc không có bước tiếp theo','over half of touchpoints lack a next step'],
+['doanh thu','revenue'],['từ đối tác phụ trách','from owned accounts'],
+['giải quyết','resolved'],['case','cases'],['việc tiếp theo đang quá hạn','next actions overdue'],
+['Đã lưu snapshot báo cáo','Report snapshot saved'],['cho từng nhân sự + dòng tổng','per person + total row'],
+['Tuần','Week'],['Quý','Quarter'],['6 tháng','Half-year'],
+['Người xử lý','Assignee'],['tự chuyển tới','auto-routed to'],
+['Doanh thu VAV/CAV bắt buộc nhập SỐ BỘ — thước đo thị phần APAC','VAV/CAV revenue requires UNIT COUNT — the APAC market-share yardstick'],
+['Nhập từ file Excel kế hoạch quốc tế','Import from the international plan Excel file'],
+['hệ thống đọc 3 sheet (Đối tác · Pipeline · Sự kiện), tự chuẩn hoá tên quốc gia về mã ISO, tách trạng thái quan hệ, gộp 2 lớp tên Hàn/Nhật, và nạp theo lô.','the system reads 3 sheets (Accounts · Pipeline · Events), normalizes country names to ISO, splits relationship status, merges the double KR/JP naming, and loads in batches.'],
+['Dữ liệu nguồn là','Source data is'],['tài liệu tham khảo (Tầng 3)','reference material (Tier 3)'],
+['— sau khi nạp, mọi bản ghi mang','— after import every record carries'],
+['Danh mục chính thức do CEO duyệt bằng cách gán','The official list is established when the CEO assigns'],
+['cho từng tài khoản.','to each account.'],['Chưa chạy.','Not run yet.'],
+['Đang đọc file…','Reading file…'],['công ty duy nhất (gộp','unique companies (merged'],
+['trùng)','duplicates)'],['người liên hệ','contacts'],
+['Nạp xong đối tác + người liên hệ','Accounts + contacts loaded'],['Nạp xong dự án','Projects loaded'],
+['sự kiện','events'],['HOÀN TẤT. Chuyển sang tab Tổng quan.','DONE. Switch to the Overview tab.'],
+['Tiếp cận','Approach'],['Chào giá','Quoted'],['Đàm phán','Negotiation'],['Đóng','Closed'],
+['Chưa quyết','Undecided'],['Sẽ tham dự','Will attend'],['Đã tham dự','Attended'],['Bỏ qua','Skip'],
+['Đã gán','Assigned'],['Chưa gán','Unassigned'],['Ai','Who'],['TỔNG','TOTAL'],
+['cấp duyệt:','approver:'],['căn cứ','evidence'],['ra quyết định','decision-maker'],
+['Đối thủ đang chiếm','Competitor holding'],['Ngày chốt dự kiến','Expected close date'],
+['tổng giá trị ước','total est. value'],['tài khoản','accounts'],['thiếu TVTK','missing consultant'],
+['TVTK','Design consultant'],['NPP','Distributor'],['Số lần','Count'],
+['Chờ phê duyệt','Pending approval'],['Toàn cảnh','Full view'],
+['Lập kế hoạch từ CSDL thị trường mình phụ trách → trình CEO → triển khai','Build a plan from your market database → submit to CEO → execute'],
+['Quy trình: ① lọc dự án/đối tác của mình ở tab Dự án & Đối tác → ② tạo kế hoạch,','Process: ① filter your projects/accounts in the Projects & Accounts tabs → ② create a plan,'],
+['gắn từng dự án với hành động + chỉ tiêu + hạn → ③ bấm','attach each project with an action + target + due date → ③ click'],
+['→ ④ CEO duyệt trong','→ ④ CEO approves in the'],
+['Hàng chờ phê duyệt','Approval queue'],
+['tự đổ hành động vào cột "Việc tiếp theo"','auto-pushes actions into "Next action"'],
+['của từng dự án','of each project'],
+['và gán owner — kế hoạch thành việc chạy, không nằm trên giấy.','and assigns owners — the plan becomes running work, not paper.'],
+['Kế hoạch','Plans'],['+ Tạo kế hoạch','+ Create plan'],
+['Tên kế hoạch * — vd: KH thâm nhập Hàn Quốc Q4','Plan name * — e.g., Korea entry plan Q4'],
+['Mục tiêu tổng quát…','Overall objective…'],
+['Chưa có kế hoạch nào trong module này.','No plans in this module yet.'],
+['Người lập','Author'],['Kỳ','Period'],['Nháp','Draft'],['Chờ CEO duyệt','Awaiting CEO'],
+['Đang triển khai','Executing'],['Hoàn thành','Completed'],
+['Hạng mục kế hoạch','Plan items'],['Chưa có hạng mục.','No items yet.'],
+['+ Thêm hạng mục','+ Add item'],['📤 Trình CEO phê duyệt','📤 Submit to CEO'],
+['Hành động *','Action *'],['Hành động','Action'],
+['Chỉ tiêu — vd: spec-in, PO 500 bộ','Target — e.g., spec-in, PO 500 units'],['Chỉ tiêu','Target'],
+['Dự án (từ CSDL)…','Project (from database)…'],
+['Trình duyệt kế hoạch: ','Plan submitted for approval: '],
+['Thiếu hành động','Missing action'],['Thiếu tên hoặc kỳ kế hoạch','Missing plan name or period'],
+['Duyệt kế hoạch','Approve plan']
+);
+// ===== Bộ dịch: tiền xử lý một lần, hai chiều =====
+const _rxEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const _F_EN=FRAG.slice().sort((a,b)=>b[0].length-a[0].length);            // VI→EN: sắp theo VI dài trước
+const _F_VI=FRAG.slice().sort((a,b)=>b[1].length-a[1].length)             // EN→VI: sắp theo EN dài trước
+  .map(([v,e])=>[v,e,/^[A-Za-z0-9].*[A-Za-z0-9]$/.test(e)?new RegExp('\\b'+_rxEsc(e)+'\\b','g'):null]);
+function _translate(s,en){
+  if(en){for(const [v,e] of _F_EN){if(s.includes(v))s=s.split(v).join(e)}}
+  else{for(const [v,e,rx] of _F_VI){
+    if(!s.includes(e))continue;
+    s=rx?s.replace(rx,v):s.split(e).join(v);               // mảnh có emoji/ký tự đặc biệt: thay trực tiếp
+  }}
+  return s;
+}
+const t=s=>LANG==='en'?_translate(s,true):s;               // dùng cho prompt/alert/msg động
+function applyLang(){
+  const en=LANG==='en';
+  (function walk(n){
+    if(n.nodeType===3){if(n.nodeValue.trim())n.nodeValue=_translate(n.nodeValue,en)}
+    else if(n.nodeType===1){
+      if(n.placeholder)n.placeholder=_translate(n.placeholder,en);
+      if(n.title)n.title=_translate(n.title,en);
+      for(const c of n.childNodes)walk(c)}
+  })(document.body);
+  // các option tĩnh có emoji không tự đảo chiều được — đặt lại tường minh
+  modSel.options[0].text=en?'🇻🇳 DOMESTIC MARKET':'🇻🇳 THỊ TRƯỜNG NỘI ĐỊA';
+  modSel.options[1].text=en?'🌏 INTERNATIONAL MARKET':'🌏 THỊ TRƯỜNG QUỐC TẾ';
+  if(frvXem.options[0])frvXem.options[0].text=en?'👑 Full view (Manager/CEO)':'👑 Toàn cảnh (Manager/CEO)';
+  langBtn.textContent=en?'VI':'EN';
+  document.documentElement.lang=en?'en':'vi';
+}
+function setLang(l){LANG=l;localStorage.setItem('crm_lang',l);renderAll();}
+
+/* ================= TRẠNG THÁI ================= */
+let sb=null, ALL_ORGS=[], ALL_DEALS=[], ALL_EVENTS=[], ALL_TPS=[], ALL_HTS=[], ALL_REVS=[];
+let ORGS=[], DEALS=[], EVENTS=[], TPS=[], HTS=[], REVS=[];
+let MOD=localStorage.getItem('crm_mod')||'nd';
+function setMod(m){MOD=m;localStorage.setItem('crm_mod',m);applyMod();}
+function applyMod(){
+  const nd=MOD==='nd';
+  ORGS=ALL_ORGS.filter(o=>(o.quoc_gia==='VN')===nd);
+  DEALS=ALL_DEALS.filter(d=>(d.quoc_gia==='VN')===nd);
+  EVENTS=ALL_EVENTS.filter(e=>{const q=(e.quoc_gia||'').toLowerCase();
+    const isVN=q.includes('việt')||q==='vn'||q.includes('vietnam');return isVN===nd});
+  const ids=new Set(ORGS.map(o=>o.id));
+  TPS=ALL_TPS.filter(t=>!t.org_id||ids.has(t.org_id));
+  const dids=new Set(DEALS.map(d=>d.id));
+  HTS=ALL_HTS.filter(h=>(!h.deal_id&&!h.org_id)||dids.has(h.deal_id)||ids.has(h.org_id));
+  REVS=ALL_REVS.filter(r=>(r.quoc_gia==='VN')===nd);
+  fillFilters();renderAll();
+}
+const PHU=['0 · Chưa tiếp cận','1 · Đã tiếp cận','2 · Quan hệ làm việc','3 · Spec-in','4 · Đã bán','5 · Khách thường xuyên'];
+const PL={cdt:'CĐT',tvtk:'TVTK',thau:'Tổng thầu-MEP',npp:'NPP',khac:'Khác'};
+const QH={npp_hien_huu:'🌾 NPP hiện hữu (chăm sóc)',npp_moi:'🌱 NPP mới (phát triển)',
+  kh_truc_tiep:'🛒 Khách hàng trực tiếp',kh_tiem_nang:'🎯 Khách hàng tiềm năng',
+  doi_tac_chien_luoc:'🤝 Đối tác chiến lược (OEM/ODM)',doi_tac_phan_phoi:'🔗 Đối tác phân phối (Broker/Agent)'};
+const ISO={'hong kong':'HK','macau':'MO','taiwan':'TW','south korea':'KR','hàn quốc':'KR',
+'japan':'JP','nhật bản':'JP','uae':'AE','uae (dubai)':'AE','vietnam':'VN','việt nam':'VN',
+'malaysia':'MY','indonesia':'ID','singapore':'SG','philippines':'PH','campuchia':'KH',
+'cambodia':'KH','thailand':'TH','thái lan':'TH','úc':'AU','australia':'AU'};
+const isoName={HK:'Hong Kong',MO:'Macau',TW:'Taiwan',KR:'Hàn Quốc',JP:'Nhật Bản',AE:'UAE',
+VN:'Việt Nam',MY:'Malaysia',ID:'Indonesia',SG:'Singapore',PH:'Philippines',KH:'Campuchia',TH:'Thái Lan',AU:'Úc'};
+const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toISO=q=>{if(!q)return'??';const k=q.toString().trim().toLowerCase();return ISO[k]||q.toString().trim().slice(0,2).toUpperCase()};
+
+/* ================= KẾT NỐI ================= */
+async function connect(){
+  const url=cfgUrl.value.trim(),key=cfgKey.value.trim();
+  if(!url||!key){cfgMsg.textContent='Thiếu URL hoặc key';return}
+  sb=supabase.createClient(url,key);
+  if(cfgEmail.value){
+    const{error}=await sb.auth.signInWithPassword({email:cfgEmail.value,password:cfgPass.value});
+    if(error){cfgMsg.textContent='Đăng nhập lỗi: '+error.message;return}
+  }
+  localStorage.setItem('crm_cfg',JSON.stringify({url,key,email:cfgEmail.value}));
+  dot.classList.add('on');connTxt.textContent='Đã kết nối';dlgCfg.close();
+  await loadAll();
+}
+(function(){const c=localStorage.getItem('crm_cfg');if(c){const{url,key,email}=JSON.parse(c);
+cfgUrl.value=url;cfgKey.value=key;cfgEmail.value=email||'';}})();
+
+async function loadAll(){
+  const [o,d,e,t,h,q,rv]=await Promise.all([
+    sb.from('crm_org').select('*').order('ten').limit(3000),
+    sb.from('crm_deals').select('*').order('uu_tien').limit(2000),
+    sb.from('crm_events').select('*'),
+    sb.from('crm_touchpoints').select('*').order('ngay',{ascending:false}).limit(300),
+    sb.from('crm_support_requests').select('*').order('created_at',{ascending:false}).limit(300),
+    sb.from('v_crm_approvals_cho').select('*').order('so_ngay_cho',{ascending:false}),
+    sb.from('v_crm_doanh_thu').select('*').limit(5000)
+  ]);
+  ALL_ORGS=o.data||[];ALL_DEALS=d.data||[];ALL_EVENTS=e.data||[];ALL_TPS=t.data||[];ALL_HTS=h.data||[];
+  window.APRQ=q.data||[];ALL_REVS=rv.data||[];
+  const ns=await sb.from('crm_user_roles').select('*').order('ho_ten');
+  window.NHANSU=ns.data||[];
+  nsList.innerHTML=NHANSU.map(n=>`<option value="${esc(n.ho_ten)}">${esc(n.chuc_danh)}</option>`).join('');
+  modSel.value=MOD;applyMod();
+  showMe();if(!ME)dlgLogin.showModal();
+  loadPlans();
+}
+
+/* ================= NAV ================= */
+nav.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('act',x===b));
+  document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!=='tab-'+b.dataset.t)};
+
+function fillFilters(){
+  const qgs=[...new Set([...ORGS.map(o=>o.quoc_gia),...DEALS.map(d=>d.quoc_gia)])].sort();
+  for(const sel of [fdtQG,fdaQG]){
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Thị trường —</option>'+
+      qgs.map(q=>`<option value="${q}">${isoName[q]||q}</option>`).join('');
+    sel.value=cur;
+  }
+  const tps=[...new Set(ORGS.map(o=>(o.thanh_pho||'').trim()).filter(Boolean))].sort();
+  const curTP=fdtTP.value;
+  fdtTP.innerHTML='<option value="">— Thành phố —</option>'+tps.map(t=>`<option>${esc(t)}</option>`).join('');
+  fdtTP.value=curTP;
+  orgList.innerHTML=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu')
+    .map(o=>`<option value="${esc(o.ten)}">`).join('');
+  dealList.innerHTML=DEALS.map(d=>`<option value="${esc(d.ten)}">`).join('');
+}
+
+function renderAll(){renderTQ();renderDT();renderDA();renderTX();renderHT();renderSK();renderRV();renderKPI();renderNS();applyLang()}
+
+/* ================= LOGIN CÁ NHÂN ================= */
+let ME=JSON.parse(localStorage.getItem('crm_me')||'null');
+function showMe(){
+  if(ME){whoami.style.display='';
+    const adm=ME.quyen_admin==='super_admin'?' · ⭐ Super Admin':ME.quyen_admin==='admin'?' · 🔧 Admin':'';
+    whoami.textContent='👤 '+ME.ho_ten+' · '+ME.chuc_danh+adm;
+    logoutBtn.style.display='';
+    // điền sẵn tên vào các ô người thực hiện
+    for(const id of ['txAi','htAi','rvAi','cmtAi','aprAi'])
+      {const el=document.getElementById(id);if(el&&!el.value)el.value=ME.ho_ten}
+  } else {whoami.style.display='none';logoutBtn.style.display='none'}
+}
+async function doLogin(){
+  const r=await sb.rpc('crm_login',{p_user:lgU.value,p_pass:lgP.value});
+  if(r.error||!r.data||!r.data.length){lgMsg.textContent='❌ Sai user name hoặc mật khẩu';return}
+  ME=r.data[0];ME.user_name=lgU.value.trim().toLowerCase();
+  localStorage.setItem('crm_me',JSON.stringify(ME));
+  dlgLogin.close();showMe();
+  // môi trường làm việc theo ngôn ngữ cá nhân (Santiago = EN)
+  const hs=(window.NHANSU||[]).find(n=>n.ho_ten===ME.ho_ten);
+  if(hs?.ngon_ngu&&hs.ngon_ngu!==LANG){LANG=hs.ngon_ngu;localStorage.setItem('crm_lang',LANG)}
+  if(ME.khu_vuc==='quoc_te'&&MOD!=='qt'){MOD='qt';localStorage.setItem('crm_mod','qt');modSel.value='qt';applyMod()}
+  if(ME.phai_doi_mk){dlgDoiMK.showModal()}
+  // staff mặc định xem dashboard cá nhân
+  if(ME.vai_tro==='staff'){frvXem.value=ME.ho_ten;renderRV()}
+  renderAll();
+}
+function logout(){ME=null;localStorage.removeItem('crm_me');showMe();dlgLogin.showModal()}
+async function doDoiMK(){
+  const r=await sb.rpc('crm_doi_mat_khau',{p_user:ME.user_name,p_cu:mkCu.value,p_moi:mkMoi.value});
+  if(r.error){mkMsg.textContent='❌ '+r.error.message;return}
+  if(!r.data){mkMsg.textContent='❌ Mật khẩu cũ không đúng';return}
+  mkMsg.textContent='✓ Đã đổi';ME.phai_doi_mk=false;
+  localStorage.setItem('crm_me',JSON.stringify(ME));setTimeout(()=>dlgDoiMK.close(),600);
+}
+
+/* ================= KẾ HOẠCH ================= */
+let PLANS=[];
+async function loadPlans(){
+  const r=await sb.from('crm_plans').select('*').order('created_at',{ascending:false});
+  PLANS=r.data||[];renderKH();
+}
+const KHT={nhap:['Nháp','p0'],cho_duyet:['Chờ CEO duyệt','p3'],da_duyet:['Đã duyệt','p4'],
+  tu_choi:['Từ chối','p0'],dang_trien_khai:['Đang triển khai','p4'],hoan_thanh:['Hoàn thành','p5']};
+function renderKH(){
+  if(!window.khList)return;
+  const rows=PLANS.filter(p=>(p.khu_vuc==='noi_dia')===(MOD==='nd'));
+  khList.innerHTML=rows.length?'<table><tr><th>Kế hoạch</th><th>Người lập</th><th>Kỳ</th><th>Trạng thái</th><th></th></tr>'+
+  rows.map(p=>{const [lbl,cls]=KHT[p.trang_thai]||[p.trang_thai,'p0'];
+  return `<tr><td><b>${esc(p.ten)}</b><div class="muted">${esc(p.muc_tieu||'')}</div></td>
+  <td>${esc(p.nguoi_lap)}</td><td>${p.ky_tu} → ${p.ky_den}</td>
+  <td><span class="pill ${cls}">${lbl}</span></td>
+  <td><button class="btn" style="padding:4px 8px" onclick="openKH('${p.id}')">Mở</button></td></tr>`}).join('')+'</table>'
+  :'<div class="muted">Chưa có kế hoạch nào trong module này.</div>';
+}
+async function taoKH(){
+  if(!khTen.value.trim()||!khTu.value||!khDen.value){alert(t('Thiếu tên hoặc kỳ kế hoạch'));return}
+  const r=await sb.from('crm_plans').insert({ten:khTen.value.trim(),
+    nguoi_lap:ME?.ho_ten||'?',khu_vuc:MOD==='nd'?'noi_dia':'quoc_te',
+    ky_tu:khTu.value,ky_den:khDen.value,muc_tieu:khMT.value.trim()||null}).select();
+  if(r.error){alert(r.error.message);return}
+  khTen.value='';khMT.value='';await loadPlans();openKH(r.data[0].id);
+}
+async function openKH(id){
+  const p=PLANS.find(x=>x.id===id);if(!p)return;
+  const items=(await sb.from('crm_plan_items').select('*').eq('plan_id',id).order('created_at')).data||[];
+  const [lbl,cls]=KHT[p.trang_thai]||[p.trang_thai,'p0'];
+  const editable=p.trang_thai==='nhap'||p.trang_thai==='tu_choi';
+  khTitle.textContent='📋 '+p.ten;
+  khBody.innerHTML=`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <span class="pill ${cls}">${lbl}</span>
+      <span class="muted">${esc(p.nguoi_lap)} · ${p.ky_tu} → ${p.ky_den}</span></div>
+    ${p.muc_tieu?`<div class="notice" style="margin-bottom:10px">${esc(p.muc_tieu)}</div>`:''}
+    <h3 style="font-size:13px;margin:0 0 6px">Hạng mục kế hoạch (${items.length})</h3>
+    <table><tr><th>Dự án / Đối tác</th><th>Hành động</th><th>Chỉ tiêu</th><th>Hạn</th><th>TT</th></tr>
+    ${items.map(i=>{const d=ALL_DEALS.find(x=>x.id===i.deal_id),o=ALL_ORGS.find(x=>x.id===i.org_id);
+    return `<tr><td><b>${esc(d?.ten||o?.ten||'—')}</b></td><td>${esc(i.hanh_dong)}</td>
+    <td class="muted">${esc(i.chi_tieu||'')}</td><td>${i.han||''}</td>
+    <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
+    </table>
+    ${editable?`<div class="grid g4" style="gap:8px;margin-top:10px">
+      <input id="kiDeal" list="dealList" placeholder="Dự án (từ CSDL)…">
+      <input id="kiHD" placeholder="Hành động *">
+      <input id="kiCT" placeholder="Chỉ tiêu — vd: spec-in, PO 500 bộ">
+      <input id="kiHan" type="date"></div>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button class="btn" onclick="themKI('${id}')">+ Thêm hạng mục</button>
+      ${items.length?`<button class="btn pri" onclick="trinhKH('${id}')">📤 Trình CEO phê duyệt</button>`:''}
+    </div>`:''}
+    <div style="margin-top:12px">
+      <button class="btn" onclick="dlgKH.close();openThread('plan','${id}','${esc(p.ten)}')">💬 Thảo luận & phê duyệt</button>
+    </div>`;
+  dlgKH.showModal();applyLang();
+}
+async function themKI(planId){
+  const d=ALL_DEALS.find(x=>x.ten===kiDeal.value.trim());
+  if(!kiHD.value.trim()){alert(t('Thiếu hành động'));return}
+  await sb.from('crm_plan_items').insert({plan_id:planId,deal_id:d?.id||null,
+    hanh_dong:kiHD.value.trim(),chi_tieu:kiCT.value.trim()||null,han:kiHan.value||null});
+  openKH(planId);
+}
+async function trinhKH(planId){
+  const p=PLANS.find(x=>x.id===planId);
+  await sb.from('crm_plans').update({trang_thai:'cho_duyet'}).eq('id',planId);
+  await sb.from('crm_approvals').insert({doi_tuong:'plan',doi_tuong_id:planId,
+    loai:'duyet_ke_hoach',cap_duyet:'ceo',nguoi_de_xuat:ME?.ho_ten||p.nguoi_lap,
+    noi_dung:t('Trình duyệt kế hoạch: ')+p.ten+' ('+p.ky_tu+' → '+p.ky_den+')',
+    han:new Date(Date.now()+14*864e5).toISOString().slice(0,10)});
+  await loadPlans();await loadAll();dlgKH.close();
+}
+
+/* ================= NHÂN SỰ & MÔ TẢ CÔNG VIỆC ================= */
+function renderNS(){
+  if(!window.NHANSU||!nsBody)return;
+  nsBody.innerHTML='<table><tr><th>Họ tên</th><th>Chức danh</th><th>Vai trò</th><th>Khu vực</th><th>User</th><th>Email</th><th></th></tr>'+
+  NHANSU.map(n=>`<tr class="row" onclick="openNS('${n.id}')">
+    <td><b>${esc(n.ho_ten)}</b></td><td>${esc(n.chuc_danh)}</td>
+    <td><span class="tag">${n.vai_tro}</span></td><td>${n.khu_vuc||'—'}</td>
+    <td class="muted">${n.user_name||'—'}</td>
+    <td>${n.email?esc(n.email):'<span class="pill p3">trống — admin bổ sung</span>'}</td>
+    <td><button class="btn" style="padding:4px 8px">Hồ sơ</button></td></tr>`).join('')+'</table>';
+}
+function openNS(id){
+  const n=NHANSU.find(x=>x.id===id);if(!n)return;
+  const isAdmin=ME&&(ME.quyen_admin==='admin'||ME.quyen_admin==='super_admin');
+  const isSuper=ME&&ME.quyen_admin==='super_admin';
+  const ro=isAdmin?'':' readonly disabled';
+  nsTitle.textContent='👤 '+n.ho_ten+' — '+n.chuc_danh+
+    (n.quyen_admin?(n.quyen_admin==='super_admin'?' · ⭐':' · 🔧'):'');
+  nsDlgBody.innerHTML=`
+    ${!isAdmin?'<div class="notice">Chế độ xem — chỉ Admin/Super Admin sửa được hồ sơ.</div>':''}`+`
+    <h3 style="font-size:13px;margin:0 0 6px">Mô tả công việc trong module (viết từ tài liệu đã đối soát)</h3>
+    <textarea id="nsMT" style="width:100%;min-height:180px;font-size:13px"${ro}>${esc(n.mo_ta_cong_viec||'')}</textarea>
+    <h3 style="font-size:13px;margin:12px 0 6px">KPI chính</h3>
+    <textarea id="nsKPI" style="width:100%;min-height:44px;font-size:13px"${ro}>${esc(n.kpi_chinh||'')}</textarea>
+    <div class="grid g2" style="margin-top:12px">
+      <div><label class="muted">Chỉ tiêu kỳ (trống — chờ DL-02)</label>
+        <input id="nsCT" value="${esc(n.chi_tieu_ky||'')}" style="width:100%"${ro}></div>
+      <div><label class="muted">Email (trống — admin bổ sung)</label>
+        <input id="nsEm" value="${esc(n.email||'')}" style="width:100%"${ro}></div>
+    </div>
+    <div style="margin-top:8px"><label class="muted">Ghi chú admin</label>
+      <textarea id="nsAd" style="width:100%;min-height:40px"${ro}>${esc(n.admin_bo_sung||'')}</textarea></div>
+    <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+      ${isAdmin?`<button class="btn pri" onclick="saveNS('${id}')">Lưu</button>`:''}
+      ${isSuper?`<button class="btn" onclick="resetMK('${esc(n.user_name||'')}')">🔑 Reset mật khẩu về mặc định</button>`:''}
+      <span class="muted" id="nsMsg"></span></div>`;
+  dlgNS.showModal();applyLang();
+}
+async function resetMK(targetUser){
+  if(!targetUser){alert(t('Người này chưa có user name'));return}
+  const pass=prompt(t('Xác nhận mật khẩu Super Admin của bạn:'));if(!pass)return;
+  const r=await sb.rpc('crm_reset_mat_khau',{p_admin_user:ME.user_name,p_admin_pass:pass,p_target_user:targetUser});
+  document.getElementById('nsMsg').textContent=r.error?('❌ '+r.error.message):
+    (r.data?'✓ Đã reset về Nsca@2026 — buộc đổi khi đăng nhập':'❌ Không tìm thấy user');
+}
+async function saveNS(id){
+  const r=await sb.from('crm_user_roles').update({
+    mo_ta_cong_viec:nsMT.value,kpi_chinh:nsKPI.value,
+    chi_tieu_ky:nsCT.value.trim()||null,email:nsEm.value.trim()||null,
+    admin_bo_sung:nsAd.value.trim()||null}).eq('id',id);
+  document.getElementById('nsMsg').textContent=r.error?('❌ '+r.error.message):'✓ Đã lưu';
+  if(!r.error){const ns=await sb.from('crm_user_roles').select('*').order('ho_ten');
+    window.NHANSU=ns.data||[];renderNS()}
+}
+
+/* ================= DOANH THU ================= */
+const NGANH={CG:'Cửa gió',EI:'Van EI',VCK:'Van cơ khí',VAV_CAV:'VAV/CAV',TAM_NAN:'Tấm nan',
+  TMC:'TMC',SWAY:'Sway',ERV:'ERV',KHAC:'Khác'};
+const STG={tiep_can:'Tiếp cận',spec_in:'Spec-in',chao_gia:'Chào giá',dam_phan:'Đàm phán',po:'PO',dong:'Đóng'};
+const HTL={bao_gia:'Báo giá',ban_ve:'Bản vẽ',gia_san_pham_moi:'Giá SP mới/phi tiêu chuẩn',
+  tien_do_sx:'Tiến độ SX',fat:'FAT/thử nghiệm',cong_no:'Công nợ',claim:'Claim',khac:'Khác'};
+const SKT={chua_quyet:'Chưa quyết',se_tham_du:'Sẽ tham dự',da_tham_du:'Đã tham dự',bo_qua:'Bỏ qua'};
+const KENH={npp:'NPP',agent_broker:'Agent/Broker',truc_tiep:'Trực tiếp',oem:'OEM'};
+for(const el of ['frvNam','frvXem','frvKenh']) document.getElementById(el).onchange=renderRV;
+function renderRV(){
+  // bộ chọn năm + người phụ trách
+  const years=[...new Set(REVS.map(r=>r.thang.slice(0,4)))].sort().reverse();
+  if(!years.length)years.push(new Date().getFullYear()+'');
+  if(frvNam.options.length!==years.length){const c=frvNam.value;
+    frvNam.innerHTML=years.map(y=>`<option>${y}</option>`).join('');frvNam.value=years.includes(c)?c:years[0]}
+  const owners=[...new Set(ORGS.map(o=>o.nguoi_phu_trach).filter(Boolean))].sort();
+  if(frvXem.options.length-1!==owners.length){const c=frvXem.value;
+    frvXem.innerHTML='<option value="all">👑 Toàn cảnh (Manager/CEO)</option>'+
+      owners.map(o=>`<option value="${esc(o)}">👤 ${esc(o)}</option>`).join('');frvXem.value=c||'all'}
+  // lọc
+  let rows=REVS.filter(r=>r.thang.startsWith(frvNam.value)&&
+    (!frvKenh.value||r.kenh===frvKenh.value)&&
+    (frvXem.value==='all'||r.nguoi_phu_trach===frvXem.value));
+  const tong=rows.reduce((s,r)=>s+ +r.so_tien,0);
+  const thisM=new Date().toISOString().slice(0,7);
+  const tongThang=rows.filter(r=>r.thang.slice(0,7)===thisM).reduce((s,r)=>s+ +r.so_tien,0);
+  const vav=rows.filter(r=>r.ma_nganh==='VAV_CAV').reduce((s,r)=>s+(+r.so_bo_vav||0),0);
+  rvKpis.innerHTML=[
+    ['Luỹ kế '+frvNam.value,fmtB(tong),rows.length+' dòng ghi nhận'],
+    ['Tháng hiện tại',fmtB(tongThang),thisM],
+    ['Số bộ VAV',vav.toLocaleString('vi-VN'),'thước đo thị phần APAC'],
+    ['Đối tác có doanh thu',new Set(rows.map(r=>r.ten_doi_tac)).size,
+      frvXem.value==='all'?'toàn module':'của '+frvXem.value]
+  ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
+  // theo đối tác
+  const byOrg={};
+  for(const r of rows){const k=r.ten_doi_tac||'(không rõ)';
+    const g=byOrg[k]=byOrg[k]||{t:0,qh:r.quan_he,ch:r.nguoi_phu_trach};g.t+=+r.so_tien}
+  rvOrg.innerHTML=Object.keys(byOrg).length?'<table><tr><th>Đối tác</th><th>Nhóm</th><th>Phụ trách</th><th class="num">Doanh thu</th><th class="num">%</th></tr>'+
+    Object.entries(byOrg).sort((a,b)=>b[1].t-a[1].t).map(([k,g])=>
+    `<tr><td><b>${esc(k)}</b></td><td class="muted">${(QH[g.qh]||'—').replace(/^[^ ]+ /,'')}</td>
+    <td class="muted">${esc(g.ch||'—')}</td><td class="num">${fmtB(g.t)}</td>
+    <td class="num">${tong?Math.round(g.t/tong*100)+'%':''}</td></tr>`).join('')+'</table>'
+    :'<div class="muted">Chưa có dữ liệu — nhập ở form dưới.</div>';
+  // theo thị trường / vùng
+  const byQG={};
+  for(const r of rows){const k=r.quoc_gia==='VN'?('VN · '+(r.vung||'chưa rõ vùng')):(isoName[r.quoc_gia]||r.quoc_gia);
+    byQG[k]=(byQG[k]||0)+ +r.so_tien}
+  rvQG.innerHTML=Object.keys(byQG).length?'<table><tr><th>Thị trường / vùng</th><th class="num">Doanh thu</th><th class="num">%</th></tr>'+
+    Object.entries(byQG).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+    `<tr><td><b>${esc(k)}</b></td><td class="num">${fmtB(v)}</td>
+    <td class="num">${tong?Math.round(v/tong*100)+'%':''}</td></tr>`).join('')+'</table>'
+    :'<div class="muted">Chưa có dữ liệu.</div>';
+  // tháng × ngành
+  const months=[...Array(12)].map((_,i)=>frvNam.value+'-'+String(i+1).padStart(2,'0'));
+  const mat={};for(const r of rows){const m=r.thang.slice(0,7);
+    (mat[r.ma_nganh]=mat[r.ma_nganh]||{})[m]=((mat[r.ma_nganh]||{})[m]||0)+ +r.so_tien}
+  rvThang.innerHTML='<table><tr><th>Ngành hàng</th>'+months.map(m=>`<th class="num">${m.slice(5)}</th>`).join('')+'<th class="num">Năm</th></tr>'+
+    Object.entries(mat).map(([n,ms])=>{const s=Object.values(ms).reduce((a,b)=>a+b,0);
+    return `<tr><td><b>${NGANH[n]||n}</b></td>${months.map(m=>`<td class="num">${ms[m]?fmtB(ms[m]):''}</td>`).join('')}
+    <td class="num"><b>${fmtB(s)}</b></td></tr>`}).join('')+
+    `<tr style="background:#fafbfc"><td><b>TỔNG</b></td>${months.map(m=>{
+      const s=rows.filter(r=>r.thang.slice(0,7)===m).reduce((a,r)=>a+ +r.so_tien,0);
+      return `<td class="num"><b>${s?fmtB(s):''}</b></td>`}).join('')}
+    <td class="num"><b>${fmtB(tong)}</b></td></tr></table>`;
+  orgListAll.innerHTML=ORGS.map(o=>`<option value="${esc(o.ten)}">`).join('');
+}
+async function saveRev(){
+  const org=ORGS.find(o=>o.ten===rvO.value.trim());
+  if(!rvT.value||!org||!rvS.value){rvMsg.textContent='⚠ Thiếu tháng, đối tác hoặc số tiền';return}
+  if(rvN.value==='VAV_CAV'&&(!rvB.value||+rvB.value<=0)){
+    rvMsg.textContent='⚠ Doanh thu VAV/CAV bắt buộc nhập SỐ BỘ — thước đo thị phần APAC';return}
+  const r=await sb.from('crm_revenue').upsert({thang:rvT.value+'-01',org_id:org.id,
+    quoc_gia:org.quoc_gia,vung:rvV.value||null,ma_nganh:rvN.value,kenh:rvK.value,
+    so_tien:+rvS.value,so_bo_vav:rvB.value?+rvB.value:null,created_by:rvAi.value.trim()||null},
+    {onConflict:'thang,org_id,ma_nganh,kenh'});
+  if(r.error){rvMsg.textContent=r.error.message;return}
+  rvMsg.textContent='✓ Đã lưu';rvS.value='';rvB.value='';await loadAll();
+}
+
+/* ================= KPI KỲ ================= */
+function setKy(){
+  const d=new Date(),y=d.getFullYear(),m=d.getMonth();
+  const iso=x=>x.toISOString().slice(0,10);
+  const map={
+    tuan:()=>{const t=new Date(d);t.setDate(d.getDate()-((d.getDay()+6)%7));return[iso(t),iso(d)]},
+    thang:()=>[`${y}-${String(m+1).padStart(2,'0')}-01`,iso(d)],
+    quy:()=>[`${y}-${String(Math.floor(m/3)*3+1).padStart(2,'0')}-01`,iso(d)],
+    '6thang':()=>[m<6?`${y}-01-01`:`${y}-07-01`,iso(d)],
+    nam:()=>[`${y}-01-01`,iso(d)]};
+  const [tu,den]=map[kpiKy.value]();kpiTu.value=tu;kpiDen.value=den;renderKPI();
+}
+(function(){const d=new Date();kpiTu.value=d.toISOString().slice(0,8)+'01';
+  kpiDen.value=d.toISOString().slice(0,10)})();
+
+async function lapBaoCao(){
+  if(!sb)return;
+  const r=await sb.rpc('crm_lap_bao_cao_ky',{p_ky:kpiKy.value,p_tu:kpiTu.value,p_den:kpiDen.value});
+  bcMsg.textContent=r.error?('❌ '+r.error.message):
+    `✓ Đã lưu snapshot báo cáo ${kpiKy.value} ${kpiTu.value} → ${kpiDen.value} cho từng nhân sự + dòng tổng`;
+}
+function nhanXet(n,p){
+  const nx=[];
+  if(p.tx===0)nx.push('chưa ghi nhận hoạt động nào trong kỳ');
+  else{
+    if(p.nangPhu>0)nx.push(`nâng được ${p.nangPhu} quan hệ${p.specIn?` (${p.specIn} đạt spec-in)`:''} — hiệu quả thật`);
+    else nx.push(`${p.tx} tiếp xúc nhưng chưa nâng được quan hệ nào — cần xem chất lượng tiếp cận`);
+    if(p.txQD===0)nx.push('chưa chạm cấp ra quyết định');
+    if(p.tx&&p.txCoBuoc/p.tx<0.5)nx.push('quá nửa tiếp xúc không có bước tiếp theo');
+  }
+  if(p.dt>0)nx.push(`doanh thu ${fmtB(p.dt)} từ đối tác phụ trách`);
+  if(p.caseXong>0)nx.push(`giải quyết ${p.caseXong} case`);
+  if(p.naQuaHan>0)nx.push(`⚠ ${p.naQuaHan} việc tiếp theo đang quá hạn`);
+  return nx.join(' · ');
+}
+function renderKPI(){
+  const tu=kpiTu.value,den=kpiDen.value;if(!tu||!den)return;
+  const inKy=x=>x&&x>=tu&&x<=den;
+  const P={};const get=n=>{if(!n)return null;return P[n]=P[n]||{tx:0,txQD:0,nangPhu:0,specIn:0,
+    dt:0,caseTao:0,caseXong:0,naQuaHan:0,txCoBuoc:0}};
+  // Tiếp xúc — số action, chất lượng, hiệu quả
+  for(const t of TPS){if(!inKy(t.ngay))continue;const p=get(t.nguoi_thuc_hien);if(!p)continue;
+    p.tx++;if(t.la_cap_ra_quyet_dinh)p.txQD++;
+    if(t.nang_phu_den!=null&&t.nang_phu_den>(t.nang_phu_tu??-1)){p.nangPhu++;if(t.nang_phu_den===3)p.specIn++}
+    if(t.buoc_tiep_theo)p.txCoBuoc++}
+  // Doanh thu trong kỳ — quy theo người phụ trách đối tác
+  for(const r of REVS){if(!(r.thang>=tu.slice(0,8)+'01'&&r.thang<=den))continue;
+    const p=get(r.nguoi_phu_trach);if(p)p.dt+=+r.so_tien}
+  // Case hỗ trợ
+  const today=new Date().toISOString().slice(0,10);
+  for(const h of HTS){const cd=(h.created_at||'').slice(0,10);
+    const p=get(h.nguoi_yeu_cau);if(p&&inKy(cd))p.caseTao++;
+    if(p&&h.trang_thai==='da_xong'&&inKy((h.resolved_at||'').slice(0,10)))p.caseXong++}
+  // Next action quá hạn (đang treo) theo owner dự án
+  for(const d of DEALS){if(d.next_action&&d.next_action_han&&d.next_action_han<today){
+    const p=get(d.owner);if(p)p.naQuaHan++}}
+  const names=Object.keys(P);
+  if(!names.length){kpiBody.innerHTML='<div class="muted">Chưa có hoạt động nào trong kỳ. Dữ liệu KPI sinh ra tự động khi đội ngũ ghi tiếp xúc, cập nhật dự án, nhập doanh thu và xử lý case — không ai phải nộp báo cáo riêng.</div>';}
+  else{
+    // điểm tương đối: chuẩn hoá từng cột về 0-100 theo max của kỳ
+    const mx=k=>Math.max(...names.map(n=>P[n][k]))||1;
+    const mTx=mx('tx'),mNang=mx('nangPhu'),mDt=mx('dt'),mCase=mx('caseXong');
+    kpiBody.innerHTML=`<table><tr><th>Nhân sự</th>
+      <th class="num" title="Số tiếp xúc trong kỳ">Action</th>
+      <th class="num" title="Tiếp xúc cấp ra quyết định">Cấp QĐ</th>
+      <th class="num" title="% tiếp xúc có bước tiếp theo">Có bước tiếp</th>
+      <th class="num" title="Số lần nâng trạng thái phủ — hiệu quả thật">Nâng phủ</th>
+      <th class="num" title="Trong đó đạt spec-in">Spec-in</th>
+      <th class="num" title="Doanh thu các đối tác mình phụ trách">Doanh thu kỳ</th>
+      <th class="num" title="Case gửi / case được giải quyết">Case tạo/xong</th>
+      <th class="num" title="Việc tiếp theo đang quá hạn">NA quá hạn</th>
+      <th class="num" title="Điểm tương đối trong kỳ — action 25% · nâng phủ 35% · doanh thu 30% · case 10%. THAM KHẢO, không thay bảng KPI chính thức">Điểm TK</th></tr>`+
+    names.map(n=>{const p=P[n];
+      const diem=Math.round(25*p.tx/mTx+35*p.nangPhu/mNang+30*p.dt/mDt+10*p.caseXong/mCase);
+      return `<tr><td><b>${esc(n)}</b></td>
+      <td class="num">${p.tx}</td><td class="num">${p.txQD}</td>
+      <td class="num">${p.tx?Math.round(p.txCoBuoc/p.tx*100)+'%':'—'}</td>
+      <td class="num"><b>${p.nangPhu}</b></td><td class="num">${p.specIn}</td>
+      <td class="num">${p.dt?fmtB(p.dt):'—'}</td>
+      <td class="num">${p.caseTao}/${p.caseXong}</td>
+      <td class="num"${p.naQuaHan?' style="color:var(--bad);font-weight:700"':''}>${p.naQuaHan||''}</td>
+      <td class="num"><span class="pill ${diem>=70?'p4':diem>=40?'p2':'p1'}">${diem}</span></td></tr>`}).join('')+'</table>'+
+    `<div class="muted" style="margin-top:8px">Điểm tham khảo = action 25% · nâng phủ 35% · doanh thu 30% · case 10%, chuẩn hoá theo giá trị cao nhất trong kỳ.
+     <b>Không thay thế bảng KPI chính thức</b> (mẫu số là chỉ tiêu được giao) — đây là thước nhịp làm việc để Manager điều phối hằng tuần.</div>`;
+  }
+  // Nhận xét tự động theo nhân sự — nội dung cho báo cáo kỳ
+  if(names.length&&window.kpiNX){
+    kpiNX.innerHTML=names.map(n=>`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <b>${esc(n)}</b><div class="muted" style="margin-top:2px">${esc(nhanXet(n,P[n]))}</div></div>`).join('')+
+      `<div class="muted" style="margin-top:8px">Nhận xét sinh tự động theo luật, làm nền cho phần
+       phân tích của Manager/BO trong báo cáo kỳ — người đánh giá bổ sung ý kiến định tính khi lập báo cáo chính thức.</div>`;
+  } else if(window.kpiNX){kpiNX.innerHTML='<div class="muted">Chưa có dữ liệu trong kỳ.</div>'}
+
+  // Tốc độ phản hồi case theo bộ phận trong kỳ
+  const agg={};
+  for(const h of HTS){const cd=(h.created_at||'').slice(0,10);if(!inKy(cd))continue;
+    const g=agg[h.bo_phan_nhan]=agg[h.bo_phan_nhan]||{n:0,xong:0,tongNgay:0,quaHan:0};
+    g.n++;
+    if(h.trang_thai==='da_xong'&&h.resolved_at){g.xong++;
+      g.tongNgay+=(new Date(h.resolved_at)-new Date(h.created_at))/864e5}
+    else if(h.han&&h.han<today)g.quaHan++}
+  kpiCase.innerHTML=Object.keys(agg).length?'<table><tr><th>Bộ phận</th><th class="num">Nhận trong kỳ</th><th class="num">Đã xong</th><th class="num">TG phản hồi TB (ngày)</th><th class="num">Đang quá hạn</th></tr>'+
+    Object.entries(agg).map(([k,g])=>`<tr><td><b>${BP[k]||k}</b></td>
+    <td class="num">${g.n}</td><td class="num">${g.xong}</td>
+    <td class="num">${g.xong?(g.tongNgay/g.xong).toFixed(1):'—'}</td>
+    <td class="num"${g.quaHan?' style="color:var(--bad);font-weight:700"':''}>${g.quaHan||''}</td></tr>`).join('')+'</table>'
+    :'<div class="muted">Chưa có case nào trong kỳ.</div>';
+}
+
+/* ================= HỖ TRỢ LIÊN PHÒNG BAN ================= */
+const BP={rd:'R&D',qlsx:'Sản xuất',bo:'BO',tckt:'TCKT',kcs:'KCS',khac:'Khác'};
+const HTT={mo:'Mở',dang_xu_ly:'Đang xử lý',da_xong:'Đã xong',tu_choi:'Từ chối'};
+async function saveHT(){
+  if(!htAi.value.trim()||!htND.value.trim()){htMsg.textContent='⚠ Thiếu người yêu cầu hoặc nội dung';return}
+  const deal=DEALS.find(d=>d.ten===htDeal.value.trim());
+  const han=htHan.value||new Date(Date.now()+2*864e5).toISOString().slice(0,10);
+  const r=await sb.from('crm_support_requests').insert({deal_id:deal?.id||null,
+    nguoi_yeu_cau:htAi.value.trim(),bo_phan_nhan:htBP.value,loai:htLoai.value,
+    noi_dung:htND.value.trim(),muc_uu_tien:htUT.value,han});
+  if(r.error){htMsg.textContent=r.error.message;return}
+  const bpHead={rd:'Phạm Hoài Nam',qlsx:'Nguyễn Văn Ngọc',kcs:'Nguyễn Văn Ngọc',
+    tckt:'Nguyễn Tiến Duẩn',bo:'Nguyễn Thị Thanh Tâm',khac:'Đào Nguyên Ngọc'}[htBP.value]||'';
+  htMsg.textContent='✓ Đã gửi — hạn '+han+(bpHead?' → tự chuyển tới '+bpHead:'');
+  htND.value='';await loadAll();
+}
+function renderHT(){
+  const today=new Date().toISOString().slice(0,10);
+  // Điểm nghẽn
+  const agg={};
+  for(const h of HTS){const b=agg[h.bo_phan_nhan]=agg[h.bo_phan_nhan]||{mo:0,qh:0,xong:0};
+    if(h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly'){b.mo++;if(h.han&&h.han<today)b.qh++}
+    if(h.trang_thai==='da_xong')b.xong++}
+  htBottleneck.innerHTML=Object.entries(BP).filter(([k])=>agg[k]).map(([k,v])=>{
+    const a=agg[k];return `<div class="kpi"><h3>${v}</h3>
+    <div class="v" style="${a.qh?'color:var(--bad)':''}">${a.mo}</div>
+    <div class="m">${a.qh?`⚠ ${a.qh} quá hạn · `:''}${a.xong} đã xong</div></div>`}).join('')
+    ||'<div class="muted">Chưa có yêu cầu nào.</div>';
+  // Danh sách
+  let rows=HTS.filter(h=>(!fhtBP.value||h.bo_phan_nhan===fhtBP.value)&&(!fhtTT.value||h.trang_thai===fhtTT.value));
+  htList.innerHTML=rows.length?'<table><tr><th>Ngày</th><th>Dự án</th><th>Bộ phận</th><th>Người xử lý</th><th>Loại</th><th>Nội dung</th><th>Hạn</th><th>Trạng thái</th></tr>'+
+  rows.slice(0,100).map(h=>{const d=DEALS.find(x=>x.id===h.deal_id);
+    const late=(h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly')&&h.han&&h.han<today;
+    return `<tr><td>${(h.created_at||'').slice(0,10)}</td><td>${esc(d?.ten||'—')}</td>
+    <td><b>${BP[h.bo_phan_nhan]}</b></td>
+    <td>${h.nguoi_xu_ly?esc(h.nguoi_xu_ly):'<span class="muted">—</span>'}</td>
+    <td>${HTL[h.loai]||h.loai}</td>
+    <td class="muted" style="max-width:260px">${esc(h.noi_dung)}</td>
+    <td>${late?`<span class="pill" style="background:var(--bad-bg);color:var(--bad)">${h.han} ⚠</span>`:h.han||''}</td>
+    <td style="white-space:nowrap"><select onchange="updHT('${h.id}',this.value)">${Object.entries(HTT).map(([k,v])=>
+      `<option value="${k}"${h.trang_thai===k?' selected':''}>${v}</option>`).join('')}</select>
+      <button class="btn" style="padding:4px 8px" title="Thảo luận"
+        onclick="openThread('support','${h.id}','Yêu cầu: ${esc((h.noi_dung||'').slice(0,40))}')">💬</button></td></tr>`}).join('')+'</table>'
+  :'<div class="muted">Không có yêu cầu khớp bộ lọc.</div>';
+}
+async function updHT(id,v){await sb.from('crm_support_requests').update({trang_thai:v}).eq('id',id);await loadAll()}
+
+/* ================= THẢO LUẬN & PHÊ DUYỆT ================= */
+const APR_LOAI={nang_trang_thai_phu:'Nâng trạng thái phủ',chuyen_stage:'Chuyển stage',
+  dong_du_an:'Đóng dự án',gan_nguoi_phu_trach:'Gán người phụ trách',
+  duyet_danh_muc_chinh_thuc:'Duyệt vào danh mục chính thức',ngan_sach_su_kien:'Ngân sách sự kiện',
+  de_xuat_chinh_sach:'Đề xuất chính sách',duyet_ke_hoach:'Duyệt kế hoạch',khac:'Khác'};
+let THR={dt:null,id:null,ten:null};
+async function openThread(dt,id,ten){
+  THR={dt,id,ten};thrTitle.textContent='💬 '+ten;
+  const [c,a]=await Promise.all([
+    sb.from('crm_comments').select('*').eq('doi_tuong',dt).eq('doi_tuong_id',id).order('created_at'),
+    sb.from('crm_approvals').select('*').eq('doi_tuong',dt).eq('doi_tuong_id',id).order('created_at',{ascending:false})
+  ]);
+  const cmts=c.data||[],aprs=a.data||[];
+  const today=new Date().toISOString().slice(0,10);
+  thrBody.innerHTML=`
+  <h3 style="font-size:13px;margin:0 0 8px">Đề xuất & phê duyệt (${aprs.length})</h3>
+  ${aprs.map(a=>{
+    const wait=Math.round((Date.now()-new Date(a.created_at))/864e5);
+    const badge=a.trang_thai==='da_duyet'?'<span class="pill p4">✓ Đã duyệt</span>':
+      a.trang_thai==='tu_choi'?'<span class="pill" style="background:var(--bad-bg);color:var(--bad)">✗ Từ chối</span>':
+      `<span class="pill p3">Chờ ${wait} ngày${wait>14?' ⚠':''}</span>`;
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <b>${APR_LOAI[a.loai]||a.loai}</b>${badge}</div>
+      <div style="font-size:13px;margin:4px 0">${esc(a.noi_dung)}</div>
+      <div class="muted">${esc(a.nguoi_de_xuat)} · ${(a.created_at||'').slice(0,10)} · cấp duyệt: ${a.cap_duyet.toUpperCase()}
+        ${a.can_cu?` · <a href="${esc(a.can_cu)}" target="_blank">căn cứ</a>`:''}</div>
+      ${a.y_kien_duyet?`<div class="muted" style="margin-top:4px">↳ <b>${esc(a.nguoi_duyet||'')}</b>: ${esc(a.y_kien_duyet)}</div>`:''}
+      ${a.trang_thai==='cho_duyet'?`<div style="margin-top:8px;display:flex;gap:6px">
+        <input id="ykd_${a.id}" placeholder="Ý kiến (bác thì bắt buộc)" style="flex:1;font-size:12px">
+        <button class="btn" style="color:var(--ok)" onclick="decideApr('${a.id}','da_duyet')">Duyệt</button>
+        <button class="btn" style="color:var(--bad)" onclick="decideApr('${a.id}','tu_choi')">Từ chối</button></div>`:''}
+    </div>`}).join('')||'<div class="muted" style="margin-bottom:8px">Chưa có đề xuất nào.</div>'}
+  <div style="border:1px dashed var(--border);border-radius:8px;padding:10px 12px;margin-bottom:16px">
+    <div class="grid g3" style="gap:8px">
+      <select id="aprLoai">${Object.entries(APR_LOAI).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+      <select id="aprCap"><option value="manager">Cấp duyệt: Manager</option><option value="ceo">Cấp duyệt: CEO</option></select>
+      <input id="aprAi" placeholder="Người đề xuất *">
+    </div>
+    <textarea id="aprND" placeholder="Đề xuất gì, căn cứ gì… *" style="width:100%;min-height:44px;margin-top:8px"></textarea>
+    <input id="aprCC" placeholder="Link căn cứ / bằng chứng (tuỳ chọn)" style="width:100%;margin-top:6px">
+    <div style="margin-top:8px"><button class="btn pri" onclick="saveApr()">Gửi đề xuất</button>
+      <span class="muted" id="aprMsg"></span></div>
+  </div>
+  <h3 style="font-size:13px;margin:0 0 8px">Thảo luận (${cmts.length})</h3>
+  <div style="max-height:240px;overflow:auto;margin-bottom:10px">
+  ${cmts.map(c=>`<div style="padding:7px 0;border-bottom:1px solid var(--border)">
+    <b style="font-size:13px">${esc(c.nguoi_viet)}</b>
+    <span class="muted">· ${(c.created_at||'').slice(0,16).replace('T',' ')}</span>
+    ${c.nguoi_nhan?`<span class="tag">→ ${esc(c.nguoi_nhan)}</span>`:''}
+    ${c.han_phan_hoi?`<span class="pill ${c.han_phan_hoi<today?'p3':'p1'}"${c.han_phan_hoi<today?' style="background:var(--bad-bg);color:var(--bad)"':''}>hạn ${c.han_phan_hoi}</span>`:''}
+    <div style="font-size:13px;margin-top:2px">${esc(c.noi_dung)}</div></div>`).join('')
+    ||'<div class="muted">Chưa có thảo luận.</div>'}
+  </div>
+  <div class="grid g3" style="gap:8px">
+    <input id="cmtAi" placeholder="Người viết *">
+    <input id="cmtNhan" placeholder="Gửi tới ai (tuỳ chọn)">
+    <input id="cmtHan" type="date" title="Hạn phản hồi">
+  </div>
+  <textarea id="cmtND" placeholder="Nội dung… *" style="width:100%;min-height:44px;margin-top:8px"></textarea>
+  <div style="margin-top:8px"><button class="btn pri" onclick="saveCmt()">Gửi</button>
+    <span class="muted" id="cmtMsg"></span></div>`;
+  dlgThread.showModal();applyLang();
+}
+async function saveCmt(){
+  if(!cmtAi.value.trim()||!cmtND.value.trim()){cmtMsg.textContent='⚠ Thiếu người viết hoặc nội dung';return}
+  const r=await sb.from('crm_comments').insert({doi_tuong:THR.dt,doi_tuong_id:THR.id,
+    nguoi_viet:cmtAi.value.trim(),noi_dung:cmtND.value.trim(),
+    nguoi_nhan:cmtNhan.value.trim()||null,han_phan_hoi:cmtHan.value||null});
+  if(r.error){cmtMsg.textContent=r.error.message;return}
+  openThread(THR.dt,THR.id,THR.ten);
+}
+async function saveApr(){
+  if(!aprAi.value.trim()||!aprND.value.trim()){aprMsg.textContent='⚠ Thiếu người đề xuất hoặc nội dung';return}
+  const han=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  const r=await sb.from('crm_approvals').insert({doi_tuong:THR.dt,doi_tuong_id:THR.id,
+    loai:aprLoai.value,cap_duyet:aprCap.value,nguoi_de_xuat:aprAi.value.trim(),
+    noi_dung:aprND.value.trim(),can_cu:aprCC.value.trim()||null,han});
+  if(r.error){aprMsg.textContent=r.error.message;return}
+  openThread(THR.dt,THR.id,THR.ten);
+}
+async function decideApr(id,tt){
+  const yk=document.getElementById('ykd_'+id).value.trim();
+  if(tt==='tu_choi'&&!yk){alert(t('Từ chối bắt buộc ghi lý do — quy tắc L4'));return}
+  const nguoi=ME?.ho_ten||prompt(t('Tên người duyệt:'));if(!nguoi)return;
+  await sb.from('crm_approvals').update({trang_thai:tt,nguoi_duyet:nguoi,y_kien_duyet:yk||null}).eq('id',id);
+  openThread(THR.dt,THR.id,THR.ten);loadAprQueue();
+}
+async function loadAprQueue(){
+  const r=await sb.from('v_crm_approvals_cho').select('*').order('so_ngay_cho',{ascending:false});
+  window.APRQ=r.data||[];
+}
+
+/* ================= TỔNG QUAN ================= */
+function renderTQ(){
+  const mt=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu');
+  const phu1=mt.filter(o=>o.trang_thai_phu>=1).length;
+  const phu2=mt.filter(o=>o.trang_thai_phu>=2).length;
+  const coChu=mt.filter(o=>o.nguoi_phu_trach).length;
+  const nContacts=ORGS.reduce((s,o)=>s+(o._nc||0),0);
+  const dealTVTK=DEALS.filter(d=>d.tvtk_id||d.tvtk_text).length;
+  const uuCao=DEALS.filter(d=>(d.uu_tien||'').startsWith('1')).length;
+  kpis.innerHTML=[
+    ['Đối tác mục tiêu',mt.length,`${ORGS.length-mt.length} tình báo`],
+    ['Độ phủ ≥1 / ≥2',`${pct(phu1,mt.length)} / ${pct(phu2,mt.length)}`,`${phu1} · ${phu2} tài khoản`],
+    ['Có người phụ trách',pct(coChu,mt.length),`${coChu}/${mt.length} — danh mục CEO duyệt`],
+    ['Dự án ưu tiên cao',uuCao,`trên ${DEALS.length} dự án · TVTK nối ${pct(dealTVTK,DEALS.length)}`]
+  ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
+
+  phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
+    const n=mt.filter(o=>o.trang_thai_phu===i).length;
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <span class="pill p${i}" style="width:170px">${PHU[i]}</span>
+      <div class="bar" style="flex:1"><i style="width:${mt.length?n/mt.length*100:0}%"></i></div>
+      <b style="width:44px;text-align:right">${n}</b></div>`}).join('');
+
+  const byQG={};
+  for(const o of mt){byQG[o.quoc_gia]=byQG[o.quoc_gia]||{n:0,p:0};byQG[o.quoc_gia].n++;
+    if(o.trang_thai_phu>=1)byQG[o.quoc_gia].p++}
+  qgChart.innerHTML='<table><tr><th>Thị trường</th><th class="num">Tài khoản</th><th class="num">Phủ ≥1</th><th class="num">Dự án</th></tr>'+
+    Object.entries(byQG).sort((a,b)=>b[1].n-a[1].n).map(([q,v])=>
+    `<tr><td>${isoName[q]||q}</td><td class="num">${v.n}</td><td class="num">${pct(v.p,v.n)}</td>
+     <td class="num">${DEALS.filter(d=>d.quoc_gia===q).length}</td></tr>`).join('')+'</table>';
+
+  // Kết quả theo nhóm quan hệ × quốc gia
+  const tp30=new Set(TPS.filter(t=>t.ngay>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).map(t=>t.org_id));
+  const qhAgg={};
+  for(const o of mt){const k=o.quan_he||'chua_phan_loai';
+    const g=qhAgg[k]=qhAgg[k]||{n:0,qh2:0,tx:0,qgs:{}};
+    g.n++;if(o.trang_thai_phu>=2)g.qh2++;if(tp30.has(o.id))g.tx++;
+    g.qgs[o.quoc_gia]=(g.qgs[o.quoc_gia]||0)+1}
+  qhChart.innerHTML='<table><tr><th>Nhóm quan hệ</th><th class="num">Tài khoản</th><th class="num">Quan hệ thực (≥2)</th><th class="num">Tiếp xúc 30 ngày</th><th>Theo quốc gia</th></tr>'+
+    Object.entries(qhAgg).sort((a,b)=>b[1].n-a[1].n).map(([k,g])=>
+    `<tr><td><b>${QH[k]||'⬜ Chưa phân loại'}</b></td><td class="num">${g.n}</td>
+     <td class="num">${g.qh2}</td><td class="num">${g.tx}</td>
+     <td class="muted">${Object.entries(g.qgs).sort((a,b)=>b[1]-a[1]).slice(0,6)
+       .map(([q,n])=>`${isoName[q]||q}: ${n}`).join(' · ')}</td></tr>`).join('')+'</table>'+
+    (qhAgg['chua_phan_loai']?`<div class="notice warn" style="margin-top:10px">⚠ ${qhAgg['chua_phan_loai'].n} tài khoản chưa phân nhóm quan hệ — mở từng tài khoản để gán, hoặc lọc "Chưa phân loại" ở tab Đối tác.</div>`:'');
+
+  const today=new Date().toISOString().slice(0,10);
+  const due=TPS.filter(t=>t.han_buoc_tiep_theo&&t.buoc_tiep_theo).sort((a,b)=>a.han_buoc_tiep_theo<b.han_buoc_tiep_theo?-1:1).slice(0,10);
+  dueList.innerHTML=due.length?'<table><tr><th>Hạn</th><th>Đối tác</th><th>Bước tiếp theo</th><th>Ai</th></tr>'+
+    due.map(t=>{const org=ORGS.find(o=>o.id===t.org_id);const late=t.han_buoc_tiep_theo<today;
+    return `<tr><td><span class="pill ${late?'p3':'p1'}" style="${late?'background:var(--bad-bg);color:var(--bad)':''}">${t.han_buoc_tiep_theo}</span></td>
+    <td>${esc(org?.ten||'—')}</td><td>${esc(t.buoc_tiep_theo)}</td><td>${esc(t.nguoi_thuc_hien)}</td></tr>`}).join('')+'</table>'
+    :'<div class="muted">Chưa có bước tiếp theo nào được ghi. Mọi tiếp xúc nên kết thúc bằng một bước tiếp theo có hạn.</div>';
+
+  // Hàng chờ phê duyệt
+  const oids=new Set(ORGS.map(o=>o.id)),didz=new Set(DEALS.map(d=>d.id));
+  const aq=(window.APRQ||[]).filter(a=>a.doi_tuong==='support'||oids.has(a.doi_tuong_id)||didz.has(a.doi_tuong_id));
+  aprQueue.innerHTML=aq.length?'<table><tr><th>Chờ</th><th>Loại</th><th>Đối tượng</th><th>Đề xuất</th><th>Người đề xuất</th><th>Cấp</th><th></th></tr>'+
+    aq.slice(0,15).map(a=>`<tr>
+    <td><span class="pill ${a.so_ngay_cho>14?'p3':'p1'}"${a.so_ngay_cho>14?' style="background:var(--bad-bg);color:var(--bad)"':''}>${a.so_ngay_cho} ngày${a.so_ngay_cho>14?' ⚠':''}</span></td>
+    <td>${APR_LOAI[a.loai]||a.loai}</td><td><b>${esc(a.ten_doi_tuong||'—')}</b></td>
+    <td class="muted" style="max-width:240px">${esc(a.noi_dung)}</td>
+    <td>${esc(a.nguoi_de_xuat)}</td><td>${a.cap_duyet.toUpperCase()}</td>
+    <td><button class="btn" style="padding:4px 8px" onclick="openThread('${a.doi_tuong}','${a.doi_tuong_id}','${esc(a.ten_doi_tuong||'')}')">Mở</button></td></tr>`).join('')+'</table>'
+    :'<div class="muted">Không có đề xuất nào chờ duyệt. ✓</div>';
+}
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+
+/* ================= ĐỐI TÁC ================= */
+for(const el of [fdtQ,fdtPL,fdtQG,fdtTP,fdtPhu,fdtLBG,fdtChu,fdtQH]) el.oninput=renderDT;
+function renderDT(){
+  const q=fdtQ.value.toLowerCase();
+  let rows=ORGS.filter(o=>
+    (!q||o.ten.toLowerCase().includes(q)||(o.ghi_chu||'').toLowerCase().includes(q)||(o.mo_ta||'').toLowerCase().includes(q))&&
+    (!fdtPL.value||o.phan_loai===fdtPL.value)&&
+    (!fdtQG.value||o.quoc_gia===fdtQG.value)&&
+    (!fdtTP.value||(o.thanh_pho||'').trim()===fdtTP.value)&&
+    (fdtPhu.value===''||o.trang_thai_phu===+fdtPhu.value)&&
+    (!fdtLBG.value||o.loai_ban_ghi===fdtLBG.value)&&
+    (!fdtChu.value||(fdtChu.value==='co')===!!o.nguoi_phu_trach)&&
+    (!fdtQH.value||(fdtQH.value==='chua'?!o.quan_he:o.quan_he===fdtQH.value)));
+  dtList.innerHTML=`<div class="muted" style="margin-bottom:6px">${rows.length} bản ghi</div>`+
+  '<table><tr><th>Tên</th><th>Loại</th><th>TT</th><th>Trạng thái phủ</th><th>Người phụ trách</th><th>Tiếp xúc cuối</th></tr>'+
+  rows.slice(0,300).map(o=>`<tr class="row" onclick="openOrg('${o.id}')">
+    <td><b>${esc(o.ten)}</b>${o.loai_ban_ghi==='tinh_bao'?' <span class="tag tb">tình báo</span>':''}</td>
+    <td>${PL[o.phan_loai]||o.phan_loai}</td><td>${isoName[o.quoc_gia]||o.quoc_gia}</td>
+    <td><span class="pill p${o.trang_thai_phu}">${PHU[o.trang_thai_phu]}</span></td>
+    <td>${esc(o.nguoi_phu_trach||'')||'<span class="muted">— chưa gán</span>'}</td>
+    <td>${o.lan_tiep_xuc_cuoi||'<span class="muted">—</span>'}</td></tr>`).join('')+'</table>'+
+  (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu — thu hẹp bộ lọc để xem thêm.</div>':'');
+}
+
+async function openOrg(id){
+  const o=id?ORGS.find(x=>x.id===id):{phan_loai:'cdt',quoc_gia:MOD==='nd'?'VN':'',trang_thai_phu:0,loai_ban_ghi:'muc_tieu'};
+  orgTitle.textContent=id?o.ten:'Thêm đối tác';
+  let contacts=[];
+  if(id&&sb){const r=await sb.from('crm_contacts').select('*').eq('org_id',id);contacts=r.data||[]}
+  orgBody.innerHTML=`
+    <div class="frow"><label>Tên *</label><input id="oTen" value="${esc(o.ten||'')}"></div>
+    <div class="frow"><label>Phân loại</label><select id="oPL">${Object.entries(PL).map(([k,v])=>
+      `<option value="${k}"${o.phan_loai===k?' selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="frow"><label>Thị trường</label><input id="oQG" value="${esc(o.quoc_gia||'')}" placeholder="mã ISO: VN, HK, KR…"></div>
+    <div class="frow"><label>Trạng thái phủ</label><select id="oPhu">${PHU.map((p,i)=>
+      `<option value="${i}"${o.trang_thai_phu===i?' selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="frow"><label>Nhóm quan hệ</label><select id="oQH">
+      <option value="">— Chưa phân loại —</option>${Object.entries(QH).map(([k,v])=>
+      `<option value="${k}"${o.quan_he===k?' selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="frow"><label>Người phụ trách</label><input id="oChu" value="${esc(o.nguoi_phu_trach||'')}"></div>
+    <div class="frow"><label>Đối thủ đang chiếm</label><input id="oDT" value="${esc(o.doi_thu_dang_chiem||'')}"></div>
+    <div class="frow"><label>Ghi chú</label><textarea id="oGC">${esc(o.ghi_chu||'')}</textarea></div>
+    ${id?`<h3 style="font-size:13px;margin:14px 0 8px">Người liên hệ (${contacts.length})</h3>
+    ${contacts.map(c=>`<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <b>${esc(c.ho_ten)}</b> ${c.la_nguoi_ra_quyet_dinh?'<span class="tag" style="background:var(--ok-bg);color:var(--ok)">ra quyết định</span>':''}
+      <div class="muted">${esc(c.chuc_danh||'')} · ${esc(c.email||'')} · ${esc(c.dien_thoai||'')}</div></div>`).join('')||'<div class="muted">Chưa có — đây là lớp dữ liệu cần bổ sung nhất (13,6%)</div>'}
+    <div style="margin-top:10px"><input id="cTen" placeholder="Họ tên" style="width:32%">
+      <input id="cCD" placeholder="Chức danh" style="width:28%">
+      <input id="cEm" placeholder="Email" style="width:24%">
+      <button class="btn" onclick="addContact('${id}')">+ Thêm</button></div>`:''}
+    <div style="margin-top:14px;display:flex;gap:8px"><button class="btn pri" onclick="saveOrg('${id||''}')">Lưu</button>
+    ${id?`<button class="btn" onclick="dlgOrg.close();openThread('org','${id}','${esc(o.ten)}')">💬 Thảo luận & phê duyệt</button>`:''}</div>`;
+  dlgOrg.showModal();applyLang();
+}
+async function saveOrg(id){
+  const rec={ten:oTen.value.trim(),phan_loai:oPL.value,quoc_gia:oQG.value.trim().toUpperCase(),
+    trang_thai_phu:+oPhu.value,quan_he:oQH.value||null,nguoi_phu_trach:oChu.value.trim()||null,
+    doi_thu_dang_chiem:oDT.value.trim()||null,ghi_chu:oGC.value.trim()||null,updated_at:new Date().toISOString()};
+  if(!rec.ten)return;
+  const r=id?await sb.from('crm_org').update(rec).eq('id',id):await sb.from('crm_org').insert(rec);
+  if(r.error){alert(r.error.message);return}
+  dlgOrg.close();await loadAll();
+}
+async function addContact(orgId){
+  if(!cTen.value.trim())return;
+  await sb.from('crm_contacts').insert({org_id:orgId,ho_ten:cTen.value.trim(),
+    chuc_danh:cCD.value.trim()||null,email:cEm.value.trim()||null,nguon:'nhap_tay'});
+  openOrg(orgId);
+}
+
+/* ================= DỰ ÁN ================= */
+for(const el of [fdaQ,fdaQG,fdaUT,fdaSt,fdaTVTK,fdaTP,fdaHM,fdaNPP]) el.oninput=renderDA;
+function renderDA(){
+  const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
+  // nạp danh sách NPP cho bộ lọc (một lần mỗi render, giữ lựa chọn)
+  const npps=ORGS.filter(o=>o.phan_loai==='npp');
+  if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
+    fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.value=cur}
+  let rows=DEALS.filter(d=>
+    (!q||d.ten.toLowerCase().includes(q)||(d.cdt_text||'').toLowerCase().includes(q)||
+      (d.tvtk_text||'').toLowerCase().includes(q)||(d.thau_text||'').toLowerCase().includes(q))&&
+    (!fdaQG.value||d.quoc_gia===fdaQG.value)&&
+    (!tp||(d.dia_diem||'').toLowerCase().includes(tp))&&
+    (!hm||(d.hang_muc||'').toLowerCase().includes(hm))&&
+    (!fdaNPP.value||d.npp_dang_ky_id===fdaNPP.value)&&
+    (!fdaUT.value||(d.uu_tien||'').startsWith(fdaUT.value))&&
+    (!fdaSt.value||d.stage===fdaSt.value)&&
+    (!fdaTVTK.checked||(!d.tvtk_id&&!d.tvtk_text)));
+  const npByid=Object.fromEntries(ORGS.filter(o=>o.phan_loai==='npp').map(n=>[n.id,n.ten]));
+  const today=new Date().toISOString().slice(0,10);
+  daList.innerHTML=`<div class="muted" style="margin-bottom:6px">${rows.length} dự án · tổng giá trị ước ${fmtB(rows.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0))}</div>`+
+  '<table><tr><th>Dự án</th><th>TT</th><th>Stage</th><th>TVTK</th><th>NPP / Owner</th><th>Việc tiếp theo</th><th class="num">Giá trị</th></tr>'+
+  rows.slice(0,300).map(d=>{
+    const naLate=d.next_action&&d.next_action_han&&d.next_action_han<today;
+    return `<tr class="row" onclick="openDeal('${d.id}')">
+    <td style="max-width:240px"><b>${esc(d.ten)}</b><div class="muted">${esc(d.cdt_text||'')}</div></td>
+    <td>${isoName[d.quoc_gia]||d.quoc_gia}</td>
+    <td><span class="pill ${d.stage==='po'?'p4':d.stage==='spec_in'?'p3':d.stage==='dong'?'p0':'p1'}">${STG[d.stage]||d.stage}</span></td>
+    <td>${d.tvtk_text?esc(d.tvtk_text):'<span class="pill p3">thiếu</span>'}</td>
+    <td>${esc(npByid[d.npp_dang_ky_id]||d.owner||'')||'<span class="muted">—</span>'}</td>
+    <td style="max-width:180px">${d.next_action?`${esc(d.next_action)}${d.next_action_han?` <span class="pill ${naLate?'p3':'p1'}"${naLate?' style="background:var(--bad-bg);color:var(--bad)"':''}>${d.next_action_han}</span>`:''}`:'<span class="muted">—</span>'}</td>
+    <td class="num">${d.gia_tri_uoc?fmtB(+d.gia_tri_uoc):''}</td></tr>`}).join('')+'</table>'+
+  (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu.</div>':'');
+}
+function openDeal(id){
+  const d=id?DEALS.find(x=>x.id===id):{quoc_gia:MOD==='nd'?'VN':'',stage:'tiep_can'};
+  dealTitle.textContent=id?d.ten:'Thêm dự án';
+  dealBody.innerHTML=`
+    <div class="frow"><label>Tên *</label><input id="dTen" value="${esc(d.ten||'')}"></div>
+    <div class="frow"><label>Thị trường</label><input id="dQG" value="${esc(d.quoc_gia||'')}"></div>
+    <div class="frow"><label>CĐT</label><input id="dCDT" value="${esc(d.cdt_text||'')}"></div>
+    <div class="frow"><label>TVTK ⭐</label><input id="dTVTK" value="${esc(d.tvtk_text||'')}" placeholder="nơi quyết định spec-in"></div>
+    <div class="frow"><label>Tổng thầu/MEP</label><input id="dThau" value="${esc(d.thau_text||'')}"></div>
+    <div class="frow"><label>Hạng mục</label><input id="dHM" value="${esc(d.hang_muc||'')}"></div>
+    <div class="frow"><label>Stage</label><select id="dSt">${['tiep_can','spec_in','chao_gia','dam_phan','po','dong']
+      .map(s=>`<option value="${s}"${d.stage===s?' selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="frow"><label>Số bộ VAV ước</label><input id="dVAV" type="number" value="${d.so_bo_vav_uoc||''}"></div>
+    <div class="frow"><label>Ngày chốt dự kiến</label><input id="dChot" type="date" value="${d.ngay_chot_du_kien||''}"></div>
+    <div class="frow"><label>Owner</label><input id="dOwner" value="${esc(d.owner||'')}"></div>
+    <div class="frow"><label>Mốc spec-in</label><input id="dMoc" value="${esc(d.moc_spec_in||'')}"></div>
+    <div class="frow"><label>Việc tiếp theo</label><input id="dNA" value="${esc(d.next_action||'')}" placeholder="VD: gửi mẫu VAV cho TVTK trước khi chốt spec"></div>
+    <div class="frow"><label>Hạn việc đó</label><input id="dNAH" type="date" value="${d.next_action_han||''}"></div>
+    <div style="margin-top:12px;display:flex;gap:8px"><button class="btn pri" onclick="saveDeal('${id||''}')">Lưu</button>
+    ${id?`<button class="btn" onclick="dlgDeal.close();openThread('deal','${id}','${esc(d.ten)}')">💬 Thảo luận & phê duyệt</button>`:''}</div>`;
+  dlgDeal.showModal();applyLang();
+}
+async function saveDeal(id){
+  const rec={ten:dTen.value.trim(),quoc_gia:dQG.value.trim().toUpperCase(),cdt_text:dCDT.value.trim()||null,
+    tvtk_text:dTVTK.value.trim()||null,thau_text:dThau.value.trim()||null,hang_muc:dHM.value.trim()||null,
+    stage:dSt.value,so_bo_vav_uoc:dVAV.value?+dVAV.value:null,ngay_chot_du_kien:dChot.value||null,
+    owner:dOwner.value.trim()||null,moc_spec_in:dMoc.value.trim()||null,
+    next_action:dNA.value.trim()||null,next_action_han:dNAH.value||null,
+    lan_cap_nhat_cuoi:new Date().toISOString()};
+  if(!rec.ten)return;
+  const r=id?await sb.from('crm_deals').update(rec).eq('id',id):await sb.from('crm_deals').insert(rec);
+  if(r.error){alert(r.error.message);return}
+  dlgDeal.close();await loadAll();
+}
+
+/* ================= TIẾP XÚC ================= */
+txNgay.value=new Date().toISOString().slice(0,10);
+async function saveTx(){
+  const org=ORGS.find(o=>o.ten===txOrg.value.trim());
+  if(!org){txMsg.textContent='⚠ Chọn đúng tên đối tác trong danh sách';return}
+  if(!txAi.value.trim()){txMsg.textContent='⚠ Thiếu người thực hiện';return}
+  const rec={org_id:org.id,ngay:txNgay.value,loai:txLoai.value,nguoi_thuc_hien:txAi.value.trim(),
+    nguoi_gap:txGap.value.trim()||null,la_cap_ra_quyet_dinh:txQD.checked,
+    noi_dung:txND.value.trim()||null,buoc_tiep_theo:txBTT.value.trim()||null,
+    han_buoc_tiep_theo:txHan.value||null,
+    nang_phu_tu:txNang.value?org.trang_thai_phu:null,nang_phu_den:txNang.value?+txNang.value:null};
+  // Luật mức 2: đòi cấp ra quyết định
+  if(txNang.value&&+txNang.value>=2&&!txQD.checked){
+    txMsg.textContent='⚠ Nâng lên mức ≥2 đòi hỏi tiếp xúc với CẤP RA QUYẾT ĐỊNH';return}
+  if(txNang.value&&!txBTT.value.trim()){
+    txMsg.textContent='⚠ Nâng trạng thái phải kèm bước tiếp theo có hạn';return}
+  const r=await sb.from('crm_touchpoints').insert(rec);
+  if(r.error){txMsg.textContent=r.error.message;return}
+  txMsg.textContent='✓ Đã lưu';
+  txND.value='';txBTT.value='';txHan.value='';txNang.value='';
+  await loadAll();
+}
+function renderTX(){
+  txList.innerHTML=TPS.length?'<table><tr><th>Ngày</th><th>Đối tác</th><th>Loại</th><th>Ai</th><th>Nội dung</th><th>Nâng phủ</th></tr>'+
+  TPS.slice(0,50).map(t=>{const o=ORGS.find(x=>x.id===t.org_id);
+  return `<tr><td>${t.ngay}</td><td><b>${esc(o?.ten||'—')}</b></td><td>${t.loai}</td>
+  <td>${esc(t.nguoi_thuc_hien)}</td><td class="muted" style="max-width:280px">${esc(t.noi_dung||'')}</td>
+  <td>${t.nang_phu_den!=null?`<span class="pill p${t.nang_phu_den}">→ ${t.nang_phu_den}</span>`:''}</td></tr>`}).join('')+'</table>'
+  :'<div class="muted">Chưa có tiếp xúc nào.</div>';
+}
+
+/* ================= SỰ KIỆN ================= */
+function renderSK(){
+  skList.innerHTML=EVENTS.length?'<table><tr><th>Thị trường</th><th>Sự kiện</th><th>Thời gian</th><th>Địa điểm</th><th>Trạng thái</th></tr>'+
+  EVENTS.map(e=>`<tr><td>${esc(e.quoc_gia||'')}</td><td><b>${esc(e.ten)}</b></td>
+  <td>${esc(e.thoi_gian||'')}</td><td class="muted">${esc(e.dia_diem||'')}</td>
+  <td style="white-space:nowrap"><select onchange="updEvent('${e.id}',this.value)">
+    ${['chua_quyet','se_tham_du','da_tham_du','bo_qua'].map(s=>
+    `<option value="${s}"${e.trang_thai===s?' selected':''}>${SKT[s]}</option>`).join('')}
+  </select> <button class="btn" style="padding:4px 8px" title="Thảo luận & duyệt ngân sách"
+    onclick="openThread('event','${e.id}','${esc(e.ten)}')">💬</button></td></tr>`).join('')+'</table>'
+  :'<div class="muted">Chưa có sự kiện — nạp từ tab Nhập dữ liệu.</div>';
+}
+async function updEvent(id,v){await sb.from('crm_events').update({trang_thai:v}).eq('id',id)}
+
+/* ================= IMPORT ================= */
+const L=m=>{impLog.textContent+=('\n'+m);impLog.scrollTop=impLog.scrollHeight};
+async function runImport(){
+  if(!sb){alert('Kết nối Supabase trước');return}
+  const f=impFile.files[0];if(!f){alert('Chọn file .xlsx');return}
+  impLog.textContent='Đang đọc file…';
+  const wb=XLSX.read(await f.arrayBuffer());
+  const shDT=wb.SheetNames.find(n=>n.includes('Đối tác')||n.includes('CSDL'));
+  const shDA=wb.SheetNames.find(n=>n.includes('Pipeline')||n.includes('Dự án'));
+  const shSK=wb.SheetNames.find(n=>n.includes('Sự kiện'));
+  // ---- Đối tác ----
+  if(shDT){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[shDT]);
+    L(`Đối tác: ${rows.length} dòng`);
+    const seen=new Map(); const orgs=[]; const contacts=[];
+    rows.forEach((r,i)=>{
+      const ten=(r['Tên công ty']||'').toString().trim(); if(!ten)return;
+      const qg=toISO(r['Quốc gia']);
+      const key=ten.toLowerCase()+'|'+qg;
+      const plRaw=(r['Phân loại']||'').toString().toLowerCase();
+      const pl=plRaw.includes('cđt')?'cdt':plRaw.includes('tvtk')?'tvtk':
+               plRaw.includes('thầu')?'thau':plRaw.includes('phân phối')?'npp':'khac';
+      const tt=(r['Trạng thái quan hệ']||'').toString().toLowerCase();
+      const tinhBao=tt.includes('không áp dụng');
+      let pheu=null,phu=0;
+      if(pl==='npp'){pheu=tt.includes('đã ký')&&!tt.includes('mou')?'da_ky_hd':
+        tt.includes('mou')?'da_ky_mou':tt.includes('pipeline')||tt.includes('đàm phán')?'dang_dam_phan':
+        tt.includes('đã biết')?'dang_ket_noi':'chua_tiep_can'}
+      if(tt.includes('đã ký'))phu=4; else if(tt.includes('đã biết')||tt.includes('pipeline'))phu=1;
+      if(seen.has(key)){ // trùng — chỉ giữ dòng đầu, gộp contact
+      } else {
+        seen.set(key,orgs.length);
+        const qh=tinhBao?null:
+          pl==='npp'?(pheu==='da_ky_hd'?'npp_hien_huu':'npp_moi'):'kh_tiem_nang';
+        orgs.push({ten,phan_loai:pl,quoc_gia:qg,thanh_pho:(r['Thành phố']||'').toString()||null,
+          mo_ta:(r['Mô tả / Quy mô']||'').toString().slice(0,400)||null,
+          loai_ban_ghi:tinhBao?'tinh_bao':'muc_tieu',trang_thai_phu:phu,pheu_npp:pheu,quan_he:qh,
+          nguon:'kh_qt_v22',dong_goc:i+2,ghi_chu:tinhBao?tt.slice(0,200):null});
+      }
+      const nguoi=(r['Người phụ trách']||'').toString().trim();
+      if(nguoi)contacts.push({_key:key,ho_ten:nguoi,chuc_danh:(r['Chức danh']||'').toString()||null,
+        email:(r['Email']||'').toString()||null,linkedin:(r['LinkedIn']||'').toString()||null,
+        dien_thoai:(r['Điện thoại']||'').toString()||null,la_nguoi_ra_quyet_dinh:true,nguon:'kh_qt_v22'});
+    });
+    L(`→ ${orgs.length} công ty duy nhất (gộp ${rows.length-orgs.length} trùng) · ${contacts.length} người liên hệ`);
+    const idByKey=new Map();
+    for(let i=0;i<orgs.length;i+=100){
+      const chunk=orgs.slice(i,i+100);
+      const r=await sb.from('crm_org').insert(chunk).select('id,ten,quoc_gia');
+      if(r.error){L('❌ '+r.error.message);return}
+      r.data.forEach(o=>idByKey.set(o.ten.toLowerCase()+'|'+o.quoc_gia,o.id));
+      L(`  đối tác: ${Math.min(i+100,orgs.length)}/${orgs.length}`);
+    }
+    const cRows=contacts.map(c=>({org_id:idByKey.get(c._key),ho_ten:c.ho_ten,chuc_danh:c.chuc_danh,
+      email:c.email,linkedin:c.linkedin,dien_thoai:c.dien_thoai,
+      la_nguoi_ra_quyet_dinh:c.la_nguoi_ra_quyet_dinh,nguon:c.nguon})).filter(c=>c.org_id);
+    for(let i=0;i<cRows.length;i+=100){
+      const r=await sb.from('crm_contacts').insert(cRows.slice(i,i+100));
+      if(r.error){L('❌ contacts: '+r.error.message);return}
+    }
+    L(`✓ Nạp xong đối tác + người liên hệ`);
+  }
+  // ---- Dự án ----
+  if(shDA){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[shDA]);
+    L(`Dự án: ${rows.length} dòng`);
+    const deals=rows.map((r,i)=>{
+      const ten=(r['Tên dự án']||'').toString().trim();if(!ten)return null;
+      const ut=(r['Giai đoạn ưu tiên (tính toán)']||r['Giai đoạn ưu tiên']||'').toString();
+      return {ten,quoc_gia:toISO(r['Quốc gia']),dia_diem:(r['Địa điểm']||'').toString()||null,
+        cdt_text:nv(r['Chủ đầu tư']),tvtk_text:nv(r['Tư vấn thiết kế']),
+        thau_text:nv(r['Tổng thầu / Nhà thầu MEP']),
+        hang_muc:(r['Hạng mục Starduct nhắm tới']||'').toString().slice(0,200)||null,
+        giai_doan:(r['Giai đoạn']||'').toString().slice(0,200)||null,
+        moc_spec_in:(r['Mốc Spec-in']||'').toString().slice(0,300)||null,
+        uu_tien:ut.slice(0,60)||null,nguon:'kh_qt_v22',dong_goc:i+2}}).filter(Boolean);
+    for(let i=0;i<deals.length;i+=100){
+      const r=await sb.from('crm_deals').insert(deals.slice(i,i+100));
+      if(r.error){L('❌ '+r.error.message);return}
+      L(`  dự án: ${Math.min(i+100,deals.length)}/${deals.length}`);
+    }
+    L('✓ Nạp xong dự án');
+  }
+  // ---- Sự kiện ----
+  if(shSK){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[shSK]);
+    const evs=rows.map(r=>({quoc_gia:(r['Quốc gia/Khu vực']||'').toString()||null,
+      ten:(r['Tên sự kiện hoặc hiệp hội']||'').toString(),loai:(r['Loại']||'').toString()||null,
+      thoi_gian:(r['Thời gian']||'').toString()||null,dia_diem:(r['Địa điểm']||'').toString()||null,
+      website:(r['Website']||'').toString()||null,ghi_chu:(r['Ghi chú']||'').toString().slice(0,300)||null}))
+      .filter(e=>e.ten);
+    const r=await sb.from('crm_events').insert(evs);
+    if(r.error){L('❌ '+r.error.message);return}
+    L(`✓ Nạp ${evs.length} sự kiện`);
+  }
+  L('HOÀN TẤT. Chuyển sang tab Tổng quan.');
+  await loadAll();
+}
+const nv=x=>{const s=(x||'').toString().trim();return !s||s.toLowerCase().includes('chưa xác minh')?null:s.slice(0,200)};
+const fmtB=n=>{const en=LANG==='en',loc=en?'en-US':'vi-VN';
+  return n>=1e9?(n/1e9).toLocaleString(loc,{maximumFractionDigits:2})+(en?' bn':' tỷ'):
+  n>=1e6?(n/1e6).toLocaleString(loc,{maximumFractionDigits:0})+(en?' m':' tr'):n.toLocaleString(loc)};
+</script>
+</body>
+</html>
