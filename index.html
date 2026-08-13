@@ -981,12 +981,16 @@ async function openKH(id){
       <select id="kiBP"><option value="">— Cần hỗ trợ từ —</option><option value="rd">R&D (bản vẽ/submittal)</option>
         <option value="bo">BO (báo giá phi tiêu chuẩn)</option><option value="tckt">TCKT (công nợ/hợp đồng)</option>
         <option value="qlsx">QLSX (tiến độ/mẫu)</option></select></div>
-    <div style="margin-top:8px;display:flex;gap:8px">
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" onclick="themKI('${id}')">+ Thêm hạng mục</button>
+      <button class="btn" onclick="taiTemplateKH()">⬇ Tải template Excel</button>
+      <button class="btn" onclick="document.getElementById('kiFile').click()">⬆ Nhập từ Excel</button>
+      <input type="file" id="kiFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="nhapKIExcel('${id}',this)">
       ${items.length?`<button class="btn pri" onclick="trinhKH('${id}')">📤 Trình CEO phê duyệt</button>`:''}
     </div>`:''}
-    <div style="margin-top:12px">
+    <div style="margin-top:12px;display:flex;gap:8px">
       <button class="btn" onclick="dlgKH.close();openThread('plan','${id}','${esc(p.ten)}')">💬 Thảo luận & phê duyệt</button>
+      ${items.length?`<button class="btn" onclick="xuatKH('${id}')">⬇ Xuất Excel</button>`:''}
     </div>`;
   dlgKH.showModal();applyLang();
 }
@@ -997,6 +1001,58 @@ async function themKI(planId){
     hanh_dong:kiHD.value.trim(),chi_tieu:kiCT.value.trim()||null,han:kiHan.value||null,
     muc_tieu:kiMT.value.trim()||null,bo_phan_ho_tro:kiBP.value||null});
   openKH(planId);
+}
+const KH_COLS=['Dự án / Đối tác','Hành động *','Chỉ tiêu','Mục tiêu cột mốc','Hạn (YYYY-MM-DD)','Cần hỗ trợ từ (rd/bo/tckt/qlsx)'];
+function taiTemplateKH(){
+  const vd=[['VD: Bệnh viện ABC Hà Nội','Gặp CĐT bảo vệ thông số VAV','Spec-in','CĐT đồng ý đưa SVAV-S vào spec','2026-09-15','rd'],
+            ['VD: Aathaworld Sdn Bhd','Gửi hồ sơ AHRI 880 + báo giá Simple Box Only','Báo giá 200 bộ','NPP xác nhận nhận chào giá','2026-09-01','bo']];
+  const ws=XLSX.utils.aoa_to_sheet([KH_COLS,...vd]);
+  ws['!cols']=[{wch:34},{wch:38},{wch:20},{wch:32},{wch:16},{wch:26}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ke hoach');
+  const hd=XLSX.utils.aoa_to_sheet([
+    ['HƯỚNG DẪN ĐIỀN TEMPLATE KẾ HOẠCH'],[''],
+    ['Hành động *','Bắt buộc. Hành động cụ thể — không viết "bám sát", "đẩy mạnh"'],
+    ['Dự án / Đối tác','Gõ đúng tên như trong CRM để hệ thống tự nối; sai tên vẫn nhập được nhưng không nối'],
+    ['Hạn','Định dạng YYYY-MM-DD, vd 2026-09-15'],
+    ['Cần hỗ trợ từ','Chỉ nhận: rd, bo, tckt, qlsx — để trống nếu tự làm'],
+    ['Hai dòng VD','Xoá trước khi nhập thật'],[''],
+    ['Nhập lại file này','Mở kế hoạch trong app → ⬆ Nhập từ Excel']]);
+  hd['!cols']=[{wch:22},{wch:80}];
+  XLSX.utils.book_append_sheet(wb,hd,'Huong dan');
+  XLSX.writeFile(wb,'template-ke-hoach.xlsx');
+}
+function xuatKH(planId){
+  const p=PLANS.find(x=>x.id===planId);if(!p)return;
+  sb.from('crm_plan_items').select('*').eq('plan_id',planId).order('created_at').then(r=>{
+    const rows=(r.data||[]).map(i=>{const d=ALL_DEALS.find(x=>x.id===i.deal_id),o=ALL_ORGS.find(x=>x.id===i.org_id);
+      return [d?.ten||o?.ten||'',i.hanh_dong||'',i.chi_tieu||'',i.muc_tieu||'',i.han||'',i.bo_phan_ho_tro||'']});
+    const ws=XLSX.utils.aoa_to_sheet([KH_COLS,...rows]);
+    ws['!cols']=[{wch:34},{wch:38},{wch:20},{wch:32},{wch:16},{wch:26}];
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ke hoach');
+    XLSX.writeFile(wb,('ke-hoach-'+(p.ten||'x')).replace(/[^\w\-àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ ]/gi,'').trim().replace(/\s+/g,'-')+'.xlsx');
+  });
+}
+async function nhapKIExcel(planId,inp){
+  const f=inp.files[0];if(!f)return;
+  try{
+    const wb=XLSX.read(await f.arrayBuffer());
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+    let ok=0,bo=0;
+    for(const r of rows.slice(1)){
+      const ten=(r[0]||'').toString().trim(),hd=(r[1]||'').toString().trim();
+      if(!hd||hd.startsWith('VD:')||ten.startsWith('VD:')){if(hd)bo++;continue}
+      const d=ALL_DEALS.find(x=>x.ten===ten),o=!ALL_DEALS.find(x=>x.ten===ten)?ALL_ORGS.find(x=>x.ten===ten):null;
+      const bp=(r[5]||'').toString().trim().toLowerCase();
+      let han=(r[4]||'').toString().trim();
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(han))han=null;
+      const ins=await sb.from('crm_plan_items').insert({plan_id:planId,deal_id:d?.id||null,org_id:o?.id||null,
+        hanh_dong:hd,chi_tieu:(r[2]||'').toString().trim()||null,muc_tieu:(r[3]||'').toString().trim()||null,
+        han:han,bo_phan_ho_tro:['rd','bo','tckt','qlsx'].includes(bp)?bp:null});
+      if(!ins.error)ok++;
+    }
+    alert('Đã nhập '+ok+' hạng mục'+(bo?' · bỏ qua '+bo+' dòng VD':''));
+  }catch(e){alert('Lỗi đọc file: '+e.message)}
+  inp.value='';openKH(planId);
 }
 async function trinhKH(planId){
   const p=PLANS.find(x=>x.id===planId);
