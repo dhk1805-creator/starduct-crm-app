@@ -843,7 +843,7 @@ async function loadAll(){
   window.NHANSU=ns.data||[];
   nsList.innerHTML=NHANSU.map(n=>`<option value="${esc(n.ho_ten)}">${esc(n.chuc_danh)}</option>`).join('');
   modSel.value=MOD;applyMod();
- async function logout(){ME=null;localStorage.removeItem('crm_me');try{await sb.auth.signOut()}catch(e){}location.reload()}
+ await autoMe();showMe();if(!ME)dlgLogin.showModal();
   loadPlans();
 }
 
@@ -898,7 +898,7 @@ async function doLogin(){
   if(ME.vai_tro==='staff'){frvXem.value=ME.ho_ten;renderRV()}
   renderAll();
 }
-function logout(){ME=null;localStorage.removeItem('crm_me');showMe();dlgLogin.showModal()}
+async function logout(){ME=null;localStorage.removeItem('crm_me');try{await sb.auth.signOut()}catch(e){}location.reload()}
 async function doDoiMK(){
   const r=await sb.rpc('crm_doi_mat_khau',{p_user:ME.user_name,p_cu:mkCu.value,p_moi:mkMoi.value});
   if(r.error){mkMsg.textContent='❌ '+r.error.message;return}
