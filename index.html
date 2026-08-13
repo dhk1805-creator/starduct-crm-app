@@ -469,6 +469,63 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08: kế hoạch kỳ + phân công + nhịp tháng ----
+['Mẫu đã kéo sẵn tài khoản & dự án bạn phụ trách từ CSDL — đánh dấu','The template pre-loads your assigned accounts & projects from the database — mark'],
+['vào cột CHỌN, điền hành động, nộp lại là hệ thống tự tạo kế hoạch.','in the SELECT column, fill in actions, submit and the system creates the plan.'],
+['Chưa có tài khoản/dự án nào được phân công cho bạn — dùng "+ Thêm dòng mới" hoặc chờ Trưởng PKD phân công.','No accounts/projects assigned to you yet — use "+ Add new row" or wait for the Head of Sales to assign.'],
+['(tự chia theo hạn — nhập kết quả tại đây)','(auto-grouped by deadline — enter results here)'],
+['Trọng tâm chiến lược của kỳ — vd: đẩy VAV Box AHRI vào phân khúc bệnh viện; hoàn tất kết nối 3 TVTK trọng điểm','Strategic focus — e.g. push AHRI VAV Box into hospitals; connect 3 key design consultants'],
+['Hàng hóa dự kiến — vd: VAV, Van EI, Cửa gió','Expected products — e.g. VAV, EI damper, grilles'],
+['Mục tiêu / target quan hệ cần xây','Milestone / relationship target to build'],
+['+ Thêm dòng mới (chưa có trong CSDL)','+ Add new row (not in database)'],
+['Bước 1 — Lập kế hoạch kỳ theo mẫu','Step 1 — Build the period plan from a template'],
+['(Sale/BD: kỳ ngắn nhất là Quý)','(Sales/BD: shortest period is a Quarter)'],
+['Tải mẫu Excel (làm offline)','Download Excel template (offline)'],
+['Hoặc tạo nhanh trên web…','Or quick-create on the web…'],
+['Nộp kế hoạch đã điền','Submit filled plan'],
+['Lập ngay trên web','Build it on the web'],
+['Nhịp hành động theo tháng','Monthly action rhythm'],
+['dự án/tài khoản bạn phụ trách','projects/accounts you own'],
+['Tick chọn từ','Tick to select from'],
+['Tên tài khoản/dự án mới *','New account/project name *'],
+['Hành động trong kỳ *','Action for the period *'],
+['Chỉ tiêu khác — vd: spec-in','Other target — e.g. spec-in'],
+['Chỉ tiêu số bộ VAV','VAV unit target'],
+['Doanh thu mục tiêu (VND)','Revenue target (VND)'],
+['Số NPP / OEM mới','New distributors / OEM'],
+['Giá trị dự bán (VND)','Expected sale value (VND)'],
+['— Doanh thu đến từ —','— Revenue comes from —'],
+['— Cần hỗ trợ —','— Support needed —'],
+['R&D (bản vẽ/submittal)','R&D (drawings/submittal)'],
+['BO (báo giá phi tiêu chuẩn)','BO (non-standard quote)'],
+['TCKT (công nợ/hợp đồng)','Finance (AR/contract)'],
+['QLSX (tiến độ/mẫu)','Factory (schedule/sample)'],
+['Mục tiêu cột mốc','Milestone'],
+['Kết quả thực tế…','Actual result…'],
+['Tải template Excel','Download Excel template'],
+['Nhập từ Excel','Import from Excel'],
+['Xuất Excel','Export Excel'],
+['File phân công','Assignment file'],
+['Nhập phân công','Import assignments'],
+['Kênh thương mại','Commercial channel'],
+['— Chưa xếp —','— Not set —'],
+['chọn từ danh sách nhân sự','pick from the staff list'],
+['— Chưa đặt hạn','— No deadline'],
+['Σ kế hoạch','Σ planned'],
+['Σ dự bán','Σ expected sales'],
+['Lọc tên…','Filter…'],
+['Loại kỳ','Period type'],
+['Nửa năm','Half-year'],
+['bộ VAV','VAV units'],
+['Đang làm','In progress'],
+['Chưa xác định','Unknown'],
+['Miền Bắc','North VN'],['Miền Trung','Central VN'],['Miền Nam','South VN'],
+['Đông Nam Á','Southeast Asia'],['Đông Bắc Á','Northeast Asia'],['Trung Đông','Middle East'],
+['Châu Đại Dương','Oceania'],['Bắc Mỹ','North America'],['Châu Âu','Europe'],
+['NPP (phân phối)','Distributor'],['Agent / Broker','Agent / Broker'],['Trực tiếp','Direct'],
+['quá hạn','overdue'],['xong','done'],['Chờ','Waiting'],['Xong','Done'],['Hủy','Cancelled'],
+['Vùng','Region'],['Kỳ:','Period:'],['Quý','Quarter'],['Năm','Year'],['Tháng','Month'],['Tuần','Week'],
+['tài khoản','account'],['dự án','project'],['chỉ tiêu','target'],['hạn','due'],['cần','needs'],['Lưu','Save'],
 // ---- câu dài trước (tự sắp theo độ dài lúc chạy) ----
 ['Chọn tên mình để xem dashboard cá nhân','Pick your name for your personal dashboard'],
 ['Tổng hợp tự động từ tiếp xúc · dự án · doanh thu · case hỗ trợ trong kỳ','Auto-compiled from touchpoints · projects · revenue · support cases in period'],
@@ -1210,7 +1267,7 @@ function moMauKH(){
       <button class="btn" onclick="themDongMau()">+ Thêm dòng mới (chưa có trong CSDL)</button>
       <button class="btn pri" onclick="luuMauKH('${loai}')" style="margin-left:auto">💾 Tạo kế hoạch</button>
     </div>`;
-  dlgMau.showModal();
+  dlgMau.showModal();applyLang();
 }
 function locMau(){
   const q=mLoc.value.trim().toLowerCase();
@@ -1233,7 +1290,7 @@ function themDongMau(){
     <select id="mbp-${i}"><option value="">— Cần hỗ trợ —</option><option value="rd">R&D</option>
       <option value="bo">BO</option><option value="tckt">TCKT</option><option value="qlsx">QLSX</option></select>
   </div>`;
-  document.getElementById('mMoi').appendChild(div);
+  document.getElementById('mMoi').appendChild(div);applyLang();
 }
 async function luuMauKH(loai){
   const v=id=>document.getElementById(id)?.value?.trim()||'';
