@@ -961,7 +961,7 @@ const CFG_MAC_DINH={
   try{
     const cli=supabase.createClient(url,key);
     const {data:{session}}=await cli.auth.getSession();
-    if(!session) return;
+    if(!session){dlgCfg.showModal();applyLang();return}
     sb=cli;
     dot.classList.add('on'); connTxt.textContent='Đã kết nối';
     if(dlgCfg.open) dlgCfg.close();
