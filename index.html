@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct</h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v10 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -467,6 +467,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
+const APP_VER='v10 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 13/08 đợt 3: mục tiêu ưu tiên ----
