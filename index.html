@@ -226,7 +226,19 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
       gắn từng dự án với hành động + chỉ tiêu + hạn → ③ bấm <b>Trình CEO</b> → ④ CEO duyệt trong
       Hàng chờ phê duyệt → hệ thống <b>tự đổ hành động vào cột "Việc tiếp theo"</b> của từng dự án
       và gán owner — kế hoạch thành việc chạy, không nằm trên giấy.</div>
-    <div class="grid g4" style="margin-bottom:12px">
+    <div style="background:var(--b50);border:1px solid var(--b400);border-radius:8px;padding:12px;margin-bottom:12px">
+      <b>Bước 1 — Lập kế hoạch kỳ theo mẫu</b> <span class="muted">(Sale/BD: kỳ ngắn nhất là Quý)</span>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <select id="mauKy"><option value="quy">Quý</option><option value="nua_nam">Nửa năm</option><option value="nam">Năm</option></select>
+        <button class="btn pri" onclick="taiMauKH()">⬇ Tải mẫu kế hoạch</button>
+        <button class="btn" onclick="document.getElementById('mauFile').click()">⬆ Nộp kế hoạch đã điền</button>
+        <input type="file" id="mauFile" accept=".xlsx,.xls" style="display:none" onchange="nopKHFile(this)">
+      </div>
+      <div class="muted" style="margin-top:6px;font-size:12px">Mẫu đã kéo sẵn tài khoản &amp; dự án bạn phụ trách từ CSDL —
+      đánh dấu <b>x</b> vào cột CHỌN, điền hành động, nộp lại là hệ thống tự tạo kế hoạch.</div>
+    </div>
+    <details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Hoặc tạo nhanh trên web…</summary>
+    <div class="grid g4" style="margin:8px 0 12px">
       <input id="khTen" placeholder="Tên kế hoạch * — vd: KH thâm nhập Hàn Quốc Q4">
       <input id="khTu" type="date"><input id="khDen" type="date">
       <button class="btn pri" onclick="taoKH()">+ Tạo kế hoạch</button>
@@ -241,6 +253,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
     </div>
     <textarea id="khMT" placeholder="Mục tiêu tổng quát…" style="width:100%;min-height:40px"></textarea>
     <textarea id="khTT" placeholder="Trọng tâm chiến lược của kỳ — vd: đẩy VAV Box AHRI vào phân khúc bệnh viện; hoàn tất kết nối 3 TVTK trọng điểm" style="width:100%;min-height:36px;margin-top:6px"></textarea>
+    </details>
     <div id="khList" style="margin-top:14px"></div>
   </div>
 </section>
@@ -974,6 +987,7 @@ async function openKH(id){
     <td class="muted">${esc(i.chi_tieu||'')}</td><td>${i.han||''}</td>
     <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
     </table>
+    ${nhipHTML(p,items)}
     ${editable?`<div class="grid g4" style="gap:8px;margin-top:10px">
       <input id="kiDeal" list="dealList" placeholder="Dự án (từ CSDL)…">
       <input id="kiHD" placeholder="Hành động *">
@@ -1003,6 +1017,127 @@ async function themKI(planId){
   await sb.from('crm_plan_items').insert({plan_id:planId,deal_id:d?.id||null,
     hanh_dong:kiHD.value.trim(),chi_tieu:kiCT.value.trim()||null,han:kiHan.value||null,
     muc_tieu:kiMT.value.trim()||null,bo_phan_ho_tro:kiBP.value||null});
+  openKH(planId);
+}
+/* ===== MẪU KẾ HOẠCH KỲ: tải trước - điền - nộp ===== */
+const MAU_COLS=['CHỌN (x)','Loại','Tên tài khoản / dự án','Quốc gia','Phân loại','Trạng thái hiện tại','HÀNH ĐỘNG TRONG KỲ *','CHỈ TIÊU','MỤC TIÊU CỘT MỐC','HẠN (YYYY-MM-DD)','CẦN HỖ TRỢ (rd/bo/tckt/qlsx)'];
+function kyMacDinh(loai){
+  const d=new Date();let tu,den;
+  if(loai==='quy'){const q=Math.floor(d.getMonth()/3)+1;const nq=q===4?1:q+1;const y=q===4?d.getFullYear()+1:d.getFullYear();
+    tu=new Date(y,(nq-1)*3,1);den=new Date(y,nq*3,0)}
+  else if(loai==='nua_nam'){const h2=d.getMonth()<6;tu=new Date(d.getFullYear()+(h2?0:1),h2?6:0,1);den=new Date(d.getFullYear()+(h2?0:1),h2?12:6,0)}
+  else{tu=new Date(d.getFullYear()+1,0,1);den=new Date(d.getFullYear()+1,12,0)}
+  const f=x=>x.toISOString().slice(0,10);return[f(tu),f(den)];
+}
+function taiMauKH(){
+  const loai=mauKy.value,ten={quy:'Quý',nua_nam:'Nửa năm',nam:'Năm'}[loai];
+  const [tu,den]=kyMacDinh(loai);
+  const me=ME?.ho_ten||'';
+  const info=XLSX.utils.aoa_to_sheet([
+    ['THÔNG TIN KỲ KẾ HOẠCH','(sửa trực tiếp cột B)'],
+    ['Tên kế hoạch','KH '+ten+' '+(ME?.khu_vuc==='quoc_te'?'quốc tế':'nội địa')+' — '+me],
+    ['Loại kỳ (KHÔNG SỬA)',loai],
+    ['Từ ngày',tu],['Đến ngày',den],
+    ['Chỉ tiêu số bộ VAV',''],['Doanh thu mục tiêu (VND)',''],['Số NPP / OEM mới',''],
+    ['Mục tiêu tổng quát',''],
+    ['Trọng tâm chiến lược','vd: đẩy SVAV-S (AHRI 880) phân khúc bệnh viện; Simple Box Only mở thị trường giá nhạy']]);
+  info['!cols']=[{wch:26},{wch:70}];
+  const myOrgs=ALL_ORGS.filter(o=>o.nguoi_phu_trach===me&&o.loai_ban_ghi==='muc_tieu');
+  const myDeals=ALL_DEALS.filter(d=>d.owner===me||(!d.owner&&myOrgs.some(o=>o.id===d.cdt_id||o.id===d.npp_dang_ky_id)));
+  const rows=[
+    ...myDeals.map(d=>['','du_an',d.ten||'',d.quoc_gia||'','',d.stage||'','','','','','']),
+    ...myOrgs.map(o=>['','tai_khoan',o.ten||'',o.quoc_gia||'',o.phan_loai||'','phủ '+(o.trang_thai_phu??0),'','','','','']),
+  ];
+  for(let i=0;i<15;i++)rows.push(['','moi','','','','','','','','','']);
+  const ws=XLSX.utils.aoa_to_sheet([MAU_COLS,...rows]);
+  ws['!cols']=[{wch:9},{wch:10},{wch:42},{wch:9},{wch:10},{wch:16},{wch:40},{wch:18},{wch:30},{wch:18},{wch:24}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,info,'Thong tin ky');
+  XLSX.utils.book_append_sheet(wb,ws,'Hang muc');
+  const hd=XLSX.utils.aoa_to_sheet([
+    ['CÁCH DÙNG MẪU KẾ HOẠCH '+ten.toUpperCase()],[''],
+    ['1','Sheet "Thong tin ky": điền chỉ tiêu + trọng tâm (cột B). Không sửa dòng Loại kỳ.'],
+    ['2','Sheet "Hang muc": hệ thống đã kéo sẵn '+myDeals.length+' dự án + '+myOrgs.length+' tài khoản bạn phụ trách.'],
+    ['3','Đánh x vào cột CHỌN cho mục đưa vào kế hoạch · điền HÀNH ĐỘNG cụ thể (cấm "bám sát/đẩy mạnh") + HẠN.'],
+    ['4','Dòng "moi": thêm tài khoản/dự án chưa có trong CSDL — gõ tên vào cột Tên.'],
+    ['5','Nộp lại: tab Kế hoạch → ⬆ Nộp kế hoạch đã điền. Hệ thống tự tạo kế hoạch + toàn bộ hạng mục.'],
+    ['6','Sau khi CEO duyệt: mở kế hoạch sẽ có NHỊP THÁNG (tự chia theo hạn) để nhập kết quả từng kỳ.']]);
+  hd['!cols']=[{wch:4},{wch:100}];
+  XLSX.utils.book_append_sheet(wb,hd,'Huong dan');
+  XLSX.writeFile(wb,'mau-ke-hoach-'+loai+'-'+tu+'.xlsx');
+}
+async function nopKHFile(inp){
+  const f=inp.files[0];if(!f)return;
+  try{
+    const wb=XLSX.read(await f.arrayBuffer());
+    const info=XLSX.utils.sheet_to_json(wb.Sheets['Thong tin ky'],{header:1,raw:false,defval:''});
+    const get=k=>{const r=info.find(x=>(x[0]||'').toString().startsWith(k));return r?(r[1]||'').toString().trim():''};
+    const loai=get('Loại kỳ')||'quy';
+    const plan={ten:get('Tên kế hoạch')||('KH '+loai),nguoi_lap:ME?.ho_ten||'?',
+      khu_vuc:MOD==='nd'?'noi_dia':'quoc_te',ky_loai:loai,
+      ky_tu:get('Từ ngày')||null,ky_den:get('Đến ngày')||null,
+      chi_tieu_vav:+get('Chỉ tiêu số bộ VAV')||null,chi_tieu_doanh_thu:+get('Doanh thu mục tiêu')||null,
+      chi_tieu_npp_moi:+get('Số NPP')||null,muc_tieu:get('Mục tiêu tổng quát')||null,trong_tam:get('Trọng tâm')||null};
+    if(!plan.ky_tu||!plan.ky_den){alert('Thiếu Từ ngày / Đến ngày trong sheet Thong tin ky');inp.value='';return}
+    const r=await sb.from('crm_plans').insert(plan).select();
+    if(r.error){alert(r.error.message);inp.value='';return}
+    const planId=r.data[0].id;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets['Hang muc']||wb.Sheets[wb.SheetNames[1]],{header:1,raw:false,defval:''});
+    let ok=0;
+    for(const row of rows.slice(1)){
+      if((row[0]||'').toString().trim().toLowerCase()!=='x')continue;
+      const ten=(row[2]||'').toString().trim(),hdg=(row[6]||'').toString().trim();
+      if(!hdg)continue;
+      const d=ALL_DEALS.find(x=>x.ten===ten),o=d?null:ALL_ORGS.find(x=>x.ten===ten);
+      const bp=(row[10]||'').toString().trim().toLowerCase();
+      let han=(row[9]||'').toString().trim();if(!/^\d{4}-\d{2}-\d{2}$/.test(han))han=null;
+      const ins=await sb.from('crm_plan_items').insert({plan_id:planId,deal_id:d?.id||null,org_id:o?.id||null,
+        hanh_dong:hdg+(!d&&!o&&ten?' — '+ten:''),chi_tieu:(row[7]||'').toString().trim()||null,
+        muc_tieu:(row[8]||'').toString().trim()||null,han:han,
+        bo_phan_ho_tro:['rd','bo','tckt','qlsx'].includes(bp)?bp:null});
+      if(!ins.error)ok++;
+    }
+    alert('✔ Đã tạo kế hoạch "'+plan.ten+'" với '+ok+' hạng mục.\nMở kế hoạch để kiểm tra rồi bấm Trình CEO phê duyệt.');
+    await loadPlans();openKH(planId);
+  }catch(e){alert('Lỗi đọc file: '+e.message)}
+  inp.value='';
+}
+/* ===== NHỊP THÁNG + KẾT QUẢ ===== */
+const KIST={cho:'Chờ',dang_lam:'Đang làm',xong:'Xong',huy:'Hủy'};
+function nhipHTML(p,items){
+  if(!['quy','nua_nam','nam'].includes(p.ky_loai||'')||!items.length)return'';
+  const homNay=new Date().toISOString().slice(0,10);
+  const xong=items.filter(i=>i.trang_thai==='xong').length;
+  const tre=items.filter(i=>i.trang_thai!=='xong'&&i.trang_thai!=='huy'&&i.han&&i.han<homNay).length;
+  const pc=Math.round(xong*100/items.length);
+  const gr={};
+  for(const i of items){const k=i.han?i.han.slice(0,7):'zz';(gr[k]=gr[k]||[]).push(i)}
+  return `<h3 style="font-size:13px;margin:14px 0 6px">📅 Nhịp hành động theo tháng <span class="muted">(tự chia theo hạn — nhập kết quả tại đây)</span></h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
+    <span class="tag" style="background:var(--ok-bg);color:var(--ok)">✔ ${xong}/${items.length} xong · ${pc}%</span>
+    ${tre?`<span class="tag" style="background:var(--bad-bg);color:var(--bad)">⏰ ${tre} quá hạn</span>`:''}</div>`+
+  Object.keys(gr).sort().map(k=>{
+    const cs=gr[k],cxong=cs.filter(i=>i.trang_thai==='xong').length;
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:8px">
+    <b>${k==='zz'?'— Chưa đặt hạn':'Tháng '+k.slice(5,7)+'/'+k.slice(0,4)}</b>
+    <span class="muted" style="font-size:12px">· ${cxong}/${cs.length} xong</span>
+    ${cs.map(i=>{const d=ALL_DEALS.find(x=>x.id===i.deal_id),o=ALL_ORGS.find(x=>x.id===i.org_id);
+      const qh=i.trang_thai!=='xong'&&i.trang_thai!=='huy'&&i.han&&i.han<homNay;
+      return `<div style="display:flex;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--border);flex-wrap:wrap">
+      <span style="flex:1;min-width:200px${qh?';color:var(--bad)':''}">${esc(d?.ten||o?.ten||'')}${(d||o)?' · ':''}${esc(i.hanh_dong)}
+        ${i.han?`<span class="muted">(hạn ${i.han}${qh?' ⏰':''})</span>`:''}</span>
+      <select id="st-${i.id}" style="width:105px">${Object.entries(KIST).map(([v,l])=>
+        `<option value="${v}"${i.trang_thai===v?' selected':''}>${l}</option>`).join('')}</select>
+      <input id="kq-${i.id}" placeholder="Kết quả thực tế…" value="${esc(i.ket_qua||'')}" style="width:220px">
+      <button class="btn" onclick="capNhatKQ('${i.id}','${p.id}')">Lưu</button></div>`}).join('')}
+    </div>`}).join('');
+}
+async function capNhatKQ(itemId,planId){
+  const st=document.getElementById('st-'+itemId).value;
+  const kq=document.getElementById('kq-'+itemId).value.trim();
+  const r=await sb.from('crm_plan_items').update({trang_thai:st,ket_qua:kq||null,
+    ngay_hoan_thanh:st==='xong'?new Date().toISOString().slice(0,10):null}).eq('id',itemId);
+  if(r.error){alert(r.error.message);return}
   openKH(planId);
 }
 const KH_COLS=['Dự án / Đối tác','Hành động *','Chỉ tiêu','Mục tiêu cột mốc','Hạn (YYYY-MM-DD)','Cần hỗ trợ từ (rd/bo/tckt/qlsx)'];
