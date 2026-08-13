@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v14 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v15 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -410,11 +410,13 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <dialog id="dlgCfg">
   <div class="dhead">Đăng nhập hệ thống<button class="btn" onclick="dlgCfg.close()">✕</button></div>
   <div class="dbody">
-    <div class="frow"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
-    <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOi…"></div>
-    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="đăng nhập tài khoản ERP"></div>
-    <div class="frow"><label>Mật khẩu</label><input id="cfgPass" type="password"></div>
-    <button class="btn pri" onclick="connect()">Kết nối & đăng nhập</button>
+    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="email công ty — vd: tamntt@nsca.vn"></div>
+    <div class="frow"><label>Mật khẩu</label><input id="cfgPass" type="password" onkeydown="if(event.key==='Enter')connect()"></div>
+    <button class="btn pri" onclick="connect()">Đăng nhập</button>
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Cấu hình kết nối (kỹ thuật — không cần đụng tới)</summary>
+      <div class="frow" style="margin-top:6px"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+      <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOi…"></div>
+    </details>
     <span class="muted" id="cfgMsg"></span>
   </div>
 </dialog>
@@ -470,9 +472,12 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v14 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v15 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08 đợt 7: gọn hộp đăng nhập ----
+['Cấu hình kết nối (kỹ thuật — không cần đụng tới)','Connection settings (technical — leave as is)'],
+['email công ty — vd: tamntt@nsca.vn','company email — e.g. tamntt@nsca.vn'],
 // ---- bổ sung 13/08 đợt 6: phân cấp duyệt + kinh phí công tác ----
 ['Dự trù kinh phí công tác (nếu kỳ này có đi công tác trong/ngoài nước)','Trip budget estimate (if this period involves domestic/overseas travel)'],
 ['Ghi chú — vd: HN–Seoul khứ hồi ×2 người','Note — e.g. HN–Seoul round trip ×2 pax'],
