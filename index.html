@@ -228,7 +228,16 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
       <input id="khTu" type="date"><input id="khDen" type="date">
       <button class="btn pri" onclick="taoKH()">+ Tạo kế hoạch</button>
     </div>
+    <div class="grid g4" style="margin-bottom:8px">
+      <select id="khKy"><option value="">— Loại kỳ —</option><option value="tuan">Tuần</option>
+        <option value="thang">Tháng</option><option value="quy">Quý</option>
+        <option value="nua_nam">Nửa năm</option><option value="nam">Năm</option></select>
+      <input id="khCTVAV" type="number" min="0" placeholder="Chỉ tiêu số bộ VAV">
+      <input id="khCTDT" type="number" min="0" placeholder="Doanh thu mục tiêu (VND)">
+      <input id="khCTNPP" type="number" min="0" placeholder="Số NPP / OEM mới">
+    </div>
     <textarea id="khMT" placeholder="Mục tiêu tổng quát…" style="width:100%;min-height:40px"></textarea>
+    <textarea id="khTT" placeholder="Trọng tâm chiến lược của kỳ — vd: đẩy VAV Box AHRI vào phân khúc bệnh viện; hoàn tất kết nối 3 TVTK trọng điểm" style="width:100%;min-height:36px;margin-top:6px"></textarea>
     <div id="khList" style="margin-top:14px"></div>
   </div>
 </section>
@@ -931,7 +940,10 @@ async function taoKH(){
   if(!khTen.value.trim()||!khTu.value||!khDen.value){alert(t('Thiếu tên hoặc kỳ kế hoạch'));return}
   const r=await sb.from('crm_plans').insert({ten:khTen.value.trim(),
     nguoi_lap:ME?.ho_ten||'?',khu_vuc:MOD==='nd'?'noi_dia':'quoc_te',
-    ky_tu:khTu.value,ky_den:khDen.value,muc_tieu:khMT.value.trim()||null}).select();
+    ky_tu:khTu.value,ky_den:khDen.value,muc_tieu:khMT.value.trim()||null,
+    ky_loai:khKy.value||null,chi_tieu_vav:+khCTVAV.value||null,
+    chi_tieu_doanh_thu:+khCTDT.value||null,chi_tieu_npp_moi:+khCTNPP.value||null,
+    trong_tam:khTT.value.trim()||null}).select();
   if(r.error){alert(r.error.message);return}
   khTen.value='';khMT.value='';await loadPlans();openKH(r.data[0].id);
 }
@@ -946,10 +958,16 @@ async function openKH(id){
       <span class="pill ${cls}">${lbl}</span>
       <span class="muted">${esc(p.nguoi_lap)} · ${p.ky_tu} → ${p.ky_den}</span></div>
     ${p.muc_tieu?`<div class="notice" style="margin-bottom:10px">${esc(p.muc_tieu)}</div>`:''}
+    ${(p.ky_loai||p.chi_tieu_vav||p.chi_tieu_doanh_thu||p.chi_tieu_npp_moi)?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      ${p.ky_loai?`<span class="tag">Kỳ: ${{tuan:'Tuần',thang:'Tháng',quy:'Quý',nua_nam:'Nửa năm',nam:'Năm'}[p.ky_loai]||p.ky_loai}</span>`:''}
+      ${p.chi_tieu_vav?`<span class="tag">🎯 ${p.chi_tieu_vav} bộ VAV</span>`:''}
+      ${p.chi_tieu_doanh_thu?`<span class="tag">💰 ${(+p.chi_tieu_doanh_thu).toLocaleString('vi')} đ</span>`:''}
+      ${p.chi_tieu_npp_moi?`<span class="tag">🤝 ${p.chi_tieu_npp_moi} NPP/OEM mới</span>`:''}</div>`:''}
+    ${p.trong_tam?`<div class="muted" style="margin-bottom:10px">⭐ ${esc(p.trong_tam)}</div>`:''}
     <h3 style="font-size:13px;margin:0 0 6px">Hạng mục kế hoạch (${items.length})</h3>
     <table><tr><th>Dự án / Đối tác</th><th>Hành động</th><th>Chỉ tiêu</th><th>Hạn</th><th>TT</th></tr>
     ${items.map(i=>{const d=ALL_DEALS.find(x=>x.id===i.deal_id),o=ALL_ORGS.find(x=>x.id===i.org_id);
-    return `<tr><td><b>${esc(d?.ten||o?.ten||'—')}</b></td><td>${esc(i.hanh_dong)}</td>
+    return `<tr><td><b>${esc(d?.ten||o?.ten||'—')}</b></td><td>${esc(i.hanh_dong)}${i.muc_tieu?`<div class="muted" style="font-size:12px">🎯 ${esc(i.muc_tieu)}</div>`:''}${i.bo_phan_ho_tro?`<span class="tag">cần ${i.bo_phan_ho_tro.toUpperCase()}</span>`:''}</td>
     <td class="muted">${esc(i.chi_tieu||'')}</td><td>${i.han||''}</td>
     <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
     </table>
@@ -958,6 +976,11 @@ async function openKH(id){
       <input id="kiHD" placeholder="Hành động *">
       <input id="kiCT" placeholder="Chỉ tiêu — vd: spec-in, PO 500 bộ">
       <input id="kiHan" type="date"></div>
+    <div class="grid g4" style="gap:8px;margin-top:8px">
+      <input id="kiMT" placeholder="Mục tiêu cột mốc — vd: gặp CĐT bảo vệ thông số" style="grid-column:span 2">
+      <select id="kiBP"><option value="">— Cần hỗ trợ từ —</option><option value="rd">R&D (bản vẽ/submittal)</option>
+        <option value="bo">BO (báo giá phi tiêu chuẩn)</option><option value="tckt">TCKT (công nợ/hợp đồng)</option>
+        <option value="qlsx">QLSX (tiến độ/mẫu)</option></select></div>
     <div style="margin-top:8px;display:flex;gap:8px">
       <button class="btn" onclick="themKI('${id}')">+ Thêm hạng mục</button>
       ${items.length?`<button class="btn pri" onclick="trinhKH('${id}')">📤 Trình CEO phê duyệt</button>`:''}
@@ -971,7 +994,8 @@ async function themKI(planId){
   const d=ALL_DEALS.find(x=>x.ten===kiDeal.value.trim());
   if(!kiHD.value.trim()){alert(t('Thiếu hành động'));return}
   await sb.from('crm_plan_items').insert({plan_id:planId,deal_id:d?.id||null,
-    hanh_dong:kiHD.value.trim(),chi_tieu:kiCT.value.trim()||null,han:kiHan.value||null});
+    hanh_dong:kiHD.value.trim(),chi_tieu:kiCT.value.trim()||null,han:kiHan.value||null,
+    muc_tieu:kiMT.value.trim()||null,bo_phan_ho_tro:kiBP.value||null});
   openKH(planId);
 }
 async function trinhKH(planId){
