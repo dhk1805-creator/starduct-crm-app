@@ -142,6 +142,9 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
         <option value="doi_tac_chien_luoc">ĐT chiến lược</option><option value="doi_tac_phan_phoi">Broker/Agent</option>
         <option value="chua">Chưa phân loại</option></select>
       <button class="btn pri" onclick="openOrg()">+ Thêm đối tác</button>
+      <button class="btn" onclick="taiFilePhanCong()">⬇ File phân công</button>
+      <button class="btn" onclick="document.getElementById('pcFile').click()">⬆ Nhập phân công</button>
+      <input type="file" id="pcFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCong(this)">
     </div>
     <div id="dtList"></div>
   </div>
@@ -1540,6 +1543,60 @@ function renderDT(){
   (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu — thu hẹp bộ lọc để xem thêm.</div>':'');
 }
 
+/* ===== PHÂN CÔNG ĐỐI TÁC: tải file / nhập file ===== */
+const PC_COLS=['ID — KHÔNG SỬA','Tên đối tác','Khối','Quốc gia','Tỉnh/Thành','Vai trò dự án','Nhóm quan hệ','Loại bản ghi','Ưu tiên','VÙNG','KÊNH THƯƠNG MẠI','NGƯỜI PHỤ TRÁCH','ĐỘ PHỦ 0–5'];
+function taiFilePhanCong(){
+  const uu=o=>o.khu_vuc==='noi_dia'?1:(o.phan_loai==='npp'?2:3);
+  const rows=[...ALL_ORGS].sort((a,b)=>uu(a)-uu(b)||(a.ten||'').localeCompare(b.ten||'','vi'))
+    .map(o=>[o.id,o.ten||'',o.khu_vuc||'',o.quoc_gia||'',o.thanh_pho||'',o.phan_loai||'',
+      o.quan_he||'',o.loai_ban_ghi||'',uu(o),o.vung||'',o.kenh_thuong_mai||'',
+      o.nguoi_phu_trach||'',o.trang_thai_phu??'']);
+  const ws=XLSX.utils.aoa_to_sheet([PC_COLS,...rows]);
+  ws['!cols']=[{wch:28},{wch:46},{wch:9},{wch:9},{wch:20},{wch:12},{wch:14},{wch:12},{wch:8},{wch:14},{wch:18},{wch:24},{wch:12}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Phan cong');
+  const hd=XLSX.utils.aoa_to_sheet([
+    ['HƯỚNG DẪN PHÂN CÔNG ĐỐI TÁC'],[''],
+    ['4 cột cần điền','VÙNG · KÊNH THƯƠNG MẠI · NGƯỜI PHỤ TRÁCH · ĐỘ PHỦ 0–5 (các cột khác chỉ để tra cứu)'],
+    ['ID','KHÔNG sửa/xoá — là khoá nối với hệ thống'],
+    ['Ưu tiên','1 = nội địa điền trước · 2 = NPP · 3 = quốc tế điền dần'],
+    ['VÙNG','mien_bac · mien_trung · mien_nam · dong_nam_a · dong_bac_a · trung_dong · chau_dai_duong · bac_my · chau_au · khac'],
+    ['KÊNH','npp · agent · oem_odm · truc_tiep'],
+    ['NGƯỜI PHỤ TRÁCH','Gõ đúng họ tên trong tab Nhân sự, vd: Đỗ Đình Đức'],
+    ['ĐỘ PHỦ','Số 0–5 (0 chưa tiếp cận → 5 khách thường xuyên)'],
+    ['Ô để trống','Giữ nguyên giá trị cũ, không bị xoá'],[''],
+    ['Nhập lại','Tab Đối tác → ⬆ Nhập phân công → chọn file này']]);
+  hd['!cols']=[{wch:20},{wch:100}];
+  XLSX.utils.book_append_sheet(wb,hd,'Huong dan');
+  XLSX.writeFile(wb,'phan-cong-doi-tac-'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+async function nhapPhanCong(inp){
+  const f=inp.files[0];if(!f)return;
+  try{
+    const wb=XLSX.read(await f.arrayBuffer());
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+    const tenNS=(window.NHANSU||[]).map(n=>n.ho_ten);
+    let ok=0,loi=[];
+    for(const r of rows.slice(1)){
+      const id=(r[0]||'').toString().trim();
+      if(!/^[0-9a-f-]{36}$/i.test(id))continue;
+      const patch={};
+      const vung=(r[9]||'').toString().trim().toLowerCase();
+      if(vung){if(VUNGDM[vung])patch.vung=vung;else{loi.push('vùng "'+vung+'"');continue}}
+      const kenh=(r[10]||'').toString().trim().toLowerCase();
+      if(kenh){if(KENHDM[kenh])patch.kenh_thuong_mai=kenh;else{loi.push('kênh "'+kenh+'"');continue}}
+      const nguoi=(r[11]||'').toString().trim();
+      if(nguoi){const kh=tenNS.find(t=>t.toLowerCase()===nguoi.toLowerCase());
+        if(kh)patch.nguoi_phu_trach=kh;else{loi.push('người "'+nguoi+'"');continue}}
+      const phu=(r[12]||'').toString().trim();
+      if(phu!==''){const n=+phu;if(n>=0&&n<=5)patch.trang_thai_phu=n;else{loi.push('độ phủ "'+phu+'"');continue}}
+      if(!Object.keys(patch).length)continue;
+      const u=await sb.from('crm_org').update(patch).eq('id',id);
+      if(u.error)loi.push(u.error.message);else ok++;
+    }
+    alert('✔ Cập nhật '+ok+' đối tác'+(loi.length?'\n⚠ '+loi.length+' dòng lỗi (bỏ qua): '+[...new Set(loi)].slice(0,5).join(' · '):''));
+  }catch(e){alert('Lỗi đọc file: '+e.message)}
+  inp.value='';await loadAll();
+}
 const VUNGDM={mien_bac:'Miền Bắc',mien_trung:'Miền Trung',mien_nam:'Miền Nam',
   dong_nam_a:'Đông Nam Á',dong_bac_a:'Đông Bắc Á',trung_dong:'Trung Đông',
   chau_dai_duong:'Châu Đại Dương',bac_my:'Bắc Mỹ',chau_au:'Châu Âu',khac:'Khác'};
