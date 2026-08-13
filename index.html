@@ -469,6 +469,71 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08 đợt 2: quét sót toàn cục ----
+['Điểm tương đối trong kỳ — action 25% · nâng phủ 35% · doanh thu 30% · case 10%. THAM KHẢO, không thay bảng KPI','Relative score — actions 25% · coverage 35% · revenue 30% · cases 10%. REFERENCE ONLY, not the KPI table'],
+['người đánh giá bổ sung ý kiến định tính khi lập báo cáo chính thức','the reviewer adds qualitative comments in the official report'],
+['Lập kế hoạch từ CSDL thị trường mình phụ trách → trình CEO → triển khai','Build plans from your market database → submit to CEO → execute'],
+['và gán owner — kế hoạch thành việc chạy, không nằm trên giấy','and assigns owners — the plan becomes running work, not paper'],
+['Tự động: pg_cron lập tuần (T7 18:05) & tháng (mùng 1) nếu được bật','Automatic: pg_cron builds weekly (Sat 18:05) & monthly (1st) if enabled'],
+['Mô tả viết sẵn từ tài liệu đã đối soát (quy chế, KPI SMART, hợp đồng, báo cáo)','Pre-written from reconciled documents (policies, SMART KPI, contracts, reports)'],
+['Chế độ xem — chỉ Admin/Super Admin sửa được hồ sơ','View mode — only Admin/Super Admin can edit profiles'],
+['tiếp xúc nhưng chưa nâng được quan hệ nào — xem chất lượng tiếp cận','touchpoints but no relationship upgraded — review approach quality'],
+['quá nửa tiếp xúc không có bước tiếp theo','over half of touchpoints lack a next step'],
+['% tiếp xúc có bước tiếp theo','% touchpoints with a next step'],
+['Số lần nâng trạng thái phủ — hiệu quả thật','Coverage upgrades — real effectiveness'],
+['chưa ghi nhận hoạt động nào trong kỳ','no activity recorded this period'],
+['chưa chạm cấp ra quyết định','no decision-maker reached yet'],
+['Đã reset về Nsca@2026 — buộc đổi khi đăng nhập','Reset to Nsca@2026 — must change at next login'],
+['Lần đầu đăng nhập bằng mật khẩu mặc định','First login: use the default password'],
+['hệ thống sẽ yêu cầu đổi ngay','the system will require a change immediately'],
+['Chỉ Super Admin được reset mật khẩu','Only Super Admin can reset passwords'],
+['Xác nhận mật khẩu Super Admin của bạn','Confirm your Super Admin password'],
+['Reset mật khẩu về mặc định','Reset password to default'],
+['Người này chưa có user name','This person has no username yet'],
+['Sai user name hoặc mật khẩu','Wrong username or password'],
+['Không tìm thấy user','User not found'],
+['Thiếu tên hoặc kỳ kế hoạch','Missing plan name or period'],
+['Chưa có kế hoạch nào trong module này','No plans in this module yet'],
+['Chưa có dữ liệu trong kỳ','No data in this period'],
+['Đội ngũ & mô tả công việc trong module','Team & job descriptions in this module'],
+['Danh mục chính thức do CEO duyệt bằng cách gán','Official list — CEO approves by assigning'],
+['để trống có chủ đích — admin bổ sung dần','intentionally blank — admin fills in gradually'],
+['trống — admin bổ sung','blank — admin to fill'],
+['Chỉ tiêu kỳ','Period targets'],['chờ DL-02','awaiting DL-02'],
+['Tên kế hoạch * — vd: KH thâm nhập Hàn Quốc Q4','Plan name * — e.g. Korea entry plan Q4'],
+['Chỉ tiêu — vd: spec-in, PO 500 bộ','Target — e.g. spec-in, PO 500 units'],
+['Mục tiêu tổng quát…','Overall objective…'],
+['Trọng tâm chiến lược','Strategic focus'],
+['Nhận xét sinh tự động theo luật, làm nền cho phần','Rule-based auto remarks, the base for the'],
+['phân tích của Manager/BO trong báo cáo kỳ','Manager/BO analysis in the period report'],
+['Nhận xét tự động theo nhân sự','Auto remarks per person'],
+['Case gửi / case được giải quyết','Cases sent / resolved'],
+['cho từng nhân sự + dòng tổng','per person + total row'],
+['Giai đoạn ưu tiên (tính toán','Priority stage (computed'],
+['Lập & lưu báo cáo kỳ','Build & save period report'],
+['Nhập từ file Excel kế hoạch','Import plan from Excel'],
+['VAV/CAV bắt buộc nhập SỐ BỘ','VAV/CAV requires UNIT COUNT'],
+['Trình CEO phê duyệt','Submit to CEO for approval'],
+['Hàng chờ phê duyệt','Approval queue'],
+['tự đổ hành động vào cột','auto-fills actions into column'],
+['Quy trình: ① lọc','Process: ① filter'],
+['mình ở tab','yours in tab'],
+['tạo kế hoạch','create a plan'],
+['gắn từng','attach each'],
+['với hành động','with an action'],
+['③ bấm','③ click'],
+['④ CEO duyệt trong','④ CEO approves in'],
+['Tổng thầu / Nhà thầu MEP','GC / MEP contractor'],
+['các đối tác mình phụ trách','accounts you own'],
+['công ty duy nhất (gộp','unique companies (merged'],
+['sự kiện hoặc hiệp hội','events or associations'],
+['tài liệu tham khảo (Tầng 3','reference list (Tier 3'],
+['người liên hệ','contacts'],
+['HOÀN TẤT. Chuyển sang tab','DONE. Switch to tab'],
+['Kết quả (trạng thái phủ','Result (coverage'],
+['Mục tiêu / target quan hệ','Milestone / relationship target'],
+['ra quyết định','decision-maker'],
+['Người lập','Author'],['Vai trò','Role'],['Khu vực','Region'],['Kế hoạch','Plan'],['Yêu cầu:','Request:'],
 // ---- bổ sung 13/08: kế hoạch kỳ + phân công + nhịp tháng ----
 ['Mẫu đã kéo sẵn tài khoản & dự án bạn phụ trách từ CSDL — đánh dấu','The template pre-loads your assigned accounts & projects from the database — mark'],
 ['vào cột CHỌN, điền hành động, nộp lại là hệ thống tự tạo kế hoạch.','in the SELECT column, fill in actions, submit and the system creates the plan.'],
@@ -839,7 +904,10 @@ function setLang(l){LANG=l;localStorage.setItem('crm_lang',l);renderAll();}
 let sb=null, ALL_ORGS=[], ALL_DEALS=[], ALL_EVENTS=[], ALL_TPS=[], ALL_HTS=[], ALL_REVS=[];
 let ORGS=[], DEALS=[], EVENTS=[], TPS=[], HTS=[], REVS=[];
 let MOD=localStorage.getItem('crm_mod')||'nd';
-function setMod(m){MOD=m;localStorage.setItem('crm_mod',m);applyMod();}
+function setMod(m){MOD=m;localStorage.setItem('crm_mod',m);
+  const lg=m==='qt'?'en':'vi';
+  if(LANG!==lg){LANG=lg;localStorage.setItem('crm_lang',lg);}
+  applyMod();try{renderAll()}catch(e){applyLang()}}
 function applyMod(){
   const nd=MOD==='nd';
   ORGS=ALL_ORGS.filter(o=>(o.quoc_gia==='VN')===nd);
