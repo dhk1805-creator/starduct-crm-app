@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v10 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v11 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -169,6 +169,9 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
       <label style="font-size:12px;display:flex;align-items:center;gap:5px">
         <input type="checkbox" id="fdaTVTK" style="width:auto"> thiếu TVTK</label>
       <button class="btn pri" onclick="openDeal()">+ Thêm dự án</button>
+      <button class="btn" onclick="taiFilePhanCongDA()">⬇ File phân công DA</button>
+      <button class="btn" onclick="document.getElementById('pcdaFile').click()">⬆ Nhập phân công DA</button>
+      <input type="file" id="pcdaFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCongDA(this)">
     </div>
     <div id="daList"></div>
   </div>
@@ -467,9 +470,19 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v10 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v11 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 13/08 đợt 4: duyệt + phân công DA ----
+['Ý kiến duyệt / lý do từ chối (bắt buộc khi từ chối — L4)','Approval comment / rejection reason (required on reject — rule L4)'],
+['Kế hoạch đang chờ duyệt','Plan awaiting approval'],
+['File phân công DA','Project assignment file'],
+['Nhập phân công DA','Import project assignments'],
+['Từ chối bắt buộc ghi lý do — quy tắc L4','Rejection requires a reason — rule L4'],
+['Chờ CEO duyệt','Awaiting CEO approval'],
+['Đang triển khai','In execution'],
+['Hoàn thành','Completed'],
+['Từ chối','Reject'],['Duyệt','Approve'],['Nháp','Draft'],
 // ---- bổ sung 13/08 đợt 3: mục tiêu ưu tiên ----
 ['Mục tiêu ưu tiên của kỳ','Priority objectives for the period'],
 ['— là gì · bao nhiêu · ở đâu · khi nào','— what · how much · where · when'],
@@ -1163,6 +1176,14 @@ async function openKH(id){
     <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
     </table>
     ${nhipHTML(p,items)}
+    ${p.trang_thai==='cho_duyet'&&(ME?.quyen_admin||ME?.vai_tro==='ceo'||ME?.vai_tro==='manager')?`
+    <div style="background:var(--warn-bg);border:1px solid var(--warn);border-radius:8px;padding:10px;margin:10px 0">
+      <b>Kế hoạch đang chờ duyệt</b>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <input id="khYK" placeholder="Ý kiến duyệt / lý do từ chối (bắt buộc khi từ chối — L4)" style="flex:1;min-width:220px">
+        <button class="btn" style="color:var(--ok)" onclick="duyetKH('${p.id}','da_duyet')">✅ Duyệt</button>
+        <button class="btn" style="color:var(--bad)" onclick="duyetKH('${p.id}','tu_choi')">❌ Từ chối</button>
+      </div></div>`:''}
     ${editable?`<div class="grid g4" style="gap:8px;margin-top:10px">
       <input id="kiDeal" list="dealList" placeholder="Dự án (từ CSDL)…">
       <input id="kiHD" placeholder="Hành động *">
@@ -1530,6 +1551,15 @@ async function nhapKIExcel(planId,inp){
     alert('Đã nhập '+ok+' hạng mục'+(bo?' · bỏ qua '+bo+' dòng VD':''));
   }catch(e){alert('Lỗi đọc file: '+e.message)}
   inp.value='';openKH(planId);
+}
+async function duyetKH(planId,tt){
+  const yk=document.getElementById('khYK').value.trim();
+  if(tt==='tu_choi'&&!yk){alert(t('Từ chối bắt buộc ghi lý do — quy tắc L4'));return}
+  await sb.from('crm_plans').update({trang_thai:tt}).eq('id',planId);
+  await sb.from('crm_approvals').update({trang_thai:tt,nguoi_duyet:ME?.ho_ten||'?',
+    y_kien_duyet:yk||null,decided_at:new Date().toISOString()})
+    .eq('doi_tuong','plan').eq('doi_tuong_id',planId).eq('trang_thai','cho');
+  await loadPlans();await loadAprQueue();openKH(planId);
 }
 async function trinhKH(planId){
   const p=PLANS.find(x=>x.id===planId);
@@ -1917,7 +1947,11 @@ async function decideApr(id,tt){
   const yk=document.getElementById('ykd_'+id).value.trim();
   if(tt==='tu_choi'&&!yk){alert(t('Từ chối bắt buộc ghi lý do — quy tắc L4'));return}
   const nguoi=ME?.ho_ten||prompt(t('Tên người duyệt:'));if(!nguoi)return;
-  await sb.from('crm_approvals').update({trang_thai:tt,nguoi_duyet:nguoi,y_kien_duyet:yk||null}).eq('id',id);
+  await sb.from('crm_approvals').update({trang_thai:tt,nguoi_duyet:nguoi,y_kien_duyet:yk||null,decided_at:new Date().toISOString()}).eq('id',id);
+  if(THR.dt==='plan'){
+    await sb.from('crm_plans').update({trang_thai:tt==='da_duyet'?'da_duyet':'tu_choi'}).eq('id',THR.id);
+    await loadPlans();
+  }
   openThread(THR.dt,THR.id,THR.ten);loadAprQueue();
 }
 async function loadAprQueue(){
@@ -2068,6 +2102,57 @@ async function nhapPhanCong(inp){
       if(u.error)loi.push(u.error.message);else ok++;
     }
     alert('✔ Cập nhật '+ok+' đối tác'+(loi.length?'\n⚠ '+loi.length+' dòng lỗi (bỏ qua): '+[...new Set(loi)].slice(0,5).join(' · '):''));
+  }catch(e){alert('Lỗi đọc file: '+e.message)}
+  inp.value='';await loadAll();
+}
+/* ===== PHÂN CÔNG DỰ ÁN ===== */
+const PCDA_COLS=['ID — KHÔNG SỬA','Tên dự án','Khối','Quốc gia','Stage','Ưu tiên','Hạng mục SP','OWNER','PHÂN KHÚC','VÙNG','TỈNH/THÀNH'];
+function taiFilePhanCongDA(){
+  const rows=[...ALL_DEALS].sort((a,b)=>(a.khu_vuc||'').localeCompare(b.khu_vuc||'')||(a.ten||'').localeCompare(b.ten||'','vi'))
+    .map(d=>[d.id,d.ten||'',d.khu_vuc||'',d.quoc_gia||'',d.stage||'',d.uu_tien||'',
+      (d.hang_muc||'').toString(),d.owner||'',d.phan_khuc||'',d.vung||'',d.thanh_pho||'']);
+  const ws=XLSX.utils.aoa_to_sheet([PCDA_COLS,...rows]);
+  ws['!cols']=[{wch:28},{wch:44},{wch:9},{wch:9},{wch:10},{wch:8},{wch:24},{wch:24},{wch:14},{wch:14},{wch:18}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Phan cong DA');
+  const hd=XLSX.utils.aoa_to_sheet([
+    ['HƯỚNG DẪN PHÂN CÔNG DỰ ÁN'],[''],
+    ['4 cột cần điền','OWNER · PHÂN KHÚC · VÙNG · TỈNH/THÀNH (cột khác chỉ tra cứu — ID không sửa)'],
+    ['OWNER','Họ tên đúng như tab Nhân sự, vd: Đỗ Đình Đức'],
+    ['PHÂN KHÚC','chung_cu · khach_san · benh_vien · truong_hoc · ttmt · van_phong · nha_may · san_bay · metro · khac'],
+    ['VÙNG','mien_bac · mien_trung · mien_nam · dong_nam_a · dong_bac_a · trung_dong · chau_dai_duong · bac_my · chau_au · khac'],
+    ['Ô trống','Giữ nguyên giá trị cũ'],
+    ['Nhập lại','Tab Dự án → ⬆ Nhập phân công DA']]);
+  hd['!cols']=[{wch:16},{wch:100}];
+  XLSX.utils.book_append_sheet(wb,hd,'Huong dan');
+  XLSX.writeFile(wb,'phan-cong-du-an-'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+async function nhapPhanCongDA(inp){
+  const f=inp.files[0];if(!f)return;
+  const PK=['chung_cu','khach_san','benh_vien','truong_hoc','ttmt','van_phong','nha_may','san_bay','metro','khac'];
+  const VG=['mien_bac','mien_trung','mien_nam','dong_nam_a','dong_bac_a','trung_dong','chau_dai_duong','bac_my','chau_au','khac'];
+  try{
+    const wb=XLSX.read(await f.arrayBuffer());
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:''});
+    const tenNS=(window.NHANSU||[]).map(n=>n.ho_ten);
+    let ok=0,loi=[];
+    for(const r of rows.slice(1)){
+      const id=(r[0]||'').toString().trim();
+      if(!/^[0-9a-f-]{36}$/i.test(id))continue;
+      const patch={};
+      const ow=(r[7]||'').toString().trim();
+      if(ow){const kh=tenNS.find(t=>t.toLowerCase()===ow.toLowerCase());
+        if(kh)patch.owner=kh;else{loi.push('owner "'+ow+'"');continue}}
+      const pk=(r[8]||'').toString().trim().toLowerCase();
+      if(pk){if(PK.includes(pk))patch.phan_khuc=pk;else{loi.push('phân khúc "'+pk+'"');continue}}
+      const vg=(r[9]||'').toString().trim().toLowerCase();
+      if(vg){if(VG.includes(vg))patch.vung=vg;else{loi.push('vùng "'+vg+'"');continue}}
+      const tp=(r[10]||'').toString().trim();
+      if(tp)patch.thanh_pho=tp;
+      if(!Object.keys(patch).length)continue;
+      const u=await sb.from('crm_deals').update(patch).eq('id',id);
+      if(u.error)loi.push(u.error.message);else ok++;
+    }
+    alert('✔ Cập nhật '+ok+' dự án'+(loi.length?'\n⚠ '+loi.length+' dòng lỗi: '+[...new Set(loi)].slice(0,5).join(' · '):''));
   }catch(e){alert('Lỗi đọc file: '+e.message)}
   inp.value='';await loadAll();
 }
