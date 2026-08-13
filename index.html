@@ -230,7 +230,8 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
       <b>Bước 1 — Lập kế hoạch kỳ theo mẫu</b> <span class="muted">(Sale/BD: kỳ ngắn nhất là Quý)</span>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <select id="mauKy"><option value="quy">Quý</option><option value="nua_nam">Nửa năm</option><option value="nam">Năm</option></select>
-        <button class="btn pri" onclick="taiMauKH()">⬇ Tải mẫu kế hoạch</button>
+        <button class="btn pri" onclick="moMauKH()">📝 Lập ngay trên web</button>
+        <button class="btn" onclick="taiMauKH()">⬇ Tải mẫu Excel (làm offline)</button>
         <button class="btn" onclick="document.getElementById('mauFile').click()">⬆ Nộp kế hoạch đã điền</button>
         <input type="file" id="mauFile" accept=".xlsx,.xls" style="display:none" onchange="nopKHFile(this)">
       </div>
@@ -261,6 +262,11 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <dialog id="dlgKH" style="max-width:760px">
   <div class="dhead"><span id="khTitle">Kế hoạch</span><button class="btn" onclick="dlgKH.close()">✕</button></div>
   <div class="dbody" id="khBody"></div>
+</dialog>
+
+<dialog id="dlgMau" style="max-width:860px;width:95%">
+  <div class="dhead"><span id="mauTitle">Lập kế hoạch</span><button class="btn" onclick="dlgMau.close()">✕</button></div>
+  <div class="dbody" id="mauBody"></div>
 </dialog>
 
 <!-- ============ KPI KỲ ============ -->
@@ -1139,6 +1145,110 @@ async function capNhatKQ(itemId,planId){
     ngay_hoan_thanh:st==='xong'?new Date().toISOString().slice(0,10):null}).eq('id',itemId);
   if(r.error){alert(r.error.message);return}
   openKH(planId);
+}
+/* ===== FORM LẬP KẾ HOẠCH TRÊN WEB — kéo CSDL, tick chọn, điền, lưu ===== */
+let MAU_ROWS=[],MAU_NEW=0;
+function moMauKH(){
+  const loai=mauKy.value,tenKy={quy:'Quý',nua_nam:'Nửa năm',nam:'Năm'}[loai];
+  const [tu,den]=kyMacDinh(loai);
+  const me=ME?.ho_ten||'';
+  const myOrgs=ALL_ORGS.filter(o=>o.nguoi_phu_trach===me&&o.loai_ban_ghi==='muc_tieu');
+  const myDeals=ALL_DEALS.filter(d=>d.owner===me||(!d.owner&&myOrgs.some(o=>o.id===d.cdt_id||o.id===d.npp_dang_ky_id)));
+  MAU_ROWS=[...myDeals.map(d=>({k:'deal',id:d.id,ten:d.ten,qg:d.quoc_gia,tt:d.stage||''})),
+            ...myOrgs.map(o=>({k:'org',id:o.id,ten:o.ten,qg:o.quoc_gia,tt:'phủ '+(o.trang_thai_phu??0)}))];
+  MAU_NEW=0;
+  mauTitle.textContent='📝 Kế hoạch '+tenKy+' — '+me;
+  mauBody.innerHTML=`
+    <div class="grid g4" style="gap:8px">
+      <input id="mTen" value="KH ${tenKy} ${MOD==='nd'?'nội địa':'quốc tế'} — ${esc(me)}" style="grid-column:span 2">
+      <input id="mTu" type="date" value="${tu}"><input id="mDen" type="date" value="${den}">
+    </div>
+    <div class="grid g4" style="gap:8px;margin-top:8px">
+      <input id="mVAV" type="number" min="0" placeholder="Chỉ tiêu số bộ VAV">
+      <input id="mDT" type="number" min="0" placeholder="Doanh thu mục tiêu (VND)">
+      <input id="mNPP" type="number" min="0" placeholder="Số NPP / OEM mới">
+    </div>
+    <textarea id="mMT" placeholder="Mục tiêu tổng quát…" style="width:100%;min-height:36px;margin-top:8px"></textarea>
+    <textarea id="mTT" placeholder="Trọng tâm chiến lược của kỳ…" style="width:100%;min-height:32px;margin-top:6px"></textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin:12px 0 6px">
+      <h3 style="font-size:13px;margin:0">Tick chọn từ ${MAU_ROWS.length} dự án/tài khoản bạn phụ trách</h3>
+      <input id="mLoc" placeholder="Lọc tên…" oninput="locMau()" style="margin-left:auto;width:200px">
+    </div>
+    ${MAU_ROWS.length?'':'<div class="notice" style="margin-bottom:8px">Chưa có tài khoản/dự án nào được phân công cho bạn — dùng "+ Thêm dòng mới" hoặc chờ Trưởng PKD phân công.</div>'}
+    <div id="mDS" style="max-height:330px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+      ${MAU_ROWS.map((r,i)=>`
+      <div class="mrow" data-ten="${esc((r.ten||'').toLowerCase())}" style="border-bottom:1px solid var(--border);padding:6px 8px">
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;margin:0">
+          <input type="checkbox" id="mc-${i}" onchange="document.getElementById('mx-${i}').style.display=this.checked?'':'none'">
+          <b style="flex:1">${esc(r.ten||'')}</b>
+          <span class="muted" style="font-size:12px">${r.k==='deal'?'dự án':'tài khoản'} · ${esc(r.qg||'')} · ${esc(r.tt)}</span>
+        </label>
+        <div id="mx-${i}" style="display:none;margin:6px 0 2px 26px" class="grid g4">
+          <input id="mh-${i}" placeholder="Hành động trong kỳ *" style="grid-column:span 2">
+          <input id="mct-${i}" placeholder="Chỉ tiêu">
+          <input id="mhan-${i}" type="date">
+          <input id="mmt-${i}" placeholder="Mục tiêu cột mốc" style="grid-column:span 2">
+          <select id="mbp-${i}"><option value="">— Cần hỗ trợ —</option><option value="rd">R&D</option>
+            <option value="bo">BO</option><option value="tckt">TCKT</option><option value="qlsx">QLSX</option></select>
+        </div>
+      </div>`).join('')}
+      <div id="mMoi"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" onclick="themDongMau()">+ Thêm dòng mới (chưa có trong CSDL)</button>
+      <button class="btn pri" onclick="luuMauKH('${loai}')" style="margin-left:auto">💾 Tạo kế hoạch</button>
+    </div>`;
+  dlgMau.showModal();
+}
+function locMau(){
+  const q=mLoc.value.trim().toLowerCase();
+  document.querySelectorAll('#mDS .mrow').forEach(r=>{r.style.display=!q||r.dataset.ten.includes(q)?'':'none'});
+}
+function themDongMau(){
+  const i='n'+(MAU_NEW++);
+  const div=document.createElement('div');
+  div.style.cssText='border-bottom:1px solid var(--border);padding:8px;background:var(--warn-bg)';
+  div.innerHTML=`<div class="grid g4" style="gap:6px">
+    <input id="mten-${i}" placeholder="Tên tài khoản/dự án mới *" style="grid-column:span 2">
+    <input id="mh-${i}" placeholder="Hành động trong kỳ *" style="grid-column:span 2">
+    <input id="mct-${i}" placeholder="Chỉ tiêu"><input id="mhan-${i}" type="date">
+    <input id="mmt-${i}" placeholder="Mục tiêu cột mốc">
+    <select id="mbp-${i}"><option value="">— Cần hỗ trợ —</option><option value="rd">R&D</option>
+      <option value="bo">BO</option><option value="tckt">TCKT</option><option value="qlsx">QLSX</option></select>
+  </div>`;
+  document.getElementById('mMoi').appendChild(div);
+}
+async function luuMauKH(loai){
+  const v=id=>document.getElementById(id)?.value?.trim()||'';
+  if(!v('mTen')||!v('mTu')||!v('mDen')){alert('Thiếu tên hoặc kỳ');return}
+  const plan={ten:v('mTen'),nguoi_lap:ME?.ho_ten||'?',khu_vuc:MOD==='nd'?'noi_dia':'quoc_te',
+    ky_loai:loai,ky_tu:v('mTu'),ky_den:v('mDen'),
+    chi_tieu_vav:+v('mVAV')||null,chi_tieu_doanh_thu:+v('mDT')||null,chi_tieu_npp_moi:+v('mNPP')||null,
+    muc_tieu:v('mMT')||null,trong_tam:v('mTT')||null};
+  const r=await sb.from('crm_plans').insert(plan).select();
+  if(r.error){alert(r.error.message);return}
+  const planId=r.data[0].id;let ok=0,thieu=0;
+  for(let i=0;i<MAU_ROWS.length;i++){
+    if(!document.getElementById('mc-'+i)?.checked)continue;
+    const hd=v('mh-'+i);if(!hd){thieu++;continue}
+    const row=MAU_ROWS[i];
+    const ins=await sb.from('crm_plan_items').insert({plan_id:planId,
+      deal_id:row.k==='deal'?row.id:null,org_id:row.k==='org'?row.id:null,
+      hanh_dong:hd,chi_tieu:v('mct-'+i)||null,muc_tieu:v('mmt-'+i)||null,
+      han:v('mhan-'+i)||null,bo_phan_ho_tro:v('mbp-'+i)||null});
+    if(!ins.error)ok++;
+  }
+  for(let j=0;j<MAU_NEW;j++){
+    const i='n'+j,ten=v('mten-'+i),hd=v('mh-'+i);
+    if(!hd)continue;
+    const ins=await sb.from('crm_plan_items').insert({plan_id:planId,
+      hanh_dong:hd+(ten?' — '+ten:''),chi_tieu:v('mct-'+i)||null,muc_tieu:v('mmt-'+i)||null,
+      han:v('mhan-'+i)||null,bo_phan_ho_tro:v('mbp-'+i)||null});
+    if(!ins.error)ok++;
+  }
+  dlgMau.close();
+  alert('✔ Đã tạo kế hoạch với '+ok+' hạng mục'+(thieu?' · '+thieu+' mục đã tick nhưng thiếu hành động (bỏ qua)':''));
+  await loadPlans();openKH(planId);
 }
 const KH_COLS=['Dự án / Đối tác','Hành động *','Chỉ tiêu','Mục tiêu cột mốc','Hạn (YYYY-MM-DD)','Cần hỗ trợ từ (rd/bo/tckt/qlsx)'];
 function taiTemplateKH(){
