@@ -812,7 +812,21 @@ const CFG_MAC_DINH={
     await loadAll();
   }catch(e){ console.warn('Tự kết nối lại thất bại:',e) }
 })();
-
+/* === NSCA: nhận diện người dùng theo email đã đăng nhập === */
+async function autoMe(){
+  if(ME) return;
+  const {data:{user}}=await sb.auth.getUser();
+  const em=((user&&user.email)||'').trim().toLowerCase();
+  if(!em) return;
+  const r=(window.NHANSU||[]).find(n=>(n.email||'').trim().toLowerCase()===em);
+  if(!r) return;
+  ME={ho_ten:r.ho_ten,chuc_danh:r.chuc_danh,vai_tro:r.vai_tro,khu_vuc:r.khu_vuc,
+      bo_phan:r.bo_phan,mo_ta_cong_viec:r.mo_ta_cong_viec,kpi_chinh:r.kpi_chinh,
+      chi_tieu_ky:r.chi_tieu_ky,quyen_admin:r.quyen_admin,phai_doi_mk:false,user_name:r.user_name};
+  localStorage.setItem('crm_me',JSON.stringify(ME));
+  if(r.ngon_ngu&&r.ngon_ngu!==LANG){LANG=r.ngon_ngu;localStorage.setItem('crm_lang',LANG)}
+  if(r.khu_vuc==='quoc_te'&&MOD!=='qt'){MOD='qt';localStorage.setItem('crm_mod','qt');modSel.value='qt';applyMod()}
+}
 async function loadAll(){
   const [o,d,e,t,h,q,rv]=await Promise.all([
     sb.from('crm_org').select('*').order('ten').limit(3000),
@@ -829,7 +843,7 @@ async function loadAll(){
   window.NHANSU=ns.data||[];
   nsList.innerHTML=NHANSU.map(n=>`<option value="${esc(n.ho_ten)}">${esc(n.chuc_danh)}</option>`).join('');
   modSel.value=MOD;applyMod();
-  showMe();if(!ME)dlgLogin.showModal();
+ async function logout(){ME=null;localStorage.removeItem('crm_me');try{await sb.auth.signOut()}catch(e){}location.reload()}
   loadPlans();
 }
 
