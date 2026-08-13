@@ -792,8 +792,26 @@ async function connect(){
   dot.classList.add('on');connTxt.textContent='Đã kết nối';dlgCfg.close();
   await loadAll();
 }
-(function(){const c=localStorage.getItem('crm_cfg');if(c){const{url,key,email}=JSON.parse(c);
-cfgUrl.value=url;cfgKey.value=key;cfgEmail.value=email||'';}})();
+/* === NSCA: nhúng sẵn kết nối + tự đăng nhập lại === */
+const CFG_MAC_DINH={
+  url:'https://zjedibydzkojgarrfbvg.supabase.co',
+  key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqZWRpYnlkemtvamdhcnJmYnZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3Mzg3NDgsImV4cCI6MjA5MjMxNDc0OH0.fmdl7OziijI64NmgPafoxWCQZ3LGniZ8jXb7DJFPeb4'
+};
+(async function(){
+  let cfg={};
+  try{ cfg=JSON.parse(localStorage.getItem('crm_cfg')||'{}') }catch(e){ cfg={} }
+  const url=cfg.url||CFG_MAC_DINH.url, key=cfg.key||CFG_MAC_DINH.key;
+  cfgUrl.value=url; cfgKey.value=key; cfgEmail.value=cfg.email||'';
+  try{
+    const cli=supabase.createClient(url,key);
+    const {data:{session}}=await cli.auth.getSession();
+    if(!session) return;
+    sb=cli;
+    dot.classList.add('on'); connTxt.textContent='Đã kết nối';
+    if(dlgCfg.open) dlgCfg.close();
+    await loadAll();
+  }catch(e){ console.warn('Tự kết nối lại thất bại:',e) }
+})();
 
 async function loadAll(){
   const [o,d,e,t,h,q,rv]=await Promise.all([
