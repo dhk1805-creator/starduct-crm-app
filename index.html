@@ -985,11 +985,15 @@ async function openKH(id){
       ${p.chi_tieu_vav?`<span class="tag">🎯 ${p.chi_tieu_vav} bộ VAV</span>`:''}
       ${p.chi_tieu_doanh_thu?`<span class="tag">💰 ${(+p.chi_tieu_doanh_thu).toLocaleString('vi')} đ</span>`:''}
       ${p.chi_tieu_npp_moi?`<span class="tag">🤝 ${p.chi_tieu_npp_moi} NPP/OEM mới</span>`:''}</div>`:''}
+    ${(()=>{const sv=items.reduce((a,i)=>a+(+i.so_bo_vav||0),0),sg=items.reduce((a,i)=>a+(+i.gia_tri_du_kien||0),0);
+      return (sv||sg)?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      ${sv?`<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Σ kế hoạch ${sv} bộ VAV${p.chi_tieu_vav?' / chỉ tiêu '+p.chi_tieu_vav+(sv>=p.chi_tieu_vav?' ✔':' ('+Math.round(sv*100/p.chi_tieu_vav)+'%)'):''}</span>`:''}
+      ${sg?`<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Σ dự bán ${sg.toLocaleString('vi')} đ</span>`:''}</div>`:''})()}
     ${p.trong_tam?`<div class="muted" style="margin-bottom:10px">⭐ ${esc(p.trong_tam)}</div>`:''}
     <h3 style="font-size:13px;margin:0 0 6px">Hạng mục kế hoạch (${items.length})</h3>
     <table><tr><th>Dự án / Đối tác</th><th>Hành động</th><th>Chỉ tiêu</th><th>Hạn</th><th>TT</th></tr>
     ${items.map(i=>{const d=ALL_DEALS.find(x=>x.id===i.deal_id),o=ALL_ORGS.find(x=>x.id===i.org_id);
-    return `<tr><td><b>${esc(d?.ten||o?.ten||'—')}</b></td><td>${esc(i.hanh_dong)}${i.muc_tieu?`<div class="muted" style="font-size:12px">🎯 ${esc(i.muc_tieu)}</div>`:''}${i.bo_phan_ho_tro?`<span class="tag">cần ${i.bo_phan_ho_tro.toUpperCase()}</span>`:''}</td>
+    return `<tr><td><b>${esc(d?.ten||o?.ten||'—')}</b></td><td>${esc(i.hanh_dong)}${i.muc_tieu?`<div class="muted" style="font-size:12px">🎯 ${esc(i.muc_tieu)}</div>`:''}${i.hang_hoa||i.so_bo_vav||i.gia_tri_du_kien||i.kenh_doanh_thu?`<div class="muted" style="font-size:12px">📦 ${esc(i.hang_hoa||'')}${i.so_bo_vav?' · '+i.so_bo_vav+' bộ':''}${i.gia_tri_du_kien?' · '+(+i.gia_tri_du_kien).toLocaleString('vi')+' đ':''}${i.kenh_doanh_thu?' · từ '+(i.kenh_doanh_thu==='truc_tiep'?'trực tiếp':i.kenh_doanh_thu.toUpperCase()):''}</div>`:''}${i.bo_phan_ho_tro?`<span class="tag">cần ${i.bo_phan_ho_tro.toUpperCase()}</span>`:''}</td>
     <td class="muted">${esc(i.chi_tieu||'')}</td><td>${i.han||''}</td>
     <td><span class="tag">${i.trang_thai}</span></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">Chưa có hạng mục.</td></tr>'}
     </table>
@@ -1154,8 +1158,11 @@ function moMauKH(){
   const me=ME?.ho_ten||'';
   const myOrgs=ALL_ORGS.filter(o=>o.nguoi_phu_trach===me&&o.loai_ban_ghi==='muc_tieu');
   const myDeals=ALL_DEALS.filter(d=>d.owner===me||(!d.owner&&myOrgs.some(o=>o.id===d.cdt_id||o.id===d.npp_dang_ky_id)));
-  MAU_ROWS=[...myDeals.map(d=>({k:'deal',id:d.id,ten:d.ten,qg:d.quoc_gia,tt:d.stage||''})),
-            ...myOrgs.map(o=>({k:'org',id:o.id,ten:o.ten,qg:o.quoc_gia,tt:'phủ '+(o.trang_thai_phu??0)}))];
+  MAU_ROWS=[...myDeals.map(d=>({k:'deal',id:d.id,ten:d.ten,qg:d.quoc_gia,tt:d.stage||'',
+              na:d.next_action||'',ha:d.hang_muc||'',vav:d.so_bo_vav_uoc,gt:d.gia_tri_uoc,kenh:'',mtg:''})),
+            ...myOrgs.map(o=>{const p=o.trang_thai_phu??0;return{k:'org',id:o.id,ten:o.ten,qg:o.quoc_gia,
+              tt:'phủ '+p,na:'',ha:'',vav:null,gt:null,kenh:o.kenh_thuong_mai||'',
+              mtg:p<5?('Nâng phủ '+p+'→'+(p+1)+(p<2?' (cần cấp ra quyết định)':'')):'Giữ quan hệ khách thường xuyên'}})];
   MAU_NEW=0;
   mauTitle.textContent='📝 Kế hoạch '+tenKy+' — '+me;
   mauBody.innerHTML=`
@@ -1184,10 +1191,15 @@ function moMauKH(){
           <span class="muted" style="font-size:12px">${r.k==='deal'?'dự án':'tài khoản'} · ${esc(r.qg||'')} · ${esc(r.tt)}</span>
         </label>
         <div id="mx-${i}" style="display:none;margin:6px 0 2px 26px" class="grid g4">
-          <input id="mh-${i}" placeholder="Hành động trong kỳ *" style="grid-column:span 2">
-          <input id="mct-${i}" placeholder="Chỉ tiêu">
+          <input id="mh-${i}" placeholder="Hành động trong kỳ *" value="${esc(r.na)}" style="grid-column:span 2">
+          <input id="mmt-${i}" placeholder="Mục tiêu / target quan hệ cần xây" value="${esc(r.mtg)}" style="grid-column:span 2">
+          <input id="mhh-${i}" placeholder="Hàng hóa dự kiến — vd: VAV, Van EI, Cửa gió" value="${esc(r.ha)}" style="grid-column:span 2">
+          <input id="mvav-${i}" type="number" min="0" placeholder="Số bộ VAV" value="${r.vav??''}">
+          <input id="mgt-${i}" type="number" min="0" placeholder="Giá trị dự bán (VND)" value="${r.gt??''}">
+          <select id="mkdt-${i}"><option value="">— Doanh thu đến từ —</option>
+            ${['npp','agent','oem_odm','truc_tiep'].map(k=>`<option value="${k}"${r.kenh===k?' selected':''}>${KENHDM[k]}</option>`).join('')}</select>
+          <input id="mct-${i}" placeholder="Chỉ tiêu khác — vd: spec-in">
           <input id="mhan-${i}" type="date">
-          <input id="mmt-${i}" placeholder="Mục tiêu cột mốc" style="grid-column:span 2">
           <select id="mbp-${i}"><option value="">— Cần hỗ trợ —</option><option value="rd">R&D</option>
             <option value="bo">BO</option><option value="tckt">TCKT</option><option value="qlsx">QLSX</option></select>
         </div>
@@ -1211,8 +1223,13 @@ function themDongMau(){
   div.innerHTML=`<div class="grid g4" style="gap:6px">
     <input id="mten-${i}" placeholder="Tên tài khoản/dự án mới *" style="grid-column:span 2">
     <input id="mh-${i}" placeholder="Hành động trong kỳ *" style="grid-column:span 2">
-    <input id="mct-${i}" placeholder="Chỉ tiêu"><input id="mhan-${i}" type="date">
-    <input id="mmt-${i}" placeholder="Mục tiêu cột mốc">
+    <input id="mmt-${i}" placeholder="Mục tiêu / target quan hệ" style="grid-column:span 2">
+    <input id="mhh-${i}" placeholder="Hàng hóa dự kiến" style="grid-column:span 2">
+    <input id="mvav-${i}" type="number" min="0" placeholder="Số bộ VAV">
+    <input id="mgt-${i}" type="number" min="0" placeholder="Giá trị dự bán (VND)">
+    <select id="mkdt-${i}"><option value="">— Doanh thu đến từ —</option><option value="npp">NPP</option>
+      <option value="agent">Agent/Broker</option><option value="oem_odm">OEM/ODM</option><option value="truc_tiep">Trực tiếp</option></select>
+    <input id="mct-${i}" placeholder="Chỉ tiêu khác"><input id="mhan-${i}" type="date">
     <select id="mbp-${i}"><option value="">— Cần hỗ trợ —</option><option value="rd">R&D</option>
       <option value="bo">BO</option><option value="tckt">TCKT</option><option value="qlsx">QLSX</option></select>
   </div>`;
@@ -1235,6 +1252,8 @@ async function luuMauKH(loai){
     const ins=await sb.from('crm_plan_items').insert({plan_id:planId,
       deal_id:row.k==='deal'?row.id:null,org_id:row.k==='org'?row.id:null,
       hanh_dong:hd,chi_tieu:v('mct-'+i)||null,muc_tieu:v('mmt-'+i)||null,
+      hang_hoa:v('mhh-'+i)||null,so_bo_vav:+v('mvav-'+i)||null,
+      gia_tri_du_kien:+v('mgt-'+i)||null,kenh_doanh_thu:v('mkdt-'+i)||null,
       han:v('mhan-'+i)||null,bo_phan_ho_tro:v('mbp-'+i)||null});
     if(!ins.error)ok++;
   }
@@ -1243,6 +1262,8 @@ async function luuMauKH(loai){
     if(!hd)continue;
     const ins=await sb.from('crm_plan_items').insert({plan_id:planId,
       hanh_dong:hd+(ten?' — '+ten:''),chi_tieu:v('mct-'+i)||null,muc_tieu:v('mmt-'+i)||null,
+      hang_hoa:v('mhh-'+i)||null,so_bo_vav:+v('mvav-'+i)||null,
+      gia_tri_du_kien:+v('mgt-'+i)||null,kenh_doanh_thu:v('mkdt-'+i)||null,
       han:v('mhan-'+i)||null,bo_phan_ho_tro:v('mbp-'+i)||null});
     if(!ins.error)ok++;
   }
