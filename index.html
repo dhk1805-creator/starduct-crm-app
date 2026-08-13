@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v13 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v14 · 13/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -86,7 +86,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
     <button class="btn" id="langBtn" onclick="setLang(LANG==='vi'?'en':'vi')"
       style="font-weight:700;min-width:44px">EN</button>
     <span class="dot" id="dot"></span><span id="connTxt">Chưa kết nối</span>
-    <button class="btn" onclick="dlgCfg.showModal()">Cấu hình</button>
+    <button class="btn" onclick="dlgCfg.showModal()">Đăng nhập</button>
   </div>
 </header>
 
@@ -408,7 +408,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <!-- ============ DIALOG CẤU HÌNH ============ -->
 <dialog id="dlgCfg">
-  <div class="dhead">Kết nối Supabase<button class="btn" onclick="dlgCfg.close()">✕</button></div>
+  <div class="dhead">Đăng nhập hệ thống<button class="btn" onclick="dlgCfg.close()">✕</button></div>
   <div class="dbody">
     <div class="frow"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
     <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOi…"></div>
@@ -470,7 +470,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v13 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v14 · 13/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 13/08 đợt 6: phân cấp duyệt + kinh phí công tác ----
@@ -698,7 +698,7 @@ const FRAG=[
 ['Gõ tên để chọn…','Type to select…'],['Tìm tên công ty…','Search company…'],['Tìm tên dự án…','Search project…'],
 ['Địa điểm / thành phố…','Location / city…'],['Chủ đề: VAV, EI, ERV…','Topic: VAV, EI, ERV…'],
 ['mã ISO: VN, HK, KR…','ISO code: VN, HK, KR…'],['đăng nhập tài khoản ERP','sign in with ERP account'],
-['Kết nối & đăng nhập','Connect & sign in'],['Kết nối Supabase','Connect Supabase'],
+['Kết nối & đăng nhập','Connect & sign in'],['Đăng nhập hệ thống','Sign in'],
 ['Đăng nhập lỗi: ','Sign-in error: '],['Thiếu URL hoặc key','Missing URL or key'],
 ['Thảo luận & phê duyệt','Discussion & approvals'],['Đề xuất & phê duyệt','Proposals & approvals'],
 ['💬 Thảo luận & phê duyệt','💬 Discussion & approvals'],
@@ -783,7 +783,7 @@ const FRAG=[
 // ---- nav & nút ----
 ['+ Thêm đối tác','+ Add account'],['+ Thêm dự án','+ Add project'],['+ Thêm','+ Add'],
 ['Lưu tiếp xúc','Save touchpoint'],['Gửi yêu cầu','Send request'],['Gửi đề xuất','Submit proposal'],
-['Nạp vào CRM','Load into CRM'],['Cấu hình','Settings'],['Chưa kết nối','Not connected'],
+['Nạp vào CRM','Load into CRM'],['Đăng nhập','Sign in'],['Chưa kết nối','Not connected'],
 ['Đã kết nối','Connected'],['Đã lưu','Saved'],['Đã gửi — hạn','Sent — due'],['Đã gửi','Sent'],
 ['Duyệt','Approve'],['Tính','Compute'],['Lưu','Save'],['Gửi','Send'],['Mở','Open'],
 ['Đối tác · Dự án · Tiếp xúc · Thị trường','Accounts · Projects · Touchpoints · Markets'],
@@ -795,7 +795,7 @@ const _legacyVI2EN={
 'Tổng quan':'Overview','Đối tác':'Accounts','Dự án':'Projects','Doanh thu':'Revenue',
 'KPI kỳ':'KPI Period','Tiếp xúc':'Touchpoints','Hỗ trợ':'Support','Sự kiện':'Events',
 'Nhập dữ liệu':'Import','Đối tác · Dự án · Tiếp xúc · Thị trường':'Accounts · Projects · Touchpoints · Markets',
-'Chưa kết nối':'Not connected','Đã kết nối':'Connected','Cấu hình':'Settings',
+'Chưa kết nối':'Not connected','Đã kết nối':'Connected','Đăng nhập':'Sign in',
 '🇻🇳 THỊ TRƯỜNG NỘI ĐỊA':'🇻🇳 DOMESTIC MARKET','🌏 THỊ TRƯỜNG QUỐC TẾ':'🌏 INTERNATIONAL MARKET',
 'Độ phủ theo trạng thái (0→5)':'Coverage by status (0→5)','Theo thị trường':'By market',
 'Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng':'Results by relationship group — farming ≠ development ≠ prospecting',
