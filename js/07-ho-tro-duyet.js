@@ -32,7 +32,8 @@ function renderHT(){
     <div class="m">${a.qh?`⚠ ${a.qh} quá hạn · `:''}${a.xong} đã xong</div></div>`}).join('')
     ||'<div class="muted">Chưa có yêu cầu nào.</div>';
   // Danh sách
-  let rows=HTS.filter(h=>(!fhtBP.value||h.bo_phan_nhan===fhtBP.value)&&(!fhtTT.value||h.trang_thai===fhtTT.value));
+  let rows=(laStaffXem()?HTS.filter(h=>h.nguoi_yeu_cau===ME.ho_ten):HTS) // v35.8: cua ai nguoi nay thay
+    .filter(h=>(!fhtBP.value||h.bo_phan_nhan===fhtBP.value)&&(!fhtTT.value||h.trang_thai===fhtTT.value));
   htList.innerHTML=rows.length?'<table><tr><th>Ngày</th><th>Dự án</th><th>Bộ phận</th><th>Người xử lý</th><th>Loại</th><th>Nội dung</th><th>Hạn</th><th>Trạng thái</th></tr>'+
   rows.slice(0,100).map(h=>{const d=DEALS.find(x=>x.id===h.deal_id);
     const late=(h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly')&&h.han&&h.han<today;

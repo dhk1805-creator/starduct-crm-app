@@ -16,6 +16,11 @@ const MB_EN={
 'Trang chính':'Home','Đóng':'Close','Việc hôm nay':'Today’s Tasks','Ghi kết quả':'Log Results',
 'KQ hôm nay':'Today’s Results','Yêu cầu hỗ trợ':'Support Request','Hỗ trợ':'Support',
 'Hôm nay':'Today','Phê duyệt':'Approvals','Yêu cầu':'Requests',
+'Đề xuất':'Proposals','Gửi đề xuất mới':'New proposal','Đề xuất của tôi':'My proposals',
+'gửi & theo dõi đề xuất':'submit & track proposals','Gửi đề xuất':'Submit proposal',
+'Chờ duyệt':'Pending','Đã duyệt':'Approved','Bị từ chối':'Rejected',
+'Cấp duyệt: Manager':'Approver: Manager','Cấp duyệt: CEO':'Approver: CEO',
+'Đề xuất gì, căn cứ gì…':'What is proposed, on what basis…','Chưa có đề xuất nào.':'No proposals yet.',
 'Bản đầy đủ':'Full version','Đăng nhập':'Sign in','Đăng xuất':'Sign out',
 'Đăng nhập để thấy công việc của bạn.':'Sign in to see your work.',
 'dự án quá hạn / đến hạn':'projects overdue / due','ghi nhanh kết quả tiếp xúc':'quick-log your touchpoints',
@@ -154,7 +159,8 @@ function mbRender(){
   // thanh trên cùng của view con: ← Đóng + tiêu đề
   const TT={viec:ql?'✅ '+T('Hôm nay'):'✅ '+T('Việc hôm nay'),
             kq:ql?'🛡 '+T('Phê duyệt'):'📝 '+T('Ghi kết quả'),
-            ht:ql?'🆘 '+T('Yêu cầu'):'🆘 '+T('Yêu cầu hỗ trợ')};
+            ht:ql?'🆘 '+T('Yêu cầu'):'🆘 '+T('Yêu cầu hỗ trợ'),
+            dx:'📨 '+T('Đề xuất')};
   el.innerHTML=`<div class="mb-viewbar">
     <button onclick="mbChon('home')">← ${T('Đóng')}</button><b>${TT[MB_TAB]||''}</b></div>
     <div id="mbView"></div>`;
@@ -166,6 +172,7 @@ function mbRender(){
   }else{
     if(MB_TAB==='viec')mbVeViec(v);
     else if(MB_TAB==='kq')mbVeKQ(v);
+    else if(MB_TAB==='dx')mbVeDX(v);
     else mbVeHT(v);
   }
 }
@@ -232,7 +239,7 @@ function mbVeHome(el){
     const due=mine.filter(d=>d.next_action&&d.next_action_han&&d.next_action_han<=today).length;
     const myReq=ALL_HTS.filter(h=>h.nguoi_yeu_cau===ME.ho_ten&&(h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly')).length;
     o1={ic:'✅',tt:T('Việc hôm nay'),sub:due+' '+T('dự án quá hạn / đến hạn'),n:due,mau:due?'#dc2626':'#16a34a'};
-    o2={ic:'📝',tt:T('Ghi kết quả'),sub:T('ghi nhanh kết quả tiếp xúc'),n:'',mau:'#0f4c81'};
+    o2={ic:'📨',tt:T('Đề xuất'),sub:T('gửi & theo dõi đề xuất'),n:'',mau:'#0f4c81'};
     o3={ic:'🆘',tt:T('Yêu cầu hỗ trợ'),sub:T('gửi & theo dõi yêu cầu'),n:myReq,mau:'#d97706'};
   }
   const O=(o,k)=>`<button class="mb-tile" style="border-left:8px solid ${o.mau}" onclick="mbChon('${k}')">
@@ -246,7 +253,7 @@ function mbVeHome(el){
       <b>${T('Chào')} ${esc((ME.ho_ten||'').split(' ').pop())} 👋</b>
       <span>${ngay.charAt(0).toUpperCase()+ngay.slice(1)}</span>
     </div>
-    <div class="mb-home">${O(o1,'viec')}${O(o2,'kq')}${O(o3,'ht')}</div>`;
+    <div class="mb-home">${O(o1,'viec')}${O(o2,ql?'kq':'dx')}${O(o3,'ht')}</div>`;
 }
 
 /* ===== NHÂN VIÊN · VIỆC HÔM NAY ===== */
@@ -268,6 +275,7 @@ function mbVeViec(el){
   </div>`;
   const sec=(tt,arr,mau)=>arr.length?`<div class="mb-card"><h3>${tt} (${arr.length})</h3>${arr.slice(0,20).map(d=>item(d,mau)).join('')}</div>`:'';
   el.innerHTML=
+    `<button class="btn pri" style="width:100%;padding:12px;margin-bottom:10px;border-radius:12px" onclick="mbChon('kq')">📝 ${T('Ghi kết quả')}</button>`+
     sec('🔴 '+T('QUÁ HẠN'),qua,'#dc2626')+
     sec('🟡 '+T('HÔM NAY'),nay,'#d97706')+
     sec('🟢 '+T('7 NGÀY TỚI'),toi7,'#16a34a')+
@@ -503,4 +511,39 @@ async function mbCopyLink(){
     document.getElementById('mbCopyMsg').textContent='✓ '+t('Đã sao chép — dán vào Zalo/email để gửi');}
   catch(e){document.getElementById('mbLinkBox').select();document.execCommand('copy');
     document.getElementById('mbCopyMsg').textContent='✓ '+t('Đã chọn sẵn — nhấn Ctrl+C để sao chép');}
+}
+
+
+/* ===== NHÂN VIÊN · ĐỀ XUẤT (v35.8) — gửi đề xuất lên cấp duyệt & theo dõi ===== */
+async function mbVeDX(el){
+  el.innerHTML='<div class="mb-card">'+T('Đang tải…')+'</div>';
+  let rows=[];
+  try{const r=await sb.from('crm_approvals').select('*').eq('nguoi_de_xuat',ME.ho_ten)
+    .order('created_at',{ascending:false}).limit(20);rows=r.data||[]}catch(e){}
+  const TTA={cho_duyet:['⏳ '+T('Chờ duyệt'),'#d97706'],da_duyet:['✅ '+T('Đã duyệt'),'#16a34a'],tu_choi:['✗ '+T('Bị từ chối'),'#dc2626']};
+  el.innerHTML=`
+  <div class="mb-card"><h3>📨 ${T('Gửi đề xuất mới')}</h3>
+    <select id="dxCap" style="width:100%;margin-bottom:8px">
+      <option value="manager">${T('Cấp duyệt: Manager')}</option>
+      <option value="ceo">${T('Cấp duyệt: CEO')}</option></select>
+    <textarea id="dxND" style="width:100%;min-height:70px" placeholder="${T('Đề xuất gì, căn cứ gì…')} *"></textarea>
+    <button class="btn pri" style="width:100%;padding:12px;margin-top:8px;border-radius:12px" onclick="mbGuiDX()">${T('Gửi đề xuất')}</button>
+    <div class="mb-sub" id="dxMsg"></div></div>
+  <div class="mb-card"><h3>${T('Đề xuất của tôi')}</h3>
+    ${rows.map(a=>{const s=TTA[a.trang_thai]||[a.trang_thai||'—','#64748b'];
+      return `<div style="padding:8px 0;border-bottom:1px solid #eef2f7">
+        <div style="font-size:13px">${esc(a.noi_dung||'')}</div>
+        <div class="mb-sub"><b style="color:${s[1]}">${s[0]}</b> · ${(a.created_at||'').slice(0,10)}${a.y_kien_duyet?' · 💬 '+esc(a.y_kien_duyet):''}</div>
+      </div>`}).join('')||'<div class="mb-sub">'+T('Chưa có đề xuất nào.')+'</div>'}
+  </div>`;
+}
+async function mbGuiDX(){
+  const nd=document.getElementById('dxND').value.trim(),m=document.getElementById('dxMsg');
+  if(!nd){m.textContent='⚠ '+T('Đề xuất gì, căn cứ gì…');return}
+  m.textContent=T('Đang gửi…');
+  const han=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
+  const r=await sb.from('crm_approvals').insert({doi_tuong:'khac',doi_tuong_id:null,loai:'khac',
+    cap_duyet:document.getElementById('dxCap').value,nguoi_de_xuat:ME.ho_ten,noi_dung:nd,han});
+  if(r.error){m.textContent=r.error.message;return}
+  mbVeDX(document.getElementById('mbView'));
 }

@@ -13,7 +13,7 @@
 (function(){
 'use strict';
 
-const SD_VER   = '35.7';
+const SD_VER   = '35.8';
 const SD_BUILD = '14/08/2026';
 
 /* ---------- ngôn ngữ: bám theo biến LANG của 00-i18n.js ---------- */
@@ -49,8 +49,9 @@ const CSS=`
 #sdVer button:disabled{background:#cbd5e1;color:#64748b;cursor:default}
 #sdVer button:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
 #sdVer.new button{background:#d97706}
-.mb-mode #sdVer{background:#fff}
-.mb-mode #sdVer button{width:100%;flex:1 1 100%;padding:14px;font-size:15px;border-radius:12px}
+.mb-mode #sdVer{background:#fff;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));font-size:11px;line-height:1.3}
+.mb-mode #sdVer .sd-v-msg{margin-top:2px;font-size:10.5px}
+.mb-mode #sdVer button{flex:0 0 auto;padding:8px 14px;font-size:12.5px;border-radius:9px;min-height:34px}
 `;
 
 /* ---------- dựng ---------- */

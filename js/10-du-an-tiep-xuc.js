@@ -96,8 +96,9 @@ async function saveTx(){
   await loadAll();
 }
 function renderTX(){
-  txList.innerHTML=TPS.length?'<table><tr><th>Ngày</th><th>Đối tác</th><th>Loại</th><th>Ai</th><th>Nội dung</th><th>Nâng phủ</th></tr>'+
-  TPS.slice(0,50).map(t=>{const o=ORGS.find(x=>x.id===t.org_id);
+  const TPSV=laStaffXem()?TPS.filter(x=>x.nguoi_thuc_hien===ME.ho_ten):TPS; // v35.8: cua ai nguoi nay thay
+  txList.innerHTML=TPSV.length?'<table><tr><th>Ngày</th><th>Đối tác</th><th>Loại</th><th>Ai</th><th>Nội dung</th><th>Nâng phủ</th></tr>'+
+  TPSV.slice(0,50).map(t=>{const o=ORGS.find(x=>x.id===t.org_id);
   return `<tr><td>${t.ngay}</td><td><b>${esc(o?.ten||'—')}</b></td><td>${t.loai}</td>
   <td>${esc(t.nguoi_thuc_hien)}</td><td class="muted" style="max-width:280px">${esc(t.noi_dung||'')}</td>
   <td>${t.nang_phu_den!=null?`<span class="pill p${t.nang_phu_den}">→ ${t.nang_phu_den}</span>`:''}</td></tr>`}).join('')+'</table>'
