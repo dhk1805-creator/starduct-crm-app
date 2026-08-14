@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v19 · 14/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v20 · 14/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -513,9 +513,23 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v19 · 14/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v20 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
+['🤝 Phễu NPP/Agent (Nhóm 1 — không tính vào thang phủ khách hàng)','🤝 Distributor/Agent funnel (Group 1 — excluded from customer coverage ladder)'],
+['Đã ký HĐ — đang phân phối','Contract signed — distributing'],
+['Đang kết nối','Connecting'],['Đang gửi mẫu','Sending samples'],['Đang đàm phán','Negotiating'],['Đã ký MOU','MOU signed'],
+['Độ phủ KH ≥1 / ≥2','Customer coverage ≥1 / ≥2'],
+[' tài khoản KH',' customer accounts'],[' khách hàng · ',' customers · '],
+['🎯 Kết quả dự án đã kết thúc theo NPP (từ sổ gốc)','🎯 Closed-project outcomes by distributor (from master register)'],
+['Kết quả dự án đã kết thúc theo NPP (từ sổ gốc)','Closed-project outcomes by distributor (from master register)'],
+['Kết thúc','Closed'],['Trượt','Lost'],['Thiếu kết quả','Missing result'],['Tỷ lệ win','Win rate'],
+[' cặp deal↔nền chờ xác nhận khớp',' deal↔catalog pairs awaiting match confirmation'],
+['⚠ Dự án KẾT THÚC nhưng thiếu "NSCA cung cấp?" sẽ không tính được win/thua — chị Cúc bổ sung cột này khi cập nhật file.','⚠ Closed projects missing "NSCA supplied?" cannot be scored win/lost — Ms Cúc should fill this column when updating the file.'],
+['↔ Đã đồng bộ hiện trạng sang ','↔ Status synced to '],
+[' dự án đang theo dõi',' tracked deals'],
+['Đồng bộ nền→deal lỗi: ','Catalog→deal sync error: '],
 // ---- bổ sung 14/08 v19: lớp nền trên Tổng quan ----
 ['🗺 Lớp thị trường nền — dữ liệu tra cứu','🗺 Base market layer — reference data'],
 ['Đang tải…','Loading…'],
@@ -1063,6 +1077,13 @@ function applyMod(){
   fillFilters();renderAll();
 }
 const PHU=['0 · Chưa tiếp cận','1 · Đã tiếp cận','2 · Quan hệ làm việc','3 · Spec-in','4 · Đã bán','5 · Khách thường xuyên'];
+// NPP/Agent/Broker (Nhóm 1 - trung gian) đo bằng phễu NPP, KHÔNG dùng thang phủ khách hàng
+const PHEU_NPP={chua_tiep_can:['Chưa tiếp cận','p0'],dang_ket_noi:['Đang kết nối','p1'],
+  dang_gui_mau:['Đang gửi mẫu','p1'],dang_dam_phan:['Đang đàm phán','p3'],
+  da_ky_mou:['Đã ký MOU','p3'],da_ky_hd:['Đã ký HĐ — đang phân phối','p4']};
+const nhanPhu=o=>(o.phan_loai==='npp'&&o.pheu_npp&&PHEU_NPP[o.pheu_npp])
+  ?`<span class="pill ${PHEU_NPP[o.pheu_npp][1]}">🤝 ${PHEU_NPP[o.pheu_npp][0]}</span>`
+  :`<span class="pill p${o.trang_thai_phu}">${PHU[o.trang_thai_phu]}</span>`;
 const PL={cdt:'CĐT',tvtk:'TVTK',thau:'Tổng thầu-MEP',npp:'NPP',khac:'Khác'};
 const QH={npp_hien_huu:'🌾 NPP hiện hữu (chăm sóc)',npp_moi:'🌱 NPP mới (phát triển)',
   kh_truc_tiep:'🛒 Khách hàng trực tiếp',kh_tiem_nang:'🎯 Khách hàng tiềm năng',
@@ -1308,8 +1329,12 @@ async function runImportDA(){
     if(!await daUpsert('crm_quotations',rows,'stt','crm_quotations'))return;
   }
   if(!nhanDien){daL(t('⚠ Không nhận diện được sheet nào (cần: DỰ ÁN / THÔNG TIN BCI / Bảng tổng hợp 3 / LIST BG)'));return}
+  // dong bo hien trang tu so goc sang cac deal dang theo (khop chac >=75%)
+  const db=await sb.rpc('crm_dong_bo_nen_sang_deals');
+  if(db.error)daL('⚠ '+t('Đồng bộ nền→deal lỗi: ')+db.error.message);
+  else daL(t('↔ Đã đồng bộ hiện trạng sang ')+(db.data||0)+t(' dự án đang theo dõi'));
   daL(t('✓ Hoàn tất. Mở tab Dự án nền để tra cứu dữ liệu mới.'));
-  DN_INIT=false;
+  DN_INIT=false;loadAll&&loadAll();
 }
 
 function fillFilters(){
@@ -2311,17 +2336,28 @@ async function renderNen(){
   const el=document.getElementById('nenChart');if(!el||!sb)return;
   try{
     if(MOD==='nd'){
-      const [npp,bci,cn]=await Promise.all([
+      const [npp,bci,cn,tl,gy]=await Promise.all([
         sb.from('crm_v_nen_theo_npp').select('*'),
         sb.from('crm_bci').select('id',{count:'exact',head:true}),
-        sb.from('crm_du_an_cap_nhat').select('id',{count:'exact',head:true})]);
+        sb.from('crm_du_an_cap_nhat').select('id',{count:'exact',head:true}),
+        sb.from('crm_v_ty_le_npp').select('*'),
+        sb.from('crm_v_goi_y_khop_nen').select('deal_id',{count:'exact',head:true})]);
       const rows=(npp.data||[]).sort((a,b)=>b.n-a.n);
       const tong=rows.reduce((s,r)=>s+r.n,0);
+      const tlr=(tl.data||[]).filter(r=>r.ket_thuc>0&&r.npp!=='(chưa chỉ định)'&&!/Xác nhận/i.test(r.npp)).sort((a,b)=>b.win-a.win);
       el.classList.remove('muted');
-      el.innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:8px">${t('Tổng ')}<b>${tong.toLocaleString('vi')}</b>${t(' dự án trong danh mục nền')} · BCI: <b>${bci.count||0}</b> · ${t('nhật ký cập nhật')}: <b>${cn.count||0}</b> — ${t('tra cứu chi tiết ở tab')} <b>${t('Dự án nền')}</b></div>`+
+      el.innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:8px">${t('Tổng ')}<b>${tong.toLocaleString('vi')}</b>${t(' dự án trong danh mục nền')} · BCI: <b>${bci.count||0}</b> · ${t('nhật ký cập nhật')}: <b>${cn.count||0}</b> — ${t('tra cứu chi tiết ở tab')} <b>${t('Dự án nền')}</b>${gy.count?` · <span class="pill p3">${gy.count}${t(' cặp deal↔nền chờ xác nhận khớp')}</span>`:''}</div>`+
         '<table><tr><th>'+t('NPP chỉ định')+'</th><th class="num">'+t('Số dự án')+'</th><th style="width:45%"></th></tr>'+
         rows.slice(0,8).map(r=>`<tr><td>${esc(r.npp)}</td><td class="num"><b>${r.n.toLocaleString('vi')}</b></td>
-          <td><div class="bar"><i style="width:${Math.round(r.n/rows[0].n*100)}%"></i></div></td></tr>`).join('')+'</table>';
+          <td><div class="bar"><i style="width:${Math.round(r.n/rows[0].n*100)}%"></i></div></td></tr>`).join('')+'</table>'+
+        (tlr.length?`<div class="muted" style="font-size:12px;margin:12px 0 6px"><b>🎯 ${t('Kết quả dự án đã kết thúc theo NPP (từ sổ gốc)')}</b></div>`+
+        '<table><tr><th>NPP</th><th class="num">'+t('Kết thúc')+'</th><th class="num">Win</th><th class="num">'+t('Trượt')+'</th><th class="num">'+t('Thiếu kết quả')+'</th><th class="num">'+t('Tỷ lệ win')+'</th></tr>'+
+        tlr.map(r=>{const co=r.win+r.thua;
+          return `<tr><td><b>${esc(r.npp)}</b></td><td class="num">${r.ket_thuc}</td>
+          <td class="num" style="color:var(--ok,#0a7)">${r.win}</td><td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
+          <td class="num muted">${r.ket_thuc_thieu_kq}</td>
+          <td class="num"><b>${co?Math.round(r.win/co*100)+'%':'—'}</b></td></tr>`}).join('')+'</table>'+
+        `<div class="notice warn" style="margin-top:8px">${t('⚠ Dự án KẾT THÚC nhưng thiếu "NSCA cung cấp?" sẽ không tính được win/thua — chị Cúc bổ sung cột này khi cập nhật file.')}</div>`:'');
     }else{
       const [bg,orgQT]=await Promise.all([
         sb.from('crm_v_bg_theo_quoc_gia').select('*'),
@@ -2341,24 +2377,33 @@ async function renderNen(){
 function renderTQ(){
   renderNen();
   const mt=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu');
-  const phu1=mt.filter(o=>o.trang_thai_phu>=1).length;
-  const phu2=mt.filter(o=>o.trang_thai_phu>=2).length;
+  const mtKH=mt.filter(o=>o.phan_loai!=='npp');   // khách hàng (Nhóm 2/3) — đo thang phủ
+  const mtNPP=mt.filter(o=>o.phan_loai==='npp');  // NPP/Agent/Broker (Nhóm 1) — đo phễu NPP
+  const phu1=mtKH.filter(o=>o.trang_thai_phu>=1).length;
+  const phu2=mtKH.filter(o=>o.trang_thai_phu>=2).length;
   const coChu=mt.filter(o=>o.nguoi_phu_trach).length;
   const nContacts=ORGS.reduce((s,o)=>s+(o._nc||0),0);
   const dealTVTK=DEALS.filter(d=>d.tvtk_id||d.tvtk_text).length;
   const uuCao=DEALS.filter(d=>(d.uu_tien||'').startsWith('1')).length;
   kpis.innerHTML=[
-    ['Đối tác mục tiêu',mt.length,`${ORGS.length-mt.length} tình báo`],
-    ['Độ phủ ≥1 / ≥2',`${pct(phu1,mt.length)} / ${pct(phu2,mt.length)}`,`${phu1} · ${phu2} tài khoản`],
+    ['Đối tác mục tiêu',mt.length,`${mtNPP.length} NPP · ${mtKH.length} khách hàng · ${ORGS.length-mt.length} tình báo`],
+    ['Độ phủ KH ≥1 / ≥2',`${pct(phu1,mtKH.length)} / ${pct(phu2,mtKH.length)}`,`${phu1} · ${phu2} / ${mtKH.length} tài khoản KH`],
     ['Có người phụ trách',pct(coChu,mt.length),`${coChu}/${mt.length} — danh mục CEO duyệt`],
     ['Dự án ưu tiên cao',uuCao,`trên ${DEALS.length} dự án · TVTK nối ${pct(dealTVTK,DEALS.length)}`]
   ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
 
   phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
-    const n=mt.filter(o=>o.trang_thai_phu===i).length;
+    const n=mtKH.filter(o=>o.trang_thai_phu===i).length;
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
       <span class="pill p${i}" style="width:170px">${PHU[i]}</span>
-      <div class="bar" style="flex:1"><i style="width:${mt.length?n/mt.length*100:0}%"></i></div>
+      <div class="bar" style="flex:1"><i style="width:${mtKH.length?n/mtKH.length*100:0}%"></i></div>
+      <b style="width:44px;text-align:right">${n}</b></div>`}).join('')+
+    `<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🤝 Phễu NPP/Agent (Nhóm 1 — không tính vào thang phủ khách hàng)</b></div>`+
+    Object.entries(PHEU_NPP).map(([k,[nhan,cls]])=>{
+      const n=mtNPP.filter(o=>o.pheu_npp===k).length;if(!n&&k!=='da_ky_hd')return '';
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <span class="pill ${cls}" style="width:170px">${nhan}</span>
+      <div class="bar" style="flex:1"><i style="width:${mtNPP.length?n/mtNPP.length*100:0}%"></i></div>
       <b style="width:44px;text-align:right">${n}</b></div>`}).join('');
 
   const byQG={};
@@ -2424,7 +2469,7 @@ function renderDT(){
   rows.slice(0,300).map(o=>`<tr class="row" onclick="openOrg('${o.id}')">
     <td><b>${esc(o.ten)}</b>${o.loai_ban_ghi==='tinh_bao'?' <span class="tag tb">tình báo</span>':''}</td>
     <td>${PL[o.phan_loai]||o.phan_loai}</td><td>${isoName[o.quoc_gia]||o.quoc_gia}</td>
-    <td><span class="pill p${o.trang_thai_phu}">${PHU[o.trang_thai_phu]}</span></td>
+    <td>${nhanPhu(o)}</td>
     <td>${esc(o.nguoi_phu_trach||'')||'<span class="muted">— chưa gán</span>'}</td>
     <td>${o.lan_tiep_xuc_cuoi||'<span class="muted">—</span>'}</td></tr>`).join('')+'</table>'+
   (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu — thu hẹp bộ lọc để xem thêm.</div>':'');
@@ -2618,7 +2663,7 @@ function renderDA(){
     <td>${isoName[d.quoc_gia]||d.quoc_gia}</td>
     <td><span class="pill ${d.stage==='po'?'p4':d.stage==='spec_in'?'p3':d.stage==='dong'?'p0':'p1'}">${STG[d.stage]||d.stage}</span></td>
     <td>${d.tvtk_text?esc(d.tvtk_text):'<span class="pill p3">thiếu</span>'}</td>
-    <td>${esc(npByid[d.npp_dang_ky_id]||d.owner||'')||'<span class="muted">—</span>'}</td>
+    <td>${esc(npByid[d.npp_dang_ky_id]||d.npp_chi_dinh||d.owner||'')||'<span class="muted">—</span>'}${d.hien_trang_da?`<div><span class="tag">${esc(d.hien_trang_da)}</span></div>`:''}</td>
     <td style="max-width:180px">${d.next_action?`${esc(d.next_action)}${d.next_action_han?` <span class="pill ${naLate?'p3':'p1'}"${naLate?' style="background:var(--bad-bg);color:var(--bad)"':''}>${d.next_action_han}</span>`:''}`:'<span class="muted">—</span>'}</td>
     <td class="num">${d.gia_tri_uoc?fmtB(+d.gia_tri_uoc):''}</td></tr>`}).join('')+'</table>'+
   (rows.length>300?'<div class="muted" style="margin-top:6px">Hiển thị 300 đầu.</div>':'');
