@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v15 · 13/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v16 · 14/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -437,12 +437,12 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <dialog id="dlgLogin">
   <div class="dhead">👤 Đăng nhập cá nhân</div>
   <div class="dbody">
-    <div class="frow"><label>User name</label><input id="lgU" placeholder="vd: santiago, tam, duc…"></div>
-    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="mặc định: Nsca@2026"></div>
+    <div class="frow"><label>User name</label><input id="lgU" placeholder="user name của bạn"></div>
+    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="mật khẩu của bạn"></div>
     <button class="btn pri" onclick="doLogin()">Đăng nhập</button>
     <span class="muted" id="lgMsg"></span>
-    <div class="notice" style="margin-top:12px">Lần đầu đăng nhập bằng mật khẩu mặc định
-      <b>Nsca@2026</b> — hệ thống sẽ yêu cầu đổi ngay.</div>
+    <div class="notice" style="margin-top:12px">Tài khoản do admin cấp. Đăng nhập lần đầu,
+      hệ thống sẽ yêu cầu đổi mật khẩu.</div>
   </div>
 </dialog>
 
@@ -472,7 +472,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v15 · 13/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v16 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 13/08 đợt 7: gọn hộp đăng nhập ----
@@ -551,9 +551,9 @@ const FRAG=[
 ['Số lần nâng trạng thái phủ — hiệu quả thật','Coverage upgrades — real effectiveness'],
 ['chưa ghi nhận hoạt động nào trong kỳ','no activity recorded this period'],
 ['chưa chạm cấp ra quyết định','no decision-maker reached yet'],
-['Đã reset về Nsca@2026 — buộc đổi khi đăng nhập','Reset to Nsca@2026 — must change at next login'],
-['Lần đầu đăng nhập bằng mật khẩu mặc định','First login: use the default password'],
-['hệ thống sẽ yêu cầu đổi ngay','the system will require a change immediately'],
+['Đã reset về mật khẩu mặc định — buộc đổi khi đăng nhập','Reset to default password — must change at next login'],
+['Tài khoản do admin cấp. Đăng nhập lần đầu,','Accounts are issued by the admin. On first sign-in,'],
+['hệ thống sẽ yêu cầu đổi mật khẩu','the system will require a password change'],
 ['Chỉ Super Admin được reset mật khẩu','Only Super Admin can reset passwords'],
 ['Xác nhận mật khẩu Super Admin của bạn','Confirm your Super Admin password'],
 ['Reset mật khẩu về mặc định','Reset password to default'],
@@ -869,12 +869,10 @@ FRAG.push(
 ['Đăng xuất','Sign out'],['Đăng nhập','Sign in'],['Mật khẩu cũ','Old password'],
 ['Mật khẩu mới','New password'],['tối thiểu 8 ký tự','minimum 8 characters'],
 ['🔑 Đổi mật khẩu','🔑 Change password'],['Đổi mật khẩu','Change password'],
-['mặc định: Nsca@2026','default: Nsca@2026'],
-['Lần đầu đăng nhập bằng mật khẩu mặc định','First sign-in uses the default password'],
-['hệ thống sẽ yêu cầu đổi ngay.','the system will require a change immediately.'],
+['user name của bạn','your user name'],['mật khẩu của bạn','your password'],
 ['Sai user name hoặc mật khẩu','Wrong user name or password'],
 ['Mật khẩu cũ không đúng','Old password incorrect'],['Đã đổi','Changed'],
-['Đã reset về Nsca@2026 — buộc đổi khi đăng nhập','Reset to Nsca@2026 — change forced at sign-in'],
+['Đã reset về mật khẩu mặc định — buộc đổi khi đăng nhập','Reset to default password — change forced at sign-in'],
 ['Người này chưa có user name','This person has no user name yet'],['Không tìm thấy user','User not found'],
 ['Xác nhận mật khẩu Super Admin của bạn:','Confirm your Super Admin password:'],
 ['Chỉ Super Admin được reset mật khẩu','Only Super Admin can reset passwords'],
@@ -1718,7 +1716,7 @@ async function resetMK(targetUser){
   const pass=prompt(t('Xác nhận mật khẩu Super Admin của bạn:'));if(!pass)return;
   const r=await sb.rpc('crm_reset_mat_khau',{p_admin_user:ME.user_name,p_admin_pass:pass,p_target_user:targetUser});
   document.getElementById('nsMsg').textContent=r.error?('❌ '+r.error.message):
-    (r.data?'✓ Đã reset về Nsca@2026 — buộc đổi khi đăng nhập':'❌ Không tìm thấy user');
+    (r.data?'✓ Đã reset về mật khẩu mặc định — buộc đổi khi đăng nhập':'❌ Không tìm thấy user');
 }
 async function saveNS(id){
   const r=await sb.from('crm_user_roles').update({
