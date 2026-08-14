@@ -97,7 +97,7 @@ window.addEventListener('load',()=>{
   let tries=0;
   const iv=setInterval(async()=>{
     if(++tries>240){clearInterval(iv);return} // theo dõi tối đa ~6 phút
-    if(!window.sb)return;
+    if(typeof sb==='undefined'||!sb)return; // sb là let toàn cục, KHÔNG nằm trên window
     try{
       const {data:{session}}=await sb.auth.getSession();
       if(!session)return;
