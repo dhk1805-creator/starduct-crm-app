@@ -69,6 +69,23 @@ là "soft" — đủ chống nhầm lẫn, chưa chống cố tình. Muốn cư�
 chuyển tài khoản NPP sang Supabase Auth thật + RLS theo `npp_org_id`. Trigger DB
 (khóa độc quyền, bắt buộc lý do) thì đã cưỡng chế cứng ngay từ v22.
 
+## v23 — Hợp nhất tab Dự án ↔ Dự án nền (bổ sung 14/08)
+
+Tab "Dự án nền" đã được gộp vào tab **Dự án** thành một nguồn CSDL duy nhất, với
+3 chế độ xem: **🎯 Đang theo dõi** (pipeline crm_deals — có phê duyệt, stage, giá trị,
+dùng để lập kế hoạch/theo dõi/đánh giá), **🗺 Nền — chưa theo dõi** (danh mục
+crm_du_an_nen đã TRỪ các dự án đã vào pipeline — khử trùng lặp hiển thị; mỗi dòng
+có nút 📌 Theo dõi để chuyển vào pipeline kèm liên kết `ma_du_an_nen`, không nhập
+tay lại), và **🧹 Trùng lặp nền** (chỉ Quản lý/CEO — quét cặp bản ghi tên giống ≥85%
+cùng tỉnh giữa dữ liệu tình báo và dữ liệu có sẵn, bấm Gộp để hợp nhất: chuyển
+nhật ký + BCI + liên kết pipeline về bản giữ rồi xóa bản thừa).
+
+Chạy `supabase-migration-v23.sql` (sau v22) để kích hoạt: cột liên kết
+`crm_deals.ma_du_an_nen`, hàm nối tự động khớp tên ≥75% `crm_lien_ket_nen_deals()`,
+hàm quét trùng `crm_tim_nen_trung_lap()` và hàm gộp `crm_gop_nen(giữ, bỏ)`.
+Workspace của dự án đã nối sẽ hiện thẳng khối "🗺 CSDL nền" (NPP chỉ định, hiện
+trạng, BCI, nhật ký) — người lập kế hoạch không phải nhảy qua lại giữa hai kho.
+
 ## Kiểm thử đã chạy
 
 Syntax check 13 module JS + sw.js + manifest: đạt. Chromium headless desktop 1280px
