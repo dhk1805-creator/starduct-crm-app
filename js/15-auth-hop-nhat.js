@@ -40,9 +40,10 @@ function batDoiMKLanDau(){
   let dlg=document.getElementById('dlgMKMoi');
   if(!dlg){
     dlg=document.createElement('dialog');dlg.id='dlgMKMoi';dlg.style.maxWidth='420px';
-    dlg.innerHTML=`<div class="dhead">🔐 ${t('Đặt mật khẩu mới (bắt buộc lần đầu)')}</div>
+    dlg.innerHTML=`<div class="dhead">🔐 ${t('Đặt mật khẩu mới')}
+      <button class="btn" onclick="dlgMKMoi.close()">✕</button></div>
     <div class="dbody">
-      <div class="notice warn">${t('Bạn đang dùng mật khẩu tạm. Hãy đặt mật khẩu riêng — từ nay chỉ dùng MỘT mật khẩu này cho mọi thứ.')}</div>
+      <div class="notice warn">${t('Mật khẩu mới áp dụng cho đăng nhập email của bạn — MỘT mật khẩu duy nhất cho mọi thứ trong CRM.')}</div>
       <div class="frow"><label>${t('Mật khẩu mới')}</label><input id="mkm1" type="password" placeholder="${t('tối thiểu 8 ký tự')}"></div>
       <div class="frow"><label>${t('Nhập lại')}</label><input id="mkm2" type="password"></div>
       <button class="btn pri" onclick="luuMKLanDau()">${t('Lưu mật khẩu mới')}</button>
@@ -63,6 +64,22 @@ async function luuMKLanDau(){
   mkmMsg.textContent='✓ '+t('Xong — từ nay đăng nhập bằng mật khẩu mới');
   setTimeout(()=>document.getElementById('dlgMKMoi').close(),900);
 }
+
+/* ============ 2b. NÚT 🔑 TRÊN HEADER: có phiên email → đổi mật khẩu EMAIL ============ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    const b=document.getElementById('doiMKBtn');
+    if(!b)return;
+    const cu=b.onclick;
+    b.onclick=async()=>{
+      try{
+        const {data:{session}}=await sb.auth.getSession();
+        if(session){batDoiMKLanDau();return} // hợp nhất: đổi thẳng mật khẩu email, không hỏi mật khẩu cũ
+      }catch(e){}
+      cu&&cu(); // chưa có phiên email → luồng nội bộ cũ
+    };
+  },300);
+});
 
 /* ============ 3. HỘP ĐĂNG NHẬP: email là chính, nội bộ cũ là phụ ============ */
 window.addEventListener('load',async()=>{
