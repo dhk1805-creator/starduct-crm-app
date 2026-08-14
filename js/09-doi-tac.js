@@ -146,6 +146,9 @@ async function openOrg(id){
     <div class="frow"><label>Phân loại</label><select id="oPL">${Object.entries(PL).map(([k,v])=>
       `<option value="${k}"${o.phan_loai===k?' selected':''}>${v}</option>`).join('')}</select></div>
     <div class="frow"><label>Thị trường</label><input id="oQG" value="${esc(o.quoc_gia||'')}" placeholder="mã ISO: VN, HK, KR…"></div>
+    <div class="frow" id="rowPheu" style="${o.phan_loai==='npp'?'':'display:none'}"><label>Phễu NPP</label><select id="oPheu">
+      <option value="">— Chưa xếp —</option>${Object.entries(PHEU_NPP).map(([k,v])=>
+      `<option value="${k}"${o.pheu_npp===k?' selected':''}>${v[0]}</option>`).join('')}</select></div>
     <div class="frow"><label>Trạng thái phủ</label><select id="oPhu">${PHU.map((p,i)=>
       `<option value="${i}"${o.trang_thai_phu===i?' selected':''}>${p}</option>`).join('')}</select></div>
     <div class="frow"><label>Nhóm quan hệ</label><select id="oQH">
@@ -167,10 +170,12 @@ async function openOrg(id){
     <div style="margin-top:14px;display:flex;gap:8px"><button class="btn pri" onclick="saveOrg('${id||''}')">Lưu</button>
     ${id?`<button class="btn" onclick="dlgOrg.close();openThread('org','${id}','${esc(o.ten)}')">💬 Thảo luận & phê duyệt</button>`:''}</div>`;
   dlgOrg.showModal();applyLang();
+  oPL.onchange=()=>{document.getElementById('rowPheu').style.display=oPL.value==='npp'?'':'none'};
 }
 async function saveOrg(id){
   const rec={ten:oTen.value.trim(),phan_loai:oPL.value,quoc_gia:oQG.value.trim().toUpperCase(),
-    trang_thai_phu:+oPhu.value,quan_he:oQH.value||null,nguoi_phu_trach:oChu.value.trim()||null,
+    trang_thai_phu:+oPhu.value,quan_he:oQH.value||null,
+    pheu_npp:(oPL.value==='npp'?(oPheu.value||null):null),nguoi_phu_trach:oChu.value.trim()||null,
     vung:oVung.value||null,kenh_thuong_mai:oKenh.value||null,
     doi_thu_dang_chiem:oDT.value.trim()||null,ghi_chu:oGC.value.trim()||null,updated_at:new Date().toISOString()};
   if(!rec.ten)return;

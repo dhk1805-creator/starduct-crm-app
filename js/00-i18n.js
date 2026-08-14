@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v35.6 · 14/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v35.7 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -793,6 +793,7 @@ FRAG.push(
 ['cần chạy migration v37','run migration v37 first'],
 ['quê nhà','home market'],
 ['— NPP —','— Distributor —'],
+['Phễu NPP','Distributor funnel'],
 ['NPP / Owner','Distributor / Owner'],
 ['NPP/Owner','Distributor/Owner'],
 ['NPP','Distributor']
