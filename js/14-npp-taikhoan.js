@@ -18,7 +18,12 @@ window.addEventListener('load',()=>{
   const b=document.createElement('button');
   b.className='btn';b.id='doiMKBtn';b.title=t('Đổi mật khẩu nội bộ');b.textContent='🔑';
   b.onclick=()=>{
-    if(!ME||!ME.user_name){alert(t('Đăng nhập cá nhân (user name + mật khẩu) trước khi đổi mật khẩu.'));return}
+    // tự chữa phiên cũ thiếu user_name: tra lại theo họ tên trong danh bạ nhân sự
+    if(ME&&!ME.user_name){
+      const r=(window.NHANSU||[]).find(n=>n.ho_ten===ME.ho_ten&&n.user_name);
+      if(r){ME.user_name=r.user_name;localStorage.setItem('crm_me',JSON.stringify(ME))}
+    }
+    if(!ME||!ME.user_name){alert(t('Phiên đăng nhập thiếu user name — bấm Đăng xuất rồi đăng nhập lại bằng user name + mật khẩu.'));return}
     mkMsg.textContent='';dlgDoiMK.showModal();
   };
   lo.parentNode.insertBefore(b,lo);
