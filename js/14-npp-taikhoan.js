@@ -11,6 +11,22 @@
 
 let NPPTK_PASS='';
 
+/* ===== Nút 🔑 Đổi mật khẩu chủ động trên header (v26.3) ===== */
+window.addEventListener('load',()=>{
+  const lo=document.getElementById('logoutBtn');
+  if(!lo||document.getElementById('doiMKBtn'))return;
+  const b=document.createElement('button');
+  b.className='btn';b.id='doiMKBtn';b.title=t('Đổi mật khẩu nội bộ');b.textContent='🔑';
+  b.onclick=()=>{
+    if(!ME||!ME.user_name){alert(t('Đăng nhập cá nhân (user name + mật khẩu) trước khi đổi mật khẩu.'));return}
+    mkMsg.textContent='';dlgDoiMK.showModal();
+  };
+  lo.parentNode.insertBefore(b,lo);
+  // hiện/ẩn cùng nút Đăng xuất
+  new MutationObserver(()=>{b.style.display=lo.style.display}).observe(lo,{attributes:true,attributeFilter:['style']});
+  b.style.display=lo.style.display;
+});
+
 window.addEventListener('load',()=>{
   const sec=document.getElementById('tab-ns');
   if(!sec||document.getElementById('cardNppTk'))return;
