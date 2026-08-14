@@ -20,8 +20,11 @@ async function initMK(){
 function renderMK(){
   const box=document.getElementById('mkList');if(!box)return;
   if(!MK_ROWS.length){box.innerHTML='<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';return}
-  // thị trường có hồ sơ trước, trong nhóm sắp theo tên
-  const rows=MK_ROWS.slice().sort((a,b)=>((b.dac_diem?1:0)-(a.dac_diem?1:0))||a.ten.localeCompare(b.ten));
+  // v35.4: QT riêng — ND riêng. Trang Quốc tế KHÔNG hiện VN; trang Nội địa chỉ hiện VN (quê nhà).
+  const qt=MOD==='qt';
+  const rows=MK_ROWS.filter(m=>(m.ma!=='VN')===qt)
+    .sort((a,b)=>((b.dac_diem?1:0)-(a.dac_diem?1:0))||a.ten.localeCompare(b.ten));
+  if(!rows.length){box.innerHTML='<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';return}
   box.innerHTML=`<table><thead><tr>
     <th style="width:130px">${t('Thị trường')}</th>
     <th style="width:210px">${t('NPP đã ký HĐ')}</th>
@@ -48,6 +51,9 @@ async function openMK(i){
     `<pre style="white-space:pre-wrap;font-family:inherit;font-size:12.5px;line-height:1.5;max-height:64vh;overflow:auto;margin:0">${esc(d.bao_cao||d.dac_diem||'')}</pre>`+
     `<div class="muted" style="font-size:11px;margin-top:6px">${t('Nguồn')}: Market Intelligence 14/08/2026</div>`;
 }
+
+// đổi module Nội địa/Quốc tế → vẽ lại danh mục thị trường
+modSel.addEventListener('change',()=>{if(MK_INIT)renderMK()});
 
 // gắn lazy-init vào nav (addEventListener — không đè handler của 01-core)
 nav.addEventListener('click',e=>{
