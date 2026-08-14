@@ -145,6 +145,27 @@ async function renderAprQueue(){
         ${moDuoc?`<button class="btn" style="padding:4px 8px" onclick="openThread('${a.doi_tuong}','${a.doi_tuong_id}','${esc(tenDT(a))}')">💬</button>`:''}
       </div>`:`<span class="muted">${t('chờ cấp')} ${(a.cap_duyet||'').toUpperCase()}</span>`}</td></tr>`}).join('')+'</table>'
     :'<div class="muted">'+t('Không có đề xuất nào chờ duyệt. ✓')+'</div>';
+  capNhatChuong(rows.length);
+}
+/* v35.9: chuông thông báo cho CEO/Manager trên header — "Có N đề xuất chưa phê duyệt" */
+function capNhatChuong(nApr){
+  let bell=document.getElementById('aprBell');
+  const coQuyen=(typeof laNguoiDuyet==='function'&&laNguoiDuyet())||(typeof laNguoiTiepNhan==='function'&&laNguoiTiepNhan());
+  const nHt=(window.ALL_HTS||[]).filter(h=>h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly').length;
+  if(!coQuyen||(!nApr&&!nHt)){if(bell)bell.style.display='none';return}
+  if(!bell){
+    bell=document.createElement('button');bell.id='aprBell';bell.className='btn';
+    bell.style.cssText='font-weight:700;color:#d97706;border-color:#d97706';
+    bell.onclick=()=>{const b=document.querySelector('nav button[data-t="tq"]');if(b)b.click();
+      setTimeout(()=>{try{aprQueue.scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},150)};
+    const conn=document.querySelector('header .conn');
+    if(conn)conn.insertBefore(bell,conn.firstChild);else document.querySelector('header')?.appendChild(bell);
+  }
+  bell.style.display='';
+  const phan=[];
+  if(nApr)phan.push(nApr+' '+t('đề xuất chưa phê duyệt'));
+  if(nHt&&typeof laNguoiTiepNhan==='function'&&laNguoiTiepNhan())phan.push(nHt+' '+t('yêu cầu đang mở'));
+  bell.textContent='🔔 '+phan.join(' · ');
 }
 async function duyetNhanh(i,tt){
   const a=(window.__APRQ2||[])[i];if(!a)return;

@@ -270,7 +270,7 @@ function mbVeHome(el){
   let o1,o2,o3;
   if(ql){
     const tps=ALL_TPS.filter(x=>x.ngay===today).length;
-    const apr=(window.APRQ||[]).length;
+    const apr=(window.__APRQ2||window.APRQ||[]).length; // v35.9: cùng nguồn crm_approvals với desktop
     const mo=ALL_HTS.filter(h=>h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly').length;
     o1={ic:'✅',tt:T('Hôm nay'),sub:tps+' '+T('tiếp xúc toàn hệ thống hôm nay'),n:tps,mau:'#0f4c81'};
     o2={ic:'🛡',tt:T('Phê duyệt'),sub:apr+' '+T('đề xuất chờ bạn duyệt'),n:apr,mau:'#d97706'};

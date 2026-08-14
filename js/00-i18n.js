@@ -794,6 +794,8 @@ FRAG.push(
 ['quê nhà','home market'],
 ['— NPP —','— Distributor —'],
 ['Phễu NPP','Distributor funnel'],
+['đề xuất chưa phê duyệt','proposals awaiting approval'],
+['yêu cầu đang mở','open requests'],
 ['NPP / Owner','Distributor / Owner'],
 ['NPP/Owner','Distributor/Owner'],
 ['NPP','Distributor']
