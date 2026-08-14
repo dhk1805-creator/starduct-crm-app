@@ -78,6 +78,7 @@ function renderTQ(){
     ['Dự án ưu tiên cao',uuCao,`trên ${DEALS.length} dự án · TVTK nối ${pct(dealTVTK,DEALS.length)}`]
   ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
   renderNppKhaiThac();
+  renderKhaiThac();
 
   phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
     const n=mtKH.filter(o=>o.trang_thai_phu===i).length;
@@ -93,13 +94,20 @@ function renderTQ(){
       <div class="bar" style="flex:1"><i style="width:${mtNPP.length?n/mtNPP.length*100:0}%"></i></div>
       <b style="width:44px;text-align:right">${n}</b></div>`}).join('');
 
+  // V36: tinh tren TOAN BO danh muc (khong chi 'muc tieu'); ND chia theo VUNG, QT theo quoc gia
+  const ndMode=MOD==='nd';
+  const keyOf=x=>ndMode?(x.vung||'Chưa xếp'):(x.quoc_gia||'—');
+  const daTiepCan=o=>o.trang_thai_phu>=1||(o.phan_loai==='npp'&&o.pheu_npp&&o.pheu_npp!=='chua_tiep_can');
   const byQG={};
-  for(const o of mt){byQG[o.quoc_gia]=byQG[o.quoc_gia]||{n:0,p:0};byQG[o.quoc_gia].n++;
-    if(o.trang_thai_phu>=1)byQG[o.quoc_gia].p++}
-  qgChart.innerHTML='<table><tr><th>Thị trường</th><th class="num">Tài khoản</th><th class="num">Phủ ≥1</th><th class="num">Dự án</th></tr>'+
+  for(const o of ORGS){const k=keyOf(o);byQG[k]=byQG[k]||{n:0,p:0,da:0,gt:0};byQG[k].n++;
+    if(daTiepCan(o))byQG[k].p++}
+  for(const x of DEALS){const k=keyOf(x);byQG[k]=byQG[k]||{n:0,p:0,da:0,gt:0};
+    byQG[k].da++;byQG[k].gt+=(+x.gia_tri_uoc||0)}
+  qgChart.innerHTML='<table><tr><th>'+(ndMode?t('Vùng'):t('Thị trường'))+'</th><th class="num">'+t('Tài khoản')+'</th><th class="num">'+t('đã tiếp cận')+'</th><th class="num">'+t('Phủ ≥1')+'</th><th class="num">'+t('Dự án')+'</th><th class="num">'+t('Giá trị ước')+'</th></tr>'+
     Object.entries(byQG).sort((a,b)=>b[1].n-a[1].n).map(([q,v])=>
-    `<tr><td>${isoName[q]||q}</td><td class="num">${v.n}</td><td class="num">${pct(v.p,v.n)}</td>
-     <td class="num">${DEALS.filter(d=>d.quoc_gia===q).length}</td></tr>`).join('')+'</table>';
+    `<tr><td>${ndMode?esc((typeof VUNGDM!=='undefined'&&VUNGDM[q])||q):(isoName[q]||q)}</td><td class="num">${v.n}</td><td class="num">${v.p}</td><td class="num">${pct(v.p,v.n)}</td>
+     <td class="num">${v.da}</td><td class="num">${v.gt?fmtB(v.gt):'—'}</td></tr>`).join('')+'</table>'+
+    '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Tính trên toàn bộ danh mục của trang này')+' — '+ORGS.length+' '+t('tài khoản')+' · '+DEALS.length+' '+t('dự án')+'</div>';
 
   // Kết quả theo nhóm quan hệ × quốc gia
   const tp30=new Set(TPS.filter(t=>t.ngay>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).map(t=>t.org_id));
@@ -218,4 +226,72 @@ function renderNppKhaiThac(){
       <td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
       <td class="num">${co?pct(r.thang,co):'<span class="muted">'+t('chưa đủ dữ liệu')+'</span>'}</td></tr>`}).join('')+'</table>'+
     '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Đang theo')+' = '+t('dự án')+' stage ≠ '+t('Đóng')+' · '+t('Thắng')+' = PO/'+t('Đóng')+' '+t('không kèm')+' loss reason</div>';
+}
+
+/* ===== V36: TÌNH HÌNH KHAI THÁC CSDL — tài nguyên đang có vs hệ thống đã khai thác, theo từng đối tượng ===== */
+async function renderKhaiThac(){
+  const el=document.getElementById('ktChart');if(!el||!sb)return;
+  if(typeof laStaffXem==='function'&&laStaffXem()){el.innerHTML='<div class="muted">'+t('Dành cho lãnh đạo')+'</div>';return}
+  const qt=MOD==='qt';
+  // kỳ xem: CEO/Manager chọn lịch — mặc định từ đầu năm đến hôm nay
+  const tu=window.KT_TU||new Date(new Date().getFullYear(),0,1).toISOString().slice(0,10);
+  const den=window.KT_DEN||new Date().toISOString().slice(0,10);
+  // tài nguyên cần truy vấn: kho nền + báo giá (lọc đúng khu vực)
+  const kv=q=>qt?q.eq('khu_vuc','quoc_te'):q.or('khu_vuc.is.null,khu_vuc.neq.quoc_te');
+  const [nen,bg]=await Promise.all([
+    kv(sb.from('crm_du_an_nen').select('id',{count:'exact',head:true})),
+    kv(sb.from('crm_quotations').select('gia_tri_bao_gia,trang_thai,ngay_update')).limit(3000)
+  ]);
+  const tongNen=nen.count||0;
+  const bgRows=bg.data||[];
+  const bgN=bgRows.length, bgGT=bgRows.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
+  const ycsx=bgRows.filter(r=>/YCSX/i.test(r.trang_thai||''));
+  const ycsxGT=ycsx.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
+  // chỉ số từ bộ nhớ (đã lọc theo trang)
+  const mtKH=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu'&&o.phan_loai!=='npp');
+  const orgTC=ORGS.filter(o=>o.trang_thai_phu>=1||(o.phan_loai==='npp'&&o.pheu_npp&&o.pheu_npp!=='chua_tiep_can')).length;
+  const phu2=mtKH.filter(o=>o.trang_thai_phu>=2).length;
+  const nppAll=ORGS.filter(o=>o.phan_loai==='npp').length;
+  const nppKy=ORGS.filter(NPP_KYHD).length;
+  const bamSat=DEALS.filter(x=>x.ma_du_an_nen).length;
+  const dealCoTX=new Set(TPS.filter(x=>x.deal_id).map(x=>x.deal_id));
+  const daTX=DEALS.filter(x=>dealCoTX.has(x.id)||x.stage!=='tiep_can');
+  const daCD=DEALS.filter(x=>x.owner||x.nguoi_phu_trach||x.npp_dang_ky_id||x.npp_chi_dinh);
+  const gtCD=daCD.reduce((s,x)=>s+(+x.gia_tri_uoc||0),0);
+  const gtTX=daTX.reduce((s,x)=>s+(+x.gia_tri_uoc||0),0);
+  const thang=DEALS.filter(x=>x.stage==='po'||(x.stage==='dong'&&!x.loss_reason)).length;
+  const thua=DEALS.filter(x=>x.stage==='dong'&&x.loss_reason).length;
+  const dtTong=REVS.reduce((s,r)=>s+(+r.so_tien||0),0);
+  // ===== chỉ số theo KỲ (khoảng thời gian chọn) =====
+  const bgKy=bgRows.filter(r=>{const n=(r.ngay_update||'').slice(0,10);return n&&n>=tu&&n<=den});
+  const bgKyGT=bgKy.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
+  const ycsxKy=bgKy.filter(r=>/YCSX/i.test(r.trang_thai||''));
+  const dtKy=REVS.filter(r=>{const m=(r.thang||'').slice(0,7);return m&&m>=tu.slice(0,7)&&m<=den.slice(0,7)})
+    .reduce((s,r)=>s+(+r.so_tien||0),0);
+  const H=(dt,tong,kt,gia)=>`<tr><td>${dt}</td><td class="num">${tong.toLocaleString('vi')}</td>
+    <td class="num"><b>${kt.toLocaleString('vi')}</b></td><td class="num">${pct(kt,tong)}</td>
+    <td class="num">${gia!=null?fmtB(gia):'—'}</td></tr>`;
+  el.classList.remove('muted');
+  const kyHtml=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+    <b style="font-size:12.5px">${t('Kỳ:')}</b>
+    <input type="date" id="ktTu" value="${tu}"><span class="muted">→</span><input type="date" id="ktDen" value="${den}">
+    <button class="btn" onclick="window.KT_TU=document.getElementById('ktTu').value;window.KT_DEN=document.getElementById('ktDen').value;renderKhaiThac()">${t('Tính')}</button>
+  </div>
+  <div class="grid g3" style="margin-bottom:12px">
+    <div class="kpi"><h3>${t('Báo giá phát hành (kỳ)')}</h3><div class="v">${fmtB(bgKyGT)}</div><div class="m">${bgKy.length} ${t('báo giá')} · ${ycsxKy.length} YCSX</div></div>
+    <div class="kpi"><h3>${t('Doanh thu kỳ')}</h3><div class="v">${fmtB(dtKy)}</div><div class="m">${tu} → ${den}</div></div>
+    <div class="kpi"><h3>${t('Tỉ lệ chuyển đổi')}</h3><div class="v">${pct(dtKy,bgKyGT)}</div><div class="m">${t('Doanh thu')} / ${t('giá trị chào')} ${t('trong kỳ')}</div></div>
+  </div>`;
+  el.innerHTML=kyHtml+'<table><tr><th>'+t('Đối tượng')+'</th><th class="num">'+t('Tổng CSDL')+'</th><th class="num">'+t('Đã khai thác')+'</th><th class="num">'+t('Tỉ lệ')+'</th><th class="num">'+t('Giá trị')+' (VND)</th></tr>'+
+    H(t('Kho dự án nền → đưa vào bám sát'),tongNen,bamSat,null)+
+    H(t('Dự án theo dõi → đã tiếp cận'),DEALS.length,daTX.length,gtTX)+
+    H(t('Dự án theo dõi → đã chỉ định'),DEALS.length,daCD.length,gtCD)+
+    H(t('Dự án đóng sổ → thắng'),thang+thua,thang,null)+
+    H(t('Đối tác → đã tiếp cận'),ORGS.length,orgTC,null)+
+    H(t('Đối tác → quan hệ thực (≥2)'),mtKH.length,phu2,null)+
+    H(t('NPP phễu → đã ký HĐ'),nppAll,nppKy,null)+
+    H(t('Báo giá → chốt YCSX'),bgN,ycsx.length,ycsxGT)+
+    `<tr><td>${t('Doanh thu ghi nhận')}</td><td class="num">${REVS.length.toLocaleString('vi')} ${t('dòng ghi nhận')}</td><td class="num">—</td><td class="num">—</td><td class="num"><b>${fmtB(dtTong)}</b></td></tr>`+
+    '</table>'+
+    `<div class="muted" style="font-size:11.5px;margin-top:6px">${t('giá trị chào')}: <b>${fmtB(bgGT)}</b> · ${t('Giá trị khai thác')} (${t('đã chỉ định')}, ${t('chưa đóng')}): <b>${fmtB(daCD.filter(x=>x.stage!=='dong').reduce((s,x)=>s+(+x.gia_tri_uoc||0),0))}</b></div>`;
 }
