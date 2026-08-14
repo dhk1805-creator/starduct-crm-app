@@ -52,7 +52,13 @@ const MB_EN={
 'Hàng chờ trống — không có gì cần bạn duyệt.':'Queue is empty — nothing needs your approval.',
 'chờ cấp':'awaiting','duyệt':'approval','Từ chối bắt buộc ghi lý do — quy tắc L4':'Rejection requires a reason — rule L4',
 'Yêu cầu đang mở':'Open requests','Không có yêu cầu nào đang mở.':'No open requests.',
-'Phân xử chi tiết / gán người xử lý — làm trên desktop, tab Hỗ trợ.':'Detailed triage / assignment — on desktop, Support tab.'
+'Phân xử chi tiết / gán người xử lý — làm trên desktop, tab Hỗ trợ.':'Detailed triage / assignment — on desktop, Support tab.',
+'Thoát':'Sign out','Chào':'Hello','Email':'Email','Mật khẩu':'Password','ĐĂNG NHẬP':'SIGN IN',
+'Đang đăng nhập…':'Signing in…','Sai email hoặc mật khẩu':'Wrong email or password',
+'Dùng tài khoản nội bộ (user name)?':'Use internal account (user name)?',
+'Dùng đăng nhập email':'Use email sign-in','User name':'User name',
+'Hệ thống quản trị quan hệ khách hàng':'Customer Relationship Management',
+'Đang khởi động…':'Starting up…'
 };
 const T=s=>(typeof LANG!=='undefined'&&LANG==='en')?(MB_EN[s]||s):s;
 
@@ -84,20 +90,32 @@ function mbOrgsCuaToi(){
 const mbQL=()=>typeof laQuanLy==='function'&&laQuanLy()&&ME&&ME.vai_tro!=='npp_lead';
 
 /* ===== dựng shell ===== */
+let MB_CHO=true, MB_LOGIN_NB=false; // splash chờ tự-kết-nối · chế độ đăng nhập nội bộ
 window.addEventListener('load',()=>{
   if(!mbLa())return;
   MB_ON=true;document.body.classList.add('mb-mode');
   const sh=document.createElement('div');sh.id='mbApp';
   sh.innerHTML=`
     <div class="mb-head">
-      <b id="mbBrand">Starduct CRM</b>
-      <span id="mbWho" class="muted" style="font-size:12px"></span>
-      <a href="javascript:void(0)" id="mbLang" onclick="mbDoiNgonNgu()" style="font-weight:800">EN</a>
-      <a href="javascript:void(0)" onclick="if(mbEp()){location.href=location.pathname}else{localStorage.setItem('crm_mb_off','1');location.reload()}" title="${T('Bản đầy đủ')}">🖥</a>
+      <div class="mb-head-r1">
+        <b>Starduct CRM</b>
+        <div class="mb-head-acts">
+          <button id="mbLang" onclick="mbDoiNgonNgu()">EN</button>
+          <button onclick="if(mbEp()){location.href=location.pathname}else{localStorage.setItem('crm_mb_off','1');location.reload()}" title="${T('Bản đầy đủ')}">🖥</button>
+        </div>
+      </div>
+      <div class="mb-head-r2" id="mbUserRow" style="display:none">
+        <span id="mbWho"></span>
+        <button id="mbOut" onclick="typeof logout==='function'?logout():location.reload()">⏻ ${T('Thoát')}</button>
+      </div>
     </div>
     <div id="mbBody"></div>
     <datalist id="mbDealList"></datalist><datalist id="mbOrgList"></datalist>`;
   document.body.appendChild(sh);
+  // DẸP các hộp thoại đăng nhập desktop trên mobile — màn đăng nhập riêng lo hết
+  try{dlgCfg.showModal=()=>{if(MB_ON)mbRender()}}catch(e){}
+  try{dlgLogin.showModal=()=>{if(MB_ON)mbRender()}}catch(e){}
+  setTimeout(()=>{MB_CHO=false;if(MB_ON&&!ME)mbRender()},2500); // hết chờ tự kết nối → hiện form
   mbRender();
 });
 window.addEventListener('load',()=>{
@@ -123,12 +141,12 @@ if(typeof renderAll==='function'){
 function mbRender(){
   if(!MB_ON)return;
   const el=document.getElementById('mbBody');if(!el)return;
-  const who=document.getElementById('mbWho');
-  if(who)who.textContent=ME?('👤 '+ME.ho_ten):'';
+  const who=document.getElementById('mbWho'),row=document.getElementById('mbUserRow');
+  if(row)row.style.display=ME?'':'none';
+  if(who&&ME)who.textContent='👤 '+ME.ho_ten+(ME.chuc_danh?' · '+ME.chuc_danh:'');
   const lb=document.getElementById('mbLang');
   if(lb)lb.textContent=LANG==='vi'?'EN':'VI';
-  if(!ME){el.innerHTML=`<div class="mb-card" style="margin-top:24px"><div class="notice">${T('Đăng nhập để thấy công việc của bạn.')}</div>
-    <button class="mb-btn" onclick="dlgCfg.showModal()">${T('Đăng nhập')}</button></div>`;return}
+  if(!ME){mbVeLogin(el);return}
   mbDealList.innerHTML=mbDealsCuaToi().filter(d=>d.stage!=='dong').map(d=>`<option value="${esc(d.ten)}">`).join('');
   mbOrgList.innerHTML=mbOrgsCuaToi().map(o=>`<option value="${esc(o.ten)}">`).join('');
   if(MB_TAB==='home'){mbVeHome(el);return}
@@ -151,6 +169,52 @@ function mbRender(){
     else mbVeHT(v);
   }
 }
+/* ===== MÀN ĐĂNG NHẬP MOBILE (một màn duy nhất, không hộp thoại chồng) ===== */
+function mbVeLogin(el){
+  if(MB_CHO){ // đang chờ tự kết nối phiên cũ
+    el.innerHTML=`<div class="mb-login"><div class="mb-logo">SD</div>
+      <h2>Starduct CRM</h2><div class="mb-sub" style="text-align:center">${T('Đang khởi động…')}</div>
+      <div class="mb-spin"></div></div>`;return}
+  el.innerHTML=`<div class="mb-login">
+    <div class="mb-logo">SD</div>
+    <h2>Starduct CRM</h2>
+    <div class="mb-sub" style="text-align:center;margin-bottom:18px">${T('Hệ thống quản trị quan hệ khách hàng')}</div>
+    ${MB_LOGIN_NB?`
+      <label>${T('User name')}</label>
+      <input id="mbLgU" autocomplete="username" placeholder="user name">
+      <label>${T('Mật khẩu')}</label>
+      <input id="mbLgP" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')mbDangNhap()">
+    `:`
+      <label>${T('Email')}</label>
+      <input id="mbLgU" type="email" autocomplete="email" placeholder="ten@nsca.vn" inputmode="email">
+      <label>${T('Mật khẩu')}</label>
+      <input id="mbLgP" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')mbDangNhap()">
+    `}
+    <button class="mb-btn" onclick="mbDangNhap()">${T('ĐĂNG NHẬP')}</button>
+    <div class="mb-sub" id="mbLgMsg" style="text-align:center;min-height:18px"></div>
+    <a href="javascript:void(0)" class="mb-lgswitch" onclick="MB_LOGIN_NB=!MB_LOGIN_NB;mbRender()">
+      ${MB_LOGIN_NB?T('Dùng đăng nhập email'):T('Dùng tài khoản nội bộ (user name)?')}</a>
+  </div>`;
+}
+async function mbDangNhap(){
+  const u=mbLgU.value.trim(),p=mbLgP.value;
+  const msg=document.getElementById('mbLgMsg');
+  if(!u||!p){msg.textContent='⚠ '+T('Sai email hoặc mật khẩu');return}
+  msg.textContent=T('Đang đăng nhập…');
+  try{
+    if(MB_LOGIN_NB){
+      lgU.value=u;lgP.value=p;
+      await doLogin();
+      if(!ME)msg.textContent='❌ '+(lgMsg.textContent||T('Sai email hoặc mật khẩu'));
+    }else{
+      cfgEmail.value=u;cfgPass.value=p;
+      await connect();
+      if(!ME)msg.textContent='❌ '+((cfgMsg.textContent||'').replace(/^.*?:/,'')||T('Sai email hoặc mật khẩu'));
+    }
+  }catch(e){msg.textContent='❌ '+e.message}
+  if(ME)mbRender();
+}
+
 /* ===== MÀN HÌNH CHÍNH: 3 Ô LỚN ===== */
 function mbVeHome(el){
   const today=new Date().toISOString().slice(0,10);
@@ -176,7 +240,13 @@ function mbVeHome(el){
     <span class="mb-tile-tx"><b>${o.tt}</b><small>${o.sub}</small></span>
     ${o.n!==''&&o.n>0?`<span class="mb-tile-n" style="background:${o.mau}">${o.n}</span>`:''}
   </button>`;
-  el.innerHTML=`<div class="mb-home">${O(o1,'viec')}${O(o2,'kq')}${O(o3,'ht')}</div>`;
+  const ngay=new Date().toLocaleDateString(LANG==='en'?'en-GB':'vi-VN',
+    {weekday:'long',day:'numeric',month:'numeric',year:'numeric'});
+  el.innerHTML=`<div class="mb-greet">
+      <b>${T('Chào')} ${esc((ME.ho_ten||'').split(' ').pop())} 👋</b>
+      <span>${ngay.charAt(0).toUpperCase()+ngay.slice(1)}</span>
+    </div>
+    <div class="mb-home">${O(o1,'viec')}${O(o2,'kq')}${O(o3,'ht')}</div>`;
 }
 
 /* ===== NHÂN VIÊN · VIỆC HÔM NAY ===== */
