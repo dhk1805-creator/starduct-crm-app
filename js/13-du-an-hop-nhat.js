@@ -23,15 +23,17 @@ window.addEventListener('load',()=>{
     card.insertBefore(m,card.firstChild);
     vebDaModes();
   }
+  // gọn bộ lọc: ẩn các lọc ít dùng trong danh mục thống nhất
+  if(window.fdaUT)fdaUT.style.display='none';
+  if(window.fdaTVTK&&fdaTVTK.parentElement)fdaTVTK.parentElement.style.display='none';
 });
 function vebDaModes(){
   const m=document.getElementById('daModes');if(!m)return;
   const B=(k,l)=>`<button class="btn${DA_MODE===k?' pri':''}" onclick="datDaMode('${k}')" style="padding:6px 12px">${l}</button>`;
-  const nCo=DEALS.filter(daGiao).length,nChua=DEALS.length-nCo;
-  m.innerHTML=B('chidinh','✅ '+t('Dự án ĐÃ chỉ định / phân công')+` <span class="tag">${nCo}+</span>`)+
-    B('chuachidinh','⬜ '+t('Dự án CHƯA chỉ định')+` <span class="tag">${nChua}+</span>`)+
-    (laQuanLy()?B('trung','🧹 '+t('Trùng lặp nền')+(TRUNG_ROWS?` <span class="tag">${TRUNG_ROWS.length}</span>`:'')):'')+
-    `<span class="muted" style="font-size:11px;margin-left:auto">${t('Mỗi khối gồm 2 phần: Pipeline đang chăm sóc (trên) + Danh mục nền tra cứu (dưới)')}</span>`;
+  m.innerHTML=B('chidinh','✅ '+t('Đã chỉ định / phân công'))+
+    B('chuachidinh','⬜ '+t('Chưa chỉ định'))+
+    (laQuanLy()?B('trung','🧹 '+t('Trùng lặp')+(TRUNG_ROWS?` <span class="tag">${TRUNG_ROWS.length}</span>`:'')):'')+
+    `<span class="muted" style="font-size:11px;margin-left:auto">${t('MỘT danh mục thống nhất — cột Nguồn: 🎯 đang bám sát · 🗺 kho thị trường')}</span>`;
 }
 function datDaMode(k){
   DA_MODE=k;NEN_PAGE=0;vebDaModes();
@@ -45,18 +47,53 @@ const _renderDA_v22=renderDA;
 const coNPP=d=>!!(d.npp_dang_ky_id||(d.npp_chi_dinh&&!['Xác nhận lại với NSCA','Các NPP cùng tham gia'].includes(d.npp_chi_dinh)));
 // "Đã chỉ định/phân công" = có NPP HOẶC có người phụ trách nội bộ
 const daGiao=d=>coNPP(d)||!!(d.nguoi_phu_trach||d.owner);
+
+/* ===== MỘT DANH MỤC THỐNG NHẤT: dự án đang bám (🎯) + kho thị trường (🗺) chung một bảng ===== */
 renderDA=function(){
   vebDaModes();
   if(DA_MODE==='trung'){veTrungLap();return}
-  // ===== PHẦN 1: PIPELINE đang chăm sóc (lọc theo đã/chưa chỉ định) =====
-  const bak=DEALS;
-  DEALS=DA_MODE==='chidinh'?DEALS.filter(daGiao):DEALS.filter(d=>!daGiao(d));
-  const soPipe=DEALS.length;
-  try{_renderDA_v22()}finally{DEALS=bak}
-  daList.insertAdjacentHTML('afterbegin',
-    `<h3 style="font-size:14px;margin:2px 0 8px">🎯 ${t('Trong PIPELINE chăm sóc')} (${soPipe}) <span class="muted" style="font-weight:400;font-size:11px">— ${t('có stage, phê duyệt, giá trị · bấm dòng để mở')}</span></h3>`);
-  // ===== PHẦN 2: DANH MỤC NỀN tra cứu (cùng tiêu chí đã/chưa chỉ định) =====
-  daList.insertAdjacentHTML('beforeend','<div id="nenSec" style="margin-top:18px;border-top:2px dashed var(--border);padding-top:10px"><div class="muted">'+t('Đang tải danh mục nền…')+'</div></div>');
+  NEN_PAGE=0; // đổi lọc/tab → về trang đầu của kho
+  const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
+  // nạp bộ lọc NPP + người phụ trách
+  const npps=ORGS.filter(o=>o.phan_loai==='npp');
+  if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
+    fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.value=cur}
+  const owners=[...new Set(DEALS.flatMap(d=>[d.owner,d.nguoi_phu_trach]).filter(Boolean))].sort();
+  if(fdaNguoi.options.length-1!==owners.length){const cur=fdaNguoi.value;
+    fdaNguoi.innerHTML='<option value="">— '+t('Người phụ trách')+' —</option>'+owners.map(o=>`<option>${esc(o)}</option>`).join('');
+    fdaNguoi.value=cur}
+  const npByid=Object.fromEntries(npps.map(n=>[n.id,n.ten]));
+  // ---- dòng PIPELINE (🎯) đã lọc ----
+  let rows=DEALS.filter(d=>
+    (DA_MODE==='chidinh'?daGiao(d):!daGiao(d))&&
+    (!q||d.ten.toLowerCase().includes(q)||(d.cdt_text||'').toLowerCase().includes(q))&&
+    (!fdaQG.value||d.quoc_gia===fdaQG.value)&&
+    (!tp||(d.dia_diem||'').toLowerCase().includes(tp))&&
+    (!hm||(d.hang_muc||'').toLowerCase().includes(hm))&&
+    (!fdaNPP.value||d.npp_dang_ky_id===fdaNPP.value)&&
+    (!fdaSt.value||d.stage===fdaSt.value)&&
+    (!fdaPD.value||(d.trang_thai_phe_duyet||'cho_tiep_nhan')===fdaPD.value)&&
+    (!fdaNguoi.value||[d.owner,d.nguoi_phu_trach].includes(fdaNguoi.value))&&
+    (!fdaDY.checked||(typeof laDungYen==='function'&&laDungYen(d))));
+  rows=typeof phamViNPP==='function'?phamViNPP(rows):rows;
+  const today=new Date().toISOString().slice(0,10);
+  const dealTr=d=>{const dy=typeof laDungYen==='function'&&laDungYen(d);
+    return `<tr class="row" onclick="openWorkspace?openWorkspace('${d.id}'):openDeal('${d.id}')"${dy?' style="background:var(--bad-bg)"':''}>
+    <td style="max-width:250px"><b>${esc(d.ten)}</b>${dy?' <span class="pill" style="background:var(--bad-bg);color:var(--bad)">⚠</span>':''}<div class="muted">${esc(d.cdt_text||'')}</div></td>
+    <td>${esc(d.dia_diem||isoName[d.quoc_gia]||d.quoc_gia||'')}</td>
+    <td>${esc(npByid[d.npp_dang_ky_id]||d.npp_chi_dinh||'')||'<span class="muted">—</span>'}</td>
+    <td>${esc(d.nguoi_phu_trach||d.owner||'')||'<span class="muted">—</span>'}</td>
+    <td><span class="pill ${d.stage==='po'?'p4':d.stage==='spec_in'?'p3':d.stage==='dong'?'p0':'p1'}">${STG[d.stage]||d.stage}</span>${nhanPD(d)?'<div style="margin-top:2px">'+nhanPD(d)+'</div>':''}</td>
+    <td class="num">${d.gia_tri_uoc?fmtB(+d.gia_tri_uoc):''}</td>
+    <td><span class="tag" title="${t('Đang bám sát trong pipeline')}">🎯</span></td></tr>`};
+  daList.innerHTML=
+    `<div class="muted" style="margin:2px 0 6px">🎯 <b>${rows.length}</b> ${t('đang bám sát')} · ${t('tổng giá trị ước')} ${fmtB(rows.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0))} · 🗺 <span id="nenDem">…</span> ${t('trong kho thị trường (cuộn xuống, phân trang)')}</div>`+
+    '<table><tr><th>'+t('Dự án')+'</th><th>'+t('Địa bàn')+'</th><th>NPP</th><th>'+t('Người phụ trách')+'</th><th>'+t('Trạng thái')+'</th><th class="num">'+t('Giá trị')+'</th><th>'+t('Nguồn')+'</th></tr>'+
+    rows.slice(0,300).map(dealTr).join('')+
+    '<tbody id="nenTbody"><tr><td colspan="7" class="muted">'+t('Đang tải kho thị trường…')+'</td></tr></tbody></table>'+
+    '<div id="nenPager" style="display:flex;gap:8px;align-items:center;margin-top:10px"></div>';
+  applyLang();
   loadNenHopNhat();
 };
 
@@ -74,34 +111,30 @@ async function loadNenHopNhat(){
   if(fdaNPP.value){const npp=ORGS.find(o=>o.id===fdaNPP.value);
     if(npp)q=q.ilike('npp_chi_dinh','%'+npp.ten.slice(0,15)+'%')}
   const r=await q.order('ma_du_an').range(NEN_PAGE*NEN_SIZE,NEN_PAGE*NEN_SIZE+NEN_SIZE-1);
-  const khung=document.getElementById('nenSec')||daList;
-  if(r.error){khung.innerHTML='<div class="notice warn">'+esc(r.error.message)+'</div>';return}
-  NEN_ROWS=(r.data||[]).filter(x=>!daNoi.has(x.ma_du_an)); // KHỬ TRÙNG: đã theo dõi thì không lặp lại ở nền
+  const tbody=document.getElementById('nenTbody');if(!tbody)return;
+  if(r.error){tbody.innerHTML='<tr><td colspan="7"><div class="notice warn">'+esc(r.error.message)+'</div></td></tr>';return}
+  NEN_ROWS=(r.data||[]).filter(x=>!daNoi.has(x.ma_du_an)); // KHỬ TRÙNG: đã có trong pipeline thì không lặp lại
   window.DN_ROWS=NEN_ROWS; // để openDN dùng lại hộp thoại chi tiết cũ
   const tong=r.count||0,maxP=Math.max(1,Math.ceil(tong/NEN_SIZE));
-  khung.innerHTML=
-  `<h3 style="font-size:14px;margin:0 0 6px">🗺 ${t('Trong DANH MỤC NỀN — tra cứu, chưa chăm sóc')} (${tong})
-    <span class="muted" style="font-weight:400;font-size:11px">— ${DA_MODE==='chidinh'?t('đã có NPP chỉ định từ file cập nhật (kể cả DA kết thúc) · bấm 📌 để đưa vào pipeline'):t('trắng NPP — dư địa để chỉ định / khai thác')}</span></h3>`+
-  `<div class="muted" style="margin-bottom:6px">${t('trang')} ${NEN_PAGE+1}/${maxP} · ${t('ẩn')} ${(r.data||[]).length-NEN_ROWS.length} ${t('dòng đã có trong pipeline (khử trùng lặp)')}</div>`+
-  '<table><tr><th>'+t('Mã')+'</th><th>'+t('Tên dự án')+'</th><th>CĐT</th><th>'+t('Tỉnh')+'</th><th>'+t('NPP chỉ định')+'</th><th>'+t('Hiện trạng')+'</th><th>Spec-in</th><th></th></tr>'+
-  NEN_ROWS.map((d,i)=>`<tr class="row">
-    <td onclick="openDN(${i})"><b>${esc(d.ma_du_an)}</b></td>
-    <td onclick="openDN(${i})">${esc(d.ten_du_an||'—')}</td>
-    <td onclick="openDN(${i})" class="muted">${esc((d.cdt||'').slice(0,36))}</td>
-    <td onclick="openDN(${i})">${esc(d.tinh||'—')}</td>
-    <td onclick="openDN(${i})">${d.npp_chi_dinh?'<span class="tag">'+esc(d.npp_chi_dinh)+'</span>':'—'}</td>
-    <td onclick="openDN(${i})">${esc(d.hien_trang||'—')}</td>
-    <td onclick="openDN(${i})">${esc(d.spec_in||'—')}</td>
-    <td style="white-space:nowrap">
-      ${DA_MODE==='chuachidinh'&&laQuanLy()?`<button class="btn pri" style="padding:3px 8px" title="${t('Phân công nội bộ hoặc giao NPP — xác nhận xong tự chuyển sang Đã chỉ định')}"
-        onclick="moPhanCong(${i})">👥 ${t('Phân công')}</button> `:''}
-      <button class="btn" style="padding:3px 8px" title="${t('Chuyển vào pipeline theo dõi — giữ liên kết CSDL nền')}"
-      onclick="moTheoDoi(${i})">📌 ${t('Theo dõi')}</button></td></tr>`).join('')+'</table>'+
-  `<div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-    <button class="btn" onclick="if(NEN_PAGE>0){NEN_PAGE--;loadNenHopNhat()}">← ${t('Trước')}</button>
-    <span class="muted" style="font-size:12px">${t('trang')} ${NEN_PAGE+1}/${maxP}</span>
-    <button class="btn" onclick="if(NEN_PAGE<${maxP-1}){NEN_PAGE++;loadNenHopNhat()}">${t('Sau')} →</button>
-  </div>`;
+  const dem=document.getElementById('nenDem');if(dem)dem.textContent=tong;
+  tbody.innerHTML=NEN_ROWS.map((d,i)=>`<tr class="row">
+    <td onclick="openDN(${i})" style="max-width:250px"><b>${esc(d.ten_du_an||d.ma_du_an)}</b>
+      <div class="muted">${esc(d.ma_du_an)}${d.cdt?' · '+esc((d.cdt||'').slice(0,32)):''}</div></td>
+    <td onclick="openDN(${i})">${esc(d.tinh||'—')}${d.quan_huyen?'<div class="muted" style="font-size:11px">'+esc(d.quan_huyen)+'</div>':''}</td>
+    <td onclick="openDN(${i})">${d.npp_chi_dinh?'<span class="tag">'+esc(d.npp_chi_dinh)+'</span>':'<span class="muted">—</span>'}</td>
+    <td onclick="openDN(${i})" class="muted">—</td>
+    <td onclick="openDN(${i})">${esc(d.hien_trang||'—')}${d.spec_in?'<div class="muted" style="font-size:11px">Spec-in: '+esc(d.spec_in)+'</div>':''}</td>
+    <td class="num"></td>
+    <td style="white-space:nowrap"><span class="tag" title="${t('Kho thị trường — chưa bám sát')}">🗺</span>
+      ${DA_MODE==='chuachidinh'&&laQuanLy()?`<button class="btn pri" style="padding:3px 8px" title="${t('Phân công nội bộ hoặc giao NPP')}"
+        onclick="event.stopPropagation();moPhanCong(${i})">👥</button>`:''}
+      <button class="btn" style="padding:3px 8px" title="${t('Đưa vào bám sát (pipeline)')}"
+      onclick="event.stopPropagation();moTheoDoi(${i})">📌</button></td></tr>`).join('')
+    ||('<tr><td colspan="7" class="muted">'+t('Kho thị trường không còn dòng nào khớp lọc ở khối này.')+'</td></tr>');
+  const pager=document.getElementById('nenPager');
+  if(pager)pager.innerHTML=`<button class="btn" onclick="if(NEN_PAGE>0){NEN_PAGE--;loadNenHopNhat()}">← ${t('Trước')}</button>
+    <span class="muted" style="font-size:12px">🗺 ${t('kho thị trường: trang')} ${NEN_PAGE+1}/${maxP} · ${tong} ${t('bản ghi')}</span>
+    <button class="btn" onclick="if(NEN_PAGE<${maxP-1}){NEN_PAGE++;loadNenHopNhat()}">${t('Sau')} →</button>`;
   applyLang();
 }
 
