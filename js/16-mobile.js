@@ -26,7 +26,7 @@ const MB_EN={
 'Chọn trong danh sách để gắn đúng dự án':'Pick from the list so it attaches to the right project',
 'Khách hàng-Đối tác':'Customers-Partners',
 'Gửi yêu cầu':'Send request','Tác nghiệp của tôi':'My actions',
-'Chấp nhận':'Accept','Đã xong':'Done','Trả lời':'Reply','Phản hồi & trao đổi':'Feedback & discussion',
+'Chấp nhận':'Accept','Đã xong':'Done','Yêu cầu mới':'New requests','Đang xử lý của tôi':'In progress (mine)','Trả lời':'Reply','Phản hồi & trao đổi':'Feedback & discussion',
 'Gửi trả lời':'Send reply','Chưa có phản hồi nào.':'No feedback yet.','Nội dung… *':'Message… *',
 'Ý kiến / phản hồi (bác thì bắt buộc)':'Comment / feedback (required if rejecting)',
 'Dự án theo kế hoạch hôm nay':'Today\u2019s planned projects','(quá hạn)':'(overdue)','(hôm nay)':'(today)','(7 ngày tới)':'(next 7 days)',
@@ -512,25 +512,35 @@ function mbQLYeuCau(el){
     ${Object.entries(agg).map(([k,v])=>`<div class="mb-kpi" style="border-top:3px solid ${v.qh?'#dc2626':'#0f4c81'}">
       <b>${v.n}</b><span>${(typeof BP!=='undefined'&&BP[k])||k}${v.qh?' · ⚠'+v.qh:''}</span></div>`).join('')||''}
   </div>
-  <div class="mb-card"><h3>🆘 ${T('Yêu cầu đang mở')} (${mo.length})</h3>
   ${(window.__MB_HTQ=mo)&&''}
-  ${mo.length?mo.slice(0,25).map((h,i)=>{const d=DEALS.find(z=>z.id===h.deal_id);
-    const late=h.han&&h.han<today;
+  <div class="mb-card"><h3>🆘 ${T('Yêu cầu mới')} (${mo.filter(h=>h.trang_thai==='mo').length})</h3>
+  ${mo.filter(h=>h.trang_thai==='mo').length?mo.map((h,i)=>{if(h.trang_thai!=='mo')return '';
+    const d=DEALS.find(z=>z.id===h.deal_id);const late=h.han&&h.han<today;
     const xuly=laNguoiTiepNhan();
     return `<div class="mb-item" style="flex-direction:column;align-items:stretch"><div>
       <b>${late?'⚠️ ':''}${esc((h.noi_dung||'').slice(0,80))}</b>
       <div class="mb-sub">${esc(h.nguoi_yeu_cau||'')} → ${(typeof BP!=='undefined'&&BP[h.bo_phan_nhan])||h.bo_phan_nhan}
-      ${d?' · '+esc(d.ten):''} · ${T('hạn')} ${h.han||'—'}${h.nguoi_xu_ly?' · 👤 '+esc(h.nguoi_xu_ly):''}</div>
+      ${d?' · '+esc(d.ten):''} · ${T('hạn')} ${h.han||'—'}</div>
     </div>
     ${xuly?`<input id="mbHtYk_${i}" placeholder="${T('Ý kiến / phản hồi (bác thì bắt buộc)')}" style="margin-top:8px">
     <div style="display:flex;gap:6px;margin-top:8px">
-      <button class="mb-mini" style="flex:1;color:#0f4c81;border-color:#0f4c81" onclick="mbXuLyHT(${i},'dang_xu_ly')">✔ ${T('Chấp nhận')}</button>
-      <button class="mb-mini" style="flex:1;color:#16a34a;border-color:#16a34a" onclick="mbXuLyHT(${i},'da_xong')">✅ ${T('Đã xong')}</button>
+      <button class="mb-mini" style="flex:1;color:#16a34a;border-color:#16a34a" onclick="mbXuLyHT(${i},'dang_xu_ly')">✔ ${T('Chấp nhận')}</button>
       <button class="mb-mini" style="flex:1;color:#dc2626;border-color:#dc2626" onclick="mbXuLyHT(${i},'tu_choi')">✘ ${T('Từ chối')}</button>
       <button class="mb-mini" onclick="mbMoThr('support','${h.id}','ht')">💬</button>
     </div>`:''}
     </div>`}).join('')
-  :'<div class="mb-sub">'+T('Không có yêu cầu nào đang mở.')+'</div>'}
+  :'<div class="mb-sub">🎉 '+T('Không có yêu cầu nào đang mở.')+'</div>'}
+  </div>
+  <div class="mb-card"><h3>🛠 ${T('Đang xử lý của tôi')} (${mo.filter(h=>h.trang_thai==='dang_xu_ly'&&h.nguoi_xu_ly===ME.ho_ten).length})</h3>
+  ${mo.filter(h=>h.trang_thai==='dang_xu_ly'&&h.nguoi_xu_ly===ME.ho_ten).length?mo.map((h,i)=>{
+    if(!(h.trang_thai==='dang_xu_ly'&&h.nguoi_xu_ly===ME.ho_ten))return '';
+    const d=DEALS.find(z=>z.id===h.deal_id);
+    return `<div class="mb-item"><button class="mb-mini" style="float:right;color:#16a34a;border-color:#16a34a" onclick="mbXuLyHT(${i},'da_xong')">✅ ${T('Đã xong')}</button>
+      <div><b>${esc((h.noi_dung||'').slice(0,70))}</b>
+      <div class="mb-sub">${esc(h.nguoi_yeu_cau||'')}${d?' · '+esc(d.ten):''} · ${T('hạn')} ${h.han||'—'}</div></div>
+    </div>`}).join('')
+  :'<div class="mb-sub">'+T('Chưa có — kết quả bạn lưu sẽ hiện ở đây và trên desktop của quản lý.').split('—')[0].trim()+'</div>'}
+  </div>
   </div>
   <div class="mb-card"><div class="mb-sub">${T('Phân xử chi tiết / gán người xử lý — làm trên desktop, tab Hỗ trợ.')}</div></div>`;
 }
