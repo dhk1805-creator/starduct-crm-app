@@ -147,3 +147,5 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden)check(); 
 window.SD_VERSION={version:SD_VER,build:SD_BUILD,update:capNhat,check:check};
 console.log('CRM version bar v'+SD_VER);
 })();
+
+try{if(typeof APP_VER!=='undefined'){var _e=document.getElementById('verTag');if(_e)_e.textContent=APP_VER;}}catch(e){}
