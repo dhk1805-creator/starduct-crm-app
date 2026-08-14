@@ -1,29 +1,24 @@
 -- ============================================================
--- MIGRATION v37: Danh muc thi truong quoc te + ho so tinh bao
--- Nguon: STARDUCT_Market_Intelligence_All_CountriesEN.xlsx (14/08/2026)
---        + LIST CUSTOMER AND DITRIBUTOR INTERNATIONAL.xlsx (sheet Distributor List)
--- 16 thi truong: 12 co bao cao (PH MY ID TH KH HK MO SG KR AE SA VN)
---               + 4 chi co NPP da ky HD (IL RU UY US)
+-- MIGRATION v37 (ban chinh 14/08 dem): Danh muc thi truong + tinh bao
+-- 12 thi truong co bao cao (PH MY ID TH KH HK MO SG KR AE SA VN) + UY US IL RU
+-- 9 NPP DA KY HOP DONG chinh thuc theo Distributor List;
+-- Quamor/Maayan (IL), Vinh Gia (RU), RectorSeal (US) = THAM KHAO (doi thu/doi tac tiem nang)
 -- An toan chay lai (upsert theo ma).
 -- ============================================================
 begin;
 
 create table if not exists crm_thi_truong (
-  ma text primary key,              -- ISO-2
-  ten text not null,
-  dac_diem text,                    -- TL;DR dac diem thi truong (EN)
-  bao_cao text,                     -- bao cao tinh bao day du (EN)
-  npp_ky_hd text,                   -- NPP da ky hop dong, dang ban hang/nhan gan KH-DA
-  ma_npp text,
-  nguon text default 'market-intelligence-14/08/2026',
-  cap_nhat timestamptz default now()
+  ma text primary key, ten text not null, dac_diem text, bao_cao text,
+  npp_ky_hd text, ma_npp text, ghi_chu_tham_khao text,
+  nguon text default 'market-intelligence-14/08/2026', cap_nhat timestamptz default now()
 );
+alter table crm_thi_truong add column if not exists ghi_chu_tham_khao text;
 alter table crm_thi_truong enable row level security;
 do $$ begin
   create policy "crm_thi_truong_read" on crm_thi_truong for select using (true);
 exception when duplicate_object then null; end $$;
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('PH', 'Philippines', '• The Philippines is a viable and attractive air-terminal export market for STARDUCT : 0% import duty under ATIGA (Form D from Vietnam), NO mandatory DTI-BPS certification barrier for grilles/diffusers/dampers/duct (only complete air-conditioning units fall under the mandatory list), and a massive project pipeline (hyperscale data centers, NMIA/NAIA airports, Metro Manila Subway, NSCR, PEZA ecozones).
 • Optimal competitive positioning : wedge into the gap between (i) domestic fabricators (ALMADECO, PBM, Spiral Group) — cheap but lacking AMCA/UL certification; and (ii) Western brands (Ruskin, Titus, TROX, Greenheck) — high quality/certification but expensive. STARDUCT, with AMCA-aligned products plus competitive pricing, can win in the data center, hospital, commercial high-rise, and especially PEZA factory segments.
 • The real barriers are not tariffs or product certification but rather (a) UL 555/555S for fire/smoke dampers (an international spec convention, even though Philippine law does not specifically mandate it), (b) the need for a domestic importer/agent to win tenders and act as importer of record, and (c) the trust of MEP consultants (DCCD, RBSanchez, Guevara) — who decide the "spec."', 'MARKET INTELLIGENCE REPORT: Philippine Construction & HVAC Sector — Market Entry Assessment for STARDUCT (Vietnam)
@@ -167,10 +162,10 @@ CAVEATS (data gaps & low-confidence areas)
 6. F.R. Sevilla, First Flow, Frostlite, Aleja, PBM pricing : contact information/details incomplete.
 7. ATIGA 0% for each 8-digit HS code : confirmed via general ATIGA rules plus the FTA block in BOC memos, but not screenshot-verified line-by-line on the Tariff Finder for each 8-digit code (the site blocks automated access) — should be self-verified at finder.tariffcommission.gov.ph. With ~99% of ASEAN tariff lines at 0%, the 0% rate is nearly certain given a valid Form D.
 8. Some projects (Ayala Land''s Laurean Residences, 67 stories, Makati) were suspended in 4/2026 due to rising construction costs — the pipeline carries volatility risk; always check the latest status on ppp.gov.ph and in the news before committing sales resources.
-9. 1D — Commercial real estate : could not identify the specific MEP/M&E contractors typically used by SM Prime/Ayala Land/Megaworld/Robinsons Land/Filinvest, nor the HVAC/air-terminal brands specified in these conglomerates'' tender documents — requires direct investigation through bid records or industry relationships.', 'Aire Focus Corporation; Greentech Indl Inc', 'EPH')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+9. 1D — Commercial real estate : could not identify the specific MEP/M&E contractors typically used by SM Prime/Ayala Land/Megaworld/Robinsons Land/Filinvest, nor the HVAC/air-terminal brands specified in these conglomerates'' tender documents — requires direct investigation through bid records or industry relationships.', 'Aire Focus Corporation; Greentech Indl Inc', 'EPH', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('MY', 'Malaysia', '• Malaysia is a larger but more fiercely competitive market than the Philippines : 0% import duty under ATIGA (Form D from Vietnam, self-certification via the ASEAN Single Window), NO mandatory SIRIM/DSM/Energy Commission/CIDB certification for standard grilles/diffusers/dampers/duct (only complete air-conditioning units are regulated) — but Malaysia''s data center project pipeline (RM426.7 billion in total approved investment for 2025, with Johor alone accounting for ~RM113.8 billion across 21 DC projects) is significantly larger than the Philippines.
 • The most important strategic difference versus the Philippines : TROX, Systemair and Halton all have their own manufacturing plants in Malaysia (not just import agents) — meaning their cost structure is close to domestic, not "import + duty" pricing. The strongest domestic competitor is Asli Mechanical (55+ years, a full product range comparable to TROX but with apparently no publicly disclosed AMCA/ISO certification) — this is the closest direct competitor to STARDUCT, not Airmaster as in the Philippines.
 • The real barriers are not product duties/certification but rather : (a) MS 555 (Malaysian Standard) plus mandatory "Sijil Perakuan Bahan" certification from Bomba (the Fire and Rescue Department) specifically for fire dampers/fire-rated duct — this is what differs from the Philippines: Malaysian regulation specifically names "Fire Dampers" and "Fire Rated Duct" among 28 mandatory categories, not merely market practice; (b) the need for a domestic importer/agent registered with MOF/ePerolehan to sell into government projects; (c) the trust of MEP consultants (KTA Tenaga, Meinhardt, WSP, NDY, Arup) — though it remains unverified whether they default to ASHRAE/AMCA or MS/SIRIM standards when writing specifications.', 'MARKET INTELLIGENCE REPORT: Malaysia Construction & HVAC Sector — Market-Entry Assessment for STARDUCT (Vietnam)
@@ -317,10 +312,10 @@ CAVEATS (data gaps & low-confidence areas)
 6. Separate certification for smoke dampers (as distinct from fire dampers) within Bomba''s 28-category list has not been confirmed — only "Fire Dampers" (#2) and "Fire Rated Duct" (#10) are certain.
 7. The effective status of the Government Procurement Act 2025 and whether the HVAC/mechanical equipment supply category is subject to foreign-ownership restrictions on ePerolehan — unverified.
 8. Pricing/tier positioning of Asli Mechanical and other domestic shops : no public price list is available for quantitative comparison with STARDUCT — the same limitation encountered in the Philippines report.
-9. Several projects carry notable timeline/cost volatility risk: Infineon Kulim Phase 2 (conflicting delay reports), MRT3 (tender not yet finalized, estimated cost has shifted from RM45 billion → RM31 billion over the years), the KL–Singapore HSR (only a possibility, no official project yet) — always check the latest news before committing sales resources.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+9. Several projects carry notable timeline/cost volatility risk: Infineon Kulim Phase 2 (conflicting delay reports), MRT3 (tender not yet finalized, estimated cost has shifted from RM45 billion → RM31 billion over the years), the KL–Singapore HSR (only a possibility, no official project yet) — always check the latest news before committing sales resources.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('ID', 'Indonesia', '• Indonesia is the largest of the three markets surveyed so far (total realized BKPM-approved investment for 2025: Rp1,931.2 trillion; the 25 KEKs alone attracted a cumulative Rp336 trillion) but it also has the heaviest non-tariff barriers — not the Philippines (near zero barriers) or Malaysia (fire-damper certification barrier), but TKDN (Tingkat Komponen Dalam Negeri — local content requirement) and mandatory SNI for coated sheet steel (the ductwork raw material) .
 • TKDN is a structural barrier, not a procedural one : for government/BUMN (state-owned enterprise) projects, TKDN+BMP ≥40% means imports are hard-blocked , and TKDN≥25% makes domestic-product preference mandatory wherever a compliant domestic product exists. STARDUCT CANNOT sell directly into the e-katalog/state-project channel if it only exports finished products — it needs a domestic partner to perform final assembly/processing in order to count toward TKDN. This is the single biggest difference versus the Philippines and Malaysia, neither of which has a comparable localization requirement.
 • Mandatory SNI for steel is about to tighten (Permenperin 23/2025, effective 20/5/2026) , covering galvanized coated sheet steel (BjLS) and Galvalume/BjLAS — the most common ductwork material — applying to imports as well; certification cost is estimated by the GINSI association at "tens of thousands of USD per product," and the certificate is valid for only 1 year. This is a major cost/timeline risk that needs to be planned for early.
@@ -466,10 +461,10 @@ CAVEATS (data gaps & low-confidence areas)
 6. The default specification standard used by major MEP consultants (pure SNI vs. ASHRAE/AMCA layered on top): not directly verified via tender documentation — only indirect evidence from green/LEED projects.
 7. Conflicting national data center capacity figures between government sources (~500MW in 2025) and private market reports (~1.44GW) — the measurement methodology should be clarified before using this to estimate opportunity size.
 8. Several projects carry notable schedule risk: Soekarno-Hatta Terminal 4 (fully cancelled 11/2024 — a lesson in always checking the latest news), North Bali Airport (multiple sources skeptical of the timeline), the Jakarta-Surabaya HSR line (still at the negotiation stage, no confirmed budget), and the Trans-Sumatra railway (still at the capital-structuring stage, no mass construction yet).
-9. Pricing/price tier of domestic fabricators (ASTEM, Indoducting, Adimas, etc.): no public price list available for quantitative comparison — a recurring limitation from the earlier Philippines/Malaysia reports.', 'PT. Sinabu Nusaindo', 'EID')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+9. Pricing/price tier of domestic fabricators (ASTEM, Indoducting, Adimas, etc.): no public price list available for quantitative comparison — a recurring limitation from the earlier Philippines/Malaysia reports.', 'PT. Sinabu Nusaindo', 'EID', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('TH', 'Thailand', '• Thailand has the largest data-center pipeline of the four countries surveyed, by rate of growth : BOI approved Bt746.2 billion (~US$21 billion) for 151 digital/data-center projects in 2025 — ByteDance/TikTok alone escalated from US$3.76 billion to US$25 billion , the single largest foreign investment ever approved by the BOI.
 • The most distinctive and serious barrier is NOT product certification but an anti-dumping (AD) duty aimed specifically at Vietnamese steel : Thailand is applying a 5-year-extended AD duty (rate 4.30%–60.26%) on hot-dip galvanized/pre-painted cold-rolled steel (PPGI/PPGL, 39 HS codes) originating from Vietnam — a risk not encountered in the Philippines/Malaysia/Indonesia reports, and it must be checked immediately against STARDUCT''s material and product HS codes for overlap.
 • "Made in Thailand" (MiT) is a localization mechanism similar to Indonesia''s TKDN but somewhat "softer": public procurement must reach a minimum of 60% domestic-content value, and steel construction works specifically must be ≥90% MiT-certified — but the domestic-content threshold to obtain MiT status is only ~40% of Thai value, and FOREIGN-INVESTED FIRMS that manufacture/assemble in Thailand can still register — opening a path for STARDUCT if it sets up a local assembly/fabrication joint venture.
@@ -606,10 +601,10 @@ CAVEATS (data gaps & low-confidence areas)
 6. Dedicated TIS standard for fire/smoke dampers (if any) : the specific มอก. 2541 sub-clause number was not identified.
 7. Ability of a foreign entity not registered in Thailand to register directly on e-GP : unverified.
 8. Notable schedule risks: the 3-airport high-speed rail link (risk of contract collapse); the Foxconn-PTT EV project (being restructured/delayed); conflicting 2025 BOI figures across sources regarding "digital" vs. "data center" scope — always check the latest news before committing sales resources.
-9. Pricing tier of domestic fabricators (Duct Asia, Airmax, King Air Grille...): no public price lists available for quantitative comparison — a limitation repeated from the previous 3 reports.', 'Wind Control Co., Ltd', 'ETL')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+9. Pricing tier of domestic fabricators (Duct Asia, Airmax, King Air Grille...): no public price lists available for quantitative comparison — a limitation repeated from the previous 3 reports.', 'Wind Control Co., Ltd', 'ETL', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('KH', 'Cambodia', '• Cambodia is the smallest market of the 5 countries surveyed — positioning must be set correctly from the outset : total operating data center capacity nationwide is only ~7MW (versus hundreds to thousands of MW in Thailand/Malaysia/Indonesia), and total CDC-approved investment capital nationwide in 2025 was only ~US$10 billion (versus Bt1,876 trillion for BOI Thailand alone). STARDUCT should treat Cambodia as an opportunistic add-on market, not a strategic pillar the way Indonesia/Thailand/Malaysia are.
 • In exchange, this is the LIGHTEST regulatory environment of the 5 countries : NO mandatory CS (Cambodian Standard) certification was found for grilles/diffusers/dampers/ducts; NO localization requirement in the style of TKDN (Indonesia) or MiT (Thailand); 100% foreign ownership is permitted for trading/import activities (no special license needed like Thailand''s FBL); the QIP (Qualified Investment Project) regime exempts import duty on machinery/production inputs without requiring a Cambodian partner.
 • Competition is almost nonexistent : NO certified domestic Cambodian air-terminal manufacturer was found, and NO dedicated Cambodian agent/legal entity was found for TROX, Ruskin, Titus, Greenheck, Price Industries, Halton, or Airmaster. The market is currently served "on an ad hoc basis" via regional offices in Thailand (Duct Asia) or Malaysia (Systemair) — this is a genuine gap for STARDUCT given its geographic proximity advantage (land border, shorter logistics than Thailand/Malaysia/China).
@@ -718,10 +713,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. The current mandatory CS list from ISC : the main reference source (the ASEAN compilation) is dated (2012) — needs direct verification against the latest version on isc.gov.kh.
 6. International air-terminal competitors that may serve Cambodia "anonymously" via regional agents (Thailand/Vietnam/China) without leaving an online footprint — the possibility of undetected competition via search cannot be ruled out.
 7. Some project values are not independently verified (e.g. the Wanli Tire plant at $500 million, Minebea land at $650 million) — sourced from a single reference only, requiring further cross-checking.
-8. Overall market size remains the biggest open question : this research confirms the existence of specific projects but CANNOT estimate Cambodia''s total annual air-terminal demand through public-search methods — it is recommended that this be treated as a mandatory next step before committing significant resources.', 'TNR Industries Co., Ltd', 'ECA')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. Overall market size remains the biggest open question : this research confirms the existence of specific projects but CANNOT estimate Cambodia''s total annual air-terminal demand through public-search methods — it is recommended that this be treated as a mandatory next step before committing significant resources.', 'TNR Industries Co., Ltd', 'ECA', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('HK', 'Hong Kong', '• Hong Kong is an absolute-free-port market with 0% import duty (not limited to ATIGA/ASEAN — all origins enjoy 0% duty except 4 "dutiable" goods categories unrelated to HVAC), has NO VAT/GST, and has NO mandatory product certification of the PS/ICC/CCC type for grilles/diffusers/dampers/ductwork. AHKFTA (ASEAN–Hong Kong FTA, in effect for Vietnam since 2019) does not create any real additional tariff advantage, since MFN duty was already 0% beforehand.
 • The most important technical difference versus the ASEAN markets : Hong Kong''s spec ecosystem leans toward British/EN standards (BS 476, BS EN 1366, HVCA DW/144, CIBSE) rather than purely American ASHRAE/SMACNA/AMCA — but for fire/smoke dampers, the Fire Services Department (FSD) accepts UL 555/555S AND BS EN 1366-2/ISO 21925-1 in parallel , provided the testing laboratory issuing the certificate is HKAS-accredited. This is good news for STARDUCT (which already follows the AMCA/UL system), but it needs case-by-case confirmation per project rather than being a "one certification fits all" situation.
 • The real barriers are not tariffs or product certification but rather : (a) price competition from domestic fabrication workshops (Janford, Goldjet, Yuen Fong) that lack AMCA certification but deliver quickly; (b) for international brands (TROX, Halton, and Systemair all maintain official sales offices in HK) — STARDUCT needs to position itself clearly lower on price; (c) earning the trust of MEP consultants (Arup, AECOM, J. Roger Preston, Meinhardt) and getting onto the "approved manufacturers list" in specs for major projects (data centers, hospitals, logistics).', 'MARKET INTELLIGENCE REPORT: Hong Kong Construction & HVAC Industry — Market-Entry Assessment for STARDUCT (Vietnam)
@@ -853,10 +848,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. Specific BEAM Plus requirements for grilles/diffusers/dampers : unverified — the BEAM Plus New Buildings v2.0 document should be reviewed directly.
 6. Whether SMACNA is genuinely widespread in HK ductwork construction (beyond the ArchSD document): inferred from industry practice, not yet confirmed by an official source.
 7. 1D — Commercial Real Estate : the specific MEP contractor or HVAC brands specified in SHKP/CK Asset/Henderson/NWD/Swire/Wheelock/Kerry tender documents could not be identified.
-8. The Three-Runway System''s (HKIA) overall investment value and the MEP contractors for major infrastructure projects — not publicly disclosed within the scope of this search.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. The Three-Runway System''s (HKIA) overall investment value and the MEP contractors for major infrastructure projects — not publicly disclosed within the scope of this search.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('MO', 'Macau', '• Macau is a 0% import-duty free port with no VAT/GST and no mandatory product certification for HVAC — similar to Hong Kong procedurally — but the market is too small and too concentrated to justify a dedicated entry strategy. There is no Vietnam–Macau FTA, and none is needed, since the general MFN tariff is already 0%.
 • HVAC demand is almost entirely dependent on the 6 casino operators (Sands China, Galaxy, Wynn, MGM, SJM, Melco), currently in a mandatory renovation/expansion cycle tied to non-gaming commitments under their 2022 relicensing (~US$19.3 billion industry-wide). These are very large single-contract-value projects, but the number of investors can be counted on one hand, and the MEP supply chain has been "locked in" for 15-20 years by international consultants (Arup) + foreign main contractors (Bouygues, Leighton Asia, China State Construction) + Western brand agents based in Hong Kong.
 • There is no local air-terminal manufacturing industry in Macau — there is insufficient industrial land. Nearly all supply likely originates from Hong Kong or Zhuhai/Guangdong. The realistic opportunity for STARDUCT should be accessed indirectly via a Hong Kong agent already serving both markets, rather than opening a dedicated Macau channel.', 'MARKET INTELLIGENCE REPORT: Macau Construction & HVAC Sector — Market Entry Assessment for STARDUCT (Vietnam)
@@ -971,10 +966,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. Whether any local air-terminal fabricator exists in Macau at all : no evidence found, but no definitive source ruling it out either — the "none exists" conclusion is based on absence of evidence, not direct confirmation.
 6. Specific HVAC brands installed at existing resorts (Venetian, Galaxy, MGM Cotai, Studio City): entirely unverified — no public documentation available.
 7. Scale of the CTM data center and the "AI Hub" plan : information is very limited and may be outdated or incomplete.
-8. Vietnam–Macau FTA/bilateral trade agreement : none found, but the possibility of a small bilateral agreement not surfaced within the scope of this research cannot be fully ruled out.', 'Mey Foong Technologies Co., Ltd', 'EMC')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. Vietnam–Macau FTA/bilateral trade agreement : none found, but the possibility of a small bilateral agreement not surfaced within the scope of this research cannot be fully ruled out.', 'Mey Foong Technologies Co., Ltd', 'EMC', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('SG', 'Singapore', '• Singapore is a free port with 0% import duty on almost all ATT products (grilles/diffusers/dampers/ducts are all 0% MFN, so no Form D is needed since the rate is already 0%), but it does levy a 9% GST on the CIF value of every import shipment — unlike the other ASEAN markets studied so far (where a similar VAT applies but MFN duty is typically positive, making ATIGA/Form D genuinely valuable).
 • There is no mandatory product certification of the Safety Mark/CPS type for ordinary grilles, diffusers, dampers, or ducts — CPS covers only 33 categories of household electrical appliances. HOWEVER, fire/smoke dampers are an important exception: they fall under SCDF''s "Regulated Fire Safety Product" category and must go through the SCDF Product Listing Scheme (PLS) and be assessed against Singapore''s own SS 333:2022 standard — it is Unverified whether UL 555/555S certification is accepted in parallel, and this is the single biggest compliance risk to verify before investing.
 • The real barrier is not tariffs but a two-sided competitive squeeze : (a) international brands (TROX, Halton, Titus) already have formal offices/legal entities in Singapore — this is not a "white space" market the way some other ASEAN countries are; (b) local fabricators have likely optimized costs by manufacturing in Johor Bahru (Malaysia, just across the border) and then selling into Singapore — both cheaper and close by. STARDUCT should position itself in the middle ground: mid-tier office/mall/residential projects that require AMCA certification but whose budgets cannot stretch to TROX/Titus pricing.', 'MARKET INTELLIGENCE REPORT: Singapore Construction & HVAC Sector — Market-Entry Assessment for STARDUCT (Vietnam)
@@ -1109,10 +1104,10 @@ CAVEATS (data gaps & areas of low confidence)
 5. The precise boundary of BCA workhead ME01 between "supplier" and "contractor" : no original BCA document could be found clearly confirming whether STARDUCT (selling components, not performing installation) falls entirely outside the registration requirement.
 6. Market share by segment (2C) : based on inference from regional industry practice and indirect signals (consultants'' portfolio websites), with no official Singapore market-share figures available.
 7. MEP/HVAC-specific investment value for hospital projects (Alexandra Hospital Campus, Eastern General Hospital): MOH does not disclose CAPEX broken down by line item.
-8. 1D — Commercial real estate : the specific MEP contractor or HVAC brands specified in the tender documents of CapitaLand/CDL/UOL/Keppel Land/Mapletree/GuocoLand could not be determined.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. 1D — Commercial real estate : the specific MEP contractor or HVAC brands specified in the tender documents of CapitaLand/CDL/UOL/Keppel Land/Mapletree/GuocoLand could not be determined.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('KR', 'South Korea', '• South Korea has VKFTA (2015) and AKFTA , and most non-sensitive industrial tariff lines (HS 73, 76, 84 relevant to ATT) have already reached, or are nearing, 0% under the reduction schedule — but a 10% import VAT applies to CIF+duty on every shipment. For standard (non-fire-rated) grilles/diffusers/dampers, there is NO mandatory KC certification — the entry barrier sits at the "open door" level seen in many ASEAN markets.
 • The single largest barrier, and one that sets Korea apart from every other market studied : fire/smoke dampers must go through "건축자재등 품질인정" (administered by the Ministry of Land, Infrastructure and Transport plus KICT) and be tested to KS F 2822 — performed WITHIN Korea by a designated laboratory, with no recognized equivalence to UL 555/555S. Since 2021, fusible-link/thermal-fuse dampers are no longer permitted — motorized dampers linked to the fire alarm system are now mandatory. This represents a separate, costly certification investment that requires careful evaluation before committing.
 • A clear two-tier competitive structure : full-line domestic manufacturers (DS Industries, Sunil Engineering) serve the mass, price-competitive segment, while premium international brands (TROX Korea, Halton Korea — both already established as Seoul-based legal entities) hold the high-spec positioning (pharma, healthcare, commercial kitchens). Notably, LG, Samsung, and Kyungdong Navien (Korea''s giant equipment conglomerates) do NOT compete directly in air terminal products — they stick to core equipment (VRF/chiller/boiler). The semiconductor cleanroom segment (the largest demand pool) is almost entirely dominated by a single company — Shinsung E&G (FFU).', 'MARKET INTELLIGENCE REPORT: South Korea Construction & HVAC Sector — Market Entry Assessment for STARDUCT (Vietnam)
@@ -1253,10 +1248,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. Korean representatives/agents for Systemair, Titus, Krueger, Price Industries, Greenheck, Ruskin : unverified; only TROX, Halton, and Belimo have clearly confirmed official presence.
 6. The extent to which Korean MEP consultants reference ASHRAE/SMACNA/AMCA in practice : not directly verified, only a logical inference from the regulatory structure.
 7. 1D — Commercial Real Estate : the specific M&E/HVAC contractor could not be identified for the major apartment reconstruction projects (Seongsu, Apgujeong, Seocho), even though the general contractor''s name is confirmed.
-8. Specific investment value for GTX-B and GTX-A Pyeongtaek : not publicly disclosed within the scope of this search.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. Specific investment value for GTX-B and GTX-A Pyeongtaek : not publicly disclosed within the scope of this search.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('AE', 'UAE', '• The UAE has a CEPA with Vietnam (signed 28/10/2024, effective from 3/2/2026) committing to eliminate tariffs on ~99% of Vietnamese export value — but the specific preferential rates by HS code (8415.90, 8481.80, 7308, 7326, 7616) are Unverified and require direct lookup. The current GCC base tariff is 5% plus 5% VAT on CIF+duty.
 • No mandatory product certification (ECAS) for standard grilles/diffusers/dampers — but fire/smoke dampers specifically must be registered on the "UAE Civil Defence Approved Material List" of each Emirate (Dubai/Abu Dhabi/Ajman separately), based on UL 555/555S or BS EN 1366-2 certification. This is an additional approval step and is not automatically granted simply on the basis of holding a UL certificate.
 • Competition is far more intense than in the ASEAN markets studied so far : beyond Airmaster (domestic, low-cost, with an established Burj Khalifa track record), both leading American brands — Titus (via the Ruskin Titus Gulf joint venture) and Price Industries (via the E.H. Price Gulf joint venture with Bin Dasmal Group) — have already established manufacturing plants in the UAE , not just import operations. STARDUCT would be competing against "localized" production at both ends of the price spectrum, with no "empty market" gap of the kind found in some other ASEAN countries.', 'MARKET INTELLIGENCE REPORT: UAE Construction & HVAC Sector — Market Entry Assessment for STARDUCT (Vietnam)
@@ -1388,10 +1383,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. Data accuracy for Emaar, DAMAC, Nakheel (1D) : sources are mainly secondary broker/blog sites, not verified via each developer''s official IR/press release pages.
 6. UAE agents/distributors for Krueger, Greenheck, Systemair, Halton : could not be verified; only TROX, Titus (Ruskin Titus Gulf), and Price (E.H. Price Gulf) have clearly confirmed presence.
 7. Segment-level market share (2C) : based on structural industry inference, no official market share data available.
-8. WSP, Atkins/AtkinsRéalis, Parsons, NORR in the UAE : no specific evidence found within the scope of this search, despite these being globally known firms with regional operations.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. WSP, Atkins/AtkinsRéalis, Parsons, NORR in the UAE : no specific evidence found within the scope of this search, despite these being globally known firms with regional operations.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('SA', 'Saudi Arabia', '• Vietnam has NO FTA with Saudi Arabia/the GCC — the ASEAN-GCC FTA negotiations are still at an early stage (negotiating round launched 5/2025, not yet signed). STARDUCT is subject to the full MFN/CET tariff: the GCC baseline rate is 5%, but since 6/2020 Saudi Arabia has unilaterally raised tariffs on numerous base-metal lines (steel, aluminum — directly relevant to HS 7308/7326/7616) to 10-20%. VAT of 15% is levied on CIF+duty — the highest among the markets studied so far.
 • SABER is the largest procedural barrier : since 1/1/2021, EVERY import shipment — including "non-regulated/low-risk" products such as standard grilles/diffusers — must obtain a Product Certificate of Conformity (PCoC) plus a Shipment Certificate of Conformity (SCoC) per shipment before customs clearance is granted. This is a fundamental difference from ASEAN/Hong Kong/Singapore, where low-risk goods are typically exempt from mandatory electronic certification.
 • Good news on the technical side : the Saudi Building Code (SBC 501 Mechanical, SBC 801 Fire) was developed in cooperation with the ICC (US), localized from the International Mechanical Code — meaning ASHRAE/SMACNA/AMCA are highly likely to be the default standards in MEP specifications, unlike markets leaning toward UK/EU standards. This is a structural advantage for STARDUCT''s AMCA-aligned positioning. HOWEVER, localization pressure (LCGPA, Saudi Aramco''s IKTVA) creates a bid-scoring disadvantage for purely imported goods on state-owned projects.', 'MARKET INTELLIGENCE REPORT: Saudi Arabia Construction & HVAC Sector — Market-Entry Assessment for STARDUCT (Vietnam)
@@ -1533,10 +1528,10 @@ CAVEATS (data gaps & low-confidence areas)
 5. Accuracy of the giga-project figures (NEOM 1GW/6GW data center, ROSHN 400,000 units): likely communications targets rather than signed construction commitments — should be continuously monitored via MEED/Arab News before being incorporated into sales planning.
 6. The Saudi agent/distributor for Titus, Krueger, Price Industries, Greenheck, Ruskin : unverified; only Systemair, TROX, and Halton have confirmed presence.
 7. Segment-level market share (2C) : based on inference from industry structure, no official market-share data available.
-8. 1D — Commercial real estate : no specific MEP contractor or specified HVAC brand identified in the tender documentation for ROSHN/New Murabba/Qiddiya.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. 1D — Commercial real estate : no specific MEP contractor or specified HVAC brand identified in the tender documentation for ROSHN/New Murabba/Qiddiya.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
 ('VN', 'Vietnam', '• STARDUCT holds a distinctive position in its own home market : it is the only confirmed Vietnamese manufacturer with AMCA and AHRI 880 (VAV box) certification, and is also an OEM export partner for American Louver and Titus into the US (~USD 2 million/year). Domestically, STARDUCT self-reports ~60% market share in the premium segment — this figure needs independent verification, but the underlying technology/certification positioning is substantiated.
 • Vietnam''s real competitive "moat" is not AMCA/UL (which serve export) but domestic fire-resistance testing investment : STARDUCT claims to be the first and only manufacturer in Vietnam to complete a 120-minute fire-resistance test (EIS120) for fire dampers — a very high cost/technical barrier that most small domestic machine shops (Dai Phuc, Hai Anh, Phu Loc Gia, etc.) cannot clear. This is a far more important structural advantage than the AMCA/UL certifications themselves in the domestic context, because Vietnam''s PCCC (fire prevention and fighting) design-appraisal process does not formally recognize UL 555/555S as equivalent — every project must go through its own appraisal dossier from scratch, with no one-time national "type approval."
 • The most notable competitor is not a small domestic fabricator but Kruger Ventilation Industries (Vietnam) — the only company that both operates an actual production plant in Tay Ninh (since 2009) and holds international AMCA certification, competing directly on both price and technical credibility. Other international brands (TROX, Halton, Greenheck, Titus) are present in Vietnam only through representative offices/distributors, without local manufacturing — resulting in higher cost/lead-time for the mainstream market.', 'MARKET INTELLIGENCE REPORT: Vietnam Construction & HVAC Sector — Domestic Market Position Assessment for STARDUCT
@@ -1668,25 +1663,25 @@ CAVEATS (data gaps & low-confidence areas)
 5. The presence of Systemair, Price Industries, Ruskin, and WSP in Vietnam : could not be verified through this research.
 6. The list of domestic MEP consultants in Vietnam : no official list of sufficiently reputable/independent firms could be established beyond the confirmed international firms.
 7. Specific investment value/M&E contractors for most commercial real estate projects (1D): Vietnamese developers typically do not disclose this publicly.
-8. Market share by segment (2C) : based on inferred industry structure and regional patterns, with no official Vietnamese market-share data.', null, null)
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+8. Market share by segment (2C) : based on inferred industry structure and regional patterns, with no official Vietnamese market-share data.', null, null, null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
-('IL', 'Israel', null, null, 'Quamor; Maayan Co., Ltd', 'EIS')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
+('UY', 'Uruguay', null, null, 'Vitrilan S.A', 'EUY', null)
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
-('RU', 'Russia', null, null, 'Vinh Gia Trading & Import-Export Co., Ltd', 'EVG')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
+('US', 'USA', null, null, 'Plasticade Products Corporation (American Louver Company); QC Manufacturing', 'EAL, EQC', 'The RectorSeal Corporation — competitor/potential partner')
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
-('UY', 'Uruguay', null, null, 'Vitrilan S.A', 'EUY')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
+('IL', 'Israel', null, null, null, null, 'Quamor; Maayan Co., Ltd — competitor/potential partner')
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
-insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp) values
-('US', 'USA', null, null, 'The RectorSeal Corporation; Plasticade Products Corporation (American Louver); QC Manufacturing', 'EAL/EQC')
-on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, cap_nhat=now();
+insert into crm_thi_truong (ma, ten, dac_diem, bao_cao, npp_ky_hd, ma_npp, ghi_chu_tham_khao) values
+('RU', 'Russia', null, null, null, null, 'Vinh Gia Trading & Import-Export Co., Ltd — competitor/potential partner')
+on conflict (ma) do update set ten=excluded.ten, dac_diem=excluded.dac_diem, bao_cao=excluded.bao_cao, npp_ky_hd=excluded.npp_ky_hd, ma_npp=excluded.ma_npp, ghi_chu_tham_khao=excluded.ghi_chu_tham_khao, cap_nhat=now();
 
 commit;
 
-select ma, ten, ma_npp, npp_ky_hd is not null as co_npp, dac_diem is not null as co_bao_cao from crm_thi_truong order by ten;
+select ma, ten, ma_npp, npp_ky_hd, ghi_chu_tham_khao from crm_thi_truong order by ten;

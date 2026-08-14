@@ -11,7 +11,7 @@ async function initMK(){
   const box=document.getElementById('mkList');
   if(!window.sb){box.innerHTML='<div class="muted">'+t('Kết nối & đăng nhập để xem dữ liệu thị trường.')+'</div>';MK_INIT=false;return}
   box.innerHTML='<div class="muted">'+t('Đang tải…')+'</div>';
-  const r=await sb.from('crm_thi_truong').select('ma,ten,dac_diem,npp_ky_hd,ma_npp,cap_nhat').order('ten');
+  const r=await sb.from('crm_thi_truong').select('ma,ten,dac_diem,npp_ky_hd,ma_npp,ghi_chu_tham_khao,cap_nhat').order('ten');
   if(r.error){box.innerHTML='<div class="muted">'+esc(r.error.message)+' — '+t('cần chạy migration v37')+'</div>';MK_INIT=false;return}
   MK_ROWS=r.data||[];
   renderMK();
@@ -32,7 +32,7 @@ function renderMK(){
     <th style="width:110px"></th></tr></thead><tbody>`+
   rows.map((m,i)=>`<tr>
     <td><b>${esc(m.ten)}</b>${m.ma==='VN'?' <span class="muted" style="font-size:11px">('+t('quê nhà')+')</span>':''}<div class="muted" style="font-size:11px">${esc(m.ma)}${m.ma_npp?' · '+esc(m.ma_npp):''}</div></td>
-    <td>${m.npp_ky_hd?esc(m.npp_ky_hd):'<span class="muted">'+t('Chưa có NPP ký HĐ')+'</span>'}</td>
+    <td>${m.npp_ky_hd?esc(m.npp_ky_hd):'<span class="muted">'+t('Chưa có NPP ký HĐ')+'</span>'}${m.ghi_chu_tham_khao?'<div class="muted" style="font-size:11px;margin-top:3px">'+t('Tham khảo:')+' '+esc(m.ghi_chu_tham_khao)+'</div>':''}</td>
     <td style="font-size:12.5px">${m.dac_diem?esc(m.dac_diem.length>420?m.dac_diem.slice(0,420)+'…':m.dac_diem):'<span class="muted">'+t('Chưa có báo cáo — bổ sung sau')+'</span>'}</td>
     <td>${m.dac_diem?`<button class="btn" onclick="openMK(${i})">📋 ${t('Xem hồ sơ')}</button>`:''}</td>
   </tr>`).join('')+'</tbody></table>';
@@ -45,9 +45,9 @@ async function openMK(i){
   const body=document.getElementById('mkBody');
   body.innerHTML='<div class="muted">'+t('Đang tải…')+'</div>';
   dlgMk.showModal();
-  const r=await sb.from('crm_thi_truong').select('bao_cao,dac_diem,npp_ky_hd,cap_nhat').eq('ma',m.ma).single();
+  const r=await sb.from('crm_thi_truong').select('bao_cao,dac_diem,npp_ky_hd,ghi_chu_tham_khao,cap_nhat').eq('ma',m.ma).single();
   const d=r.data||{};
-  body.innerHTML=(d.npp_ky_hd?`<div class="notice" style="margin-bottom:8px"><b>${t('NPP đã ký HĐ')}:</b> ${esc(d.npp_ky_hd)}</div>`:'')+
+  body.innerHTML=(d.npp_ky_hd?`<div class="notice" style="margin-bottom:8px"><b>${t('NPP đã ký HĐ')}:</b> ${esc(d.npp_ky_hd)}</div>`:'')+(d.ghi_chu_tham_khao?`<div class="muted" style="margin-bottom:8px;font-size:12px">${t('Tham khảo:')} ${esc(d.ghi_chu_tham_khao)}</div>`:'')+
     `<pre style="white-space:pre-wrap;font-family:inherit;font-size:12.5px;line-height:1.5;max-height:64vh;overflow:auto;margin:0">${esc(d.bao_cao||d.dac_diem||'')}</pre>`+
     `<div class="muted" style="font-size:11px;margin-top:6px">${t('Nguồn')}: Market Intelligence 14/08/2026</div>`;
 }

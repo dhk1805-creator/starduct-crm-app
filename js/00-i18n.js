@@ -777,8 +777,11 @@ FRAG.push(
 
 // ---- bổ sung v35.4: tab Thị trường (danh mục + tình báo) ----
 FRAG.push(
-['Thị trường quốc tế — danh mục & tình báo','International markets — catalog & intelligence'],
-['Danh mục 16 thị trường: đặc điểm (TL;DR), hồ sơ tình báo đầy đủ và NPP đã ký hợp đồng','Catalog of 16 markets: profile (TL;DR), full intelligence report and the contracted distributor'],
+['Thông tin & đặc điểm thị trường (Market Information)','Market Information & profiles'],
+['Đặc điểm (TL;DR), hồ sơ tình báo đầy đủ và','Profile (TL;DR), full intelligence report and'],
+['9 NPP đã ký hợp đồng chính thức','9 officially contracted distributors'],
+['Các đơn vị khác (đối thủ / đối tác tiềm năng) chỉ ghi ở mục Tham khảo.','Other companies (competitors / potential partners) are listed for Reference only.'],
+['Tham khảo:','Reference:'],
 ['— NPP đang bán hàng, nhận gán khách hàng/dự án để theo đuổi tại thị trường đó.','— the distributor actively selling and receiving assigned customers/projects to pursue in that market.'],
 ['Đặc điểm thị trường','Market profile'],
 ['NPP đã ký HĐ','Signed distributor'],
