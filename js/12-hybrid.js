@@ -257,6 +257,18 @@ function renderWs(d,quots,tps,hts,files){
       F(t('Giá trị ước'),d.gia_tri_uoc?fmtB(+d.gia_tri_uoc):null)+
       F(t('Việc tiếp theo'),d.next_action?d.next_action+(d.next_action_han?' — hạn '+d.next_action_han:''):null)+
       (d.loss_reason?F('Loss reason',d.loss_reason):'')+
+      (typeof laNguoiDuyet==='function'&&laNguoiDuyet()?`
+      <div style="margin-top:12px;padding:10px;border:1.5px dashed var(--b400);border-radius:8px">
+        <b style="font-size:13px">👥 ${t('Gán người phụ trách')} & ${t('NPP')}</b>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="wsOwner" style="min-width:180px"><option value="">— ${t('Người phụ trách')} —</option>
+            ${(window.NHANSU||[]).filter(n=>!['npp_lead','npp_staff'].includes(n.vai_tro)).map(n=>
+              `<option value="${esc(n.ho_ten)}"${(d.nguoi_phu_trach||d.owner)===n.ho_ten?' selected':''}>${esc(n.ho_ten)}</option>`).join('')}</select>
+          <select id="wsNPP" style="min-width:200px"><option value="">— ${t('Chọn NPP')} —</option>
+            ${ORGS.filter(NPP_KYHD).map(o=>`<option value="${o.id}"${d.npp_dang_ky_id===o.id?' selected':''}>${esc(o.ten)}</option>`).join('')}</select>
+          <button class="btn pri" onclick="wsGan('${d.id}')">💾 ${t('Lưu')}</button>
+          <span class="muted" id="wsGanMsg" style="align-self:center"></span>
+        </div></div>`:'')+
       `<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn" onclick="dlgWs.close();openDeal('${d.id}')">✏️ ${t('Sửa dự án')}</button>
         <button class="btn" onclick="dlgWs.close();openThread('deal','${d.id}','${esc(d.ten)}')">💬 ${t('Thảo luận & phê duyệt')}</button>
@@ -328,4 +340,24 @@ function mbViecHomNay(){
   mbGo('tq');
   const el=document.getElementById('dueList');
   if(el)setTimeout(()=>el.closest('.card').scrollIntoView({behavior:'smooth'}),200);
+}
+
+
+/* ===== v35.9: GÁN NGƯỜI PHỤ TRÁCH + NPP ngay trong Workspace (Manager/CEO có quyền phê duyệt) ===== */
+async function wsGan(id){
+  const msg=document.getElementById('wsGanMsg');
+  const nguoi=document.getElementById('wsOwner').value||null;
+  const nppId=document.getElementById('wsNPP').value||null;
+  const npp=nppId?ORGS.find(o=>o.id===nppId):null;
+  msg.textContent=t('Đang lưu…');
+  const r=await sb.from('crm_deals').update({
+    nguoi_phu_trach:nguoi,owner:nguoi,
+    npp_dang_ky_id:nppId,npp_chi_dinh:npp?npp.ten:null,
+    nguoi_cap_nhat:ME?.ho_ten||null,lan_cap_nhat_cuoi:new Date().toISOString()
+  }).eq('id',id);
+  if(r.error){msg.textContent='❌ '+r.error.message;return}
+  msg.textContent='✓ '+t('Đã lưu');
+  await loadAll();
+  const d2=DEALS.find(x=>x.id===id)||ALL_DEALS.find(x=>x.id===id);
+  if(d2&&typeof openWorkspace==='function')openWorkspace(id);
 }
