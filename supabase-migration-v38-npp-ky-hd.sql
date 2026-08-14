@@ -1,6 +1,6 @@
 -- ============================================================
 -- MIGRATION v38: Danh dau 9 NPP DA KY HOP DONG trong crm_org
--- pheu_npp='da_ky_hd' + nhom_quan_he='npp_hien_huu'.
+-- pheu_npp='da_ky_hd' + quan_he='npp_hien_huu'.
 -- Neu chua co trong crm_org thi tao moi. An toan chay lai.
 -- Bo loc/gan NPP trang Quoc te (app v35.5) chi hien cac NPP nay.
 -- ============================================================
@@ -9,11 +9,11 @@ begin;
 create or replace function _v38_mark(p_pat text, p_ten text, p_qg text) returns text as $f$
 declare n int;
 begin
-  update crm_org set phan_loai='npp', pheu_npp='da_ky_hd', nhom_quan_he='npp_hien_huu'
+  update crm_org set phan_loai='npp', pheu_npp='da_ky_hd', quan_he='npp_hien_huu'
    where quoc_gia is distinct from 'VN' and ten ilike p_pat;
   get diagnostics n = row_count;
   if n = 0 then
-    insert into crm_org (ten, quoc_gia, phan_loai, pheu_npp, nhom_quan_he, nguon)
+    insert into crm_org (ten, quoc_gia, phan_loai, pheu_npp, quan_he, nguon)
     values (p_ten, p_qg, 'npp', 'da_ky_hd', 'npp_hien_huu', 'distributor-list-14/08/2026');
     return p_ten || ' -> TAO MOI';
   end if;
