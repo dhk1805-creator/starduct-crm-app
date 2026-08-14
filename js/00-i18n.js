@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v35.3 · 14/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v35.4 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -773,6 +773,22 @@ FRAG.push(
 ['Khóa','Lock'],
 ['nền','catalog'],
 ['tổng','total']
+);
+
+// ---- bổ sung v35.4: tab Thị trường (danh mục + tình báo) ----
+FRAG.push(
+['Thị trường quốc tế — danh mục & tình báo','International markets — catalog & intelligence'],
+['Danh mục 16 thị trường: đặc điểm (TL;DR), hồ sơ tình báo đầy đủ và NPP đã ký hợp đồng','Catalog of 16 markets: profile (TL;DR), full intelligence report and the contracted distributor'],
+['— NPP đang bán hàng, nhận gán khách hàng/dự án để theo đuổi tại thị trường đó.','— the distributor actively selling and receiving assigned customers/projects to pursue in that market.'],
+['Đặc điểm thị trường','Market profile'],
+['NPP đã ký HĐ','Signed distributor'],
+['Hồ sơ tình báo','Intelligence report'],
+['Xem hồ sơ','View report'],
+['Chưa có báo cáo — bổ sung sau','No report yet — to be added'],
+['Chưa có NPP ký HĐ','No signed distributor yet'],
+['Kết nối & đăng nhập để xem dữ liệu thị trường.','Connect & sign in to view market data.'],
+['cần chạy migration v37','run migration v37 first'],
+['quê nhà','home market']
 );
 
 // ===== Bộ dịch v35.3: MỘT LƯỢT duy nhất + chặn biên từ + không dịch nửa vời dữ liệu =====

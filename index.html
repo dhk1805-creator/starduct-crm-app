@@ -48,6 +48,7 @@
   <button data-t="ht">Hỗ trợ</button>
   <button data-t="sk">Sự kiện</button>
   <button data-t="ns">Nhân sự</button>
+  <button data-t="mk">Thị trường</button>
   <button data-t="im">Nhập dữ liệu</button>
 </nav>
 
@@ -369,6 +370,16 @@
   </div>
 </section>
 
+<!-- ============ THỊ TRƯỜNG (danh mục + tình báo · v35.4) ============ -->
+<section id="tab-mk" hidden>
+  <div class="card">
+    <h2>Thị trường quốc tế — danh mục & tình báo</h2>
+    <div class="notice">Danh mục 16 thị trường: đặc điểm (TL;DR), hồ sơ tình báo đầy đủ và NPP đã ký hợp đồng
+      — NPP đang bán hàng, nhận gán khách hàng/dự án để theo đuổi tại thị trường đó.</div>
+    <div id="mkList"></div>
+  </div>
+</section>
+
 <!-- ============ NHẬP DỮ LIỆU ============ -->
 <section id="tab-im" hidden>
   <div class="card">
@@ -487,6 +498,11 @@
   <div class="dbody" id="thrBody"></div>
 </dialog>
 
+<dialog id="dlgMk" style="max-width:860px;width:95%">
+  <div class="dhead"><span id="mkTitle">Hồ sơ tình báo</span><button class="btn" onclick="dlgMk.close()">✕</button></div>
+  <div class="dbody" id="mkBody"></div>
+</dialog>
+
 <!-- ==========================================================================
      THỨ TỰ NẠP BẮT BUỘC — không đổi, không thêm defer/async.
      Tất cả file là script cổ điển: hàm & biến vẫn ở phạm vi toàn cục, nên 69
@@ -510,6 +526,7 @@
 <script src="js/15-auth-hop-nhat.js"></script>
 <script src="js/16-mobile.js"></script>
 <script src="js/17-nganh-hang-kh.js"></script>
-<script src="js/18-version.js?v=35.3"></script>
+<script src="js/19-thi-truong.js"></script>
+<script src="js/18-version.js?v=35.4"></script>
 </body>
 </html>
