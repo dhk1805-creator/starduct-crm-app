@@ -96,7 +96,7 @@ async function nppTkTai(){
   // form + danh sách NPP cho admin
   tkFormBox.style.display='';
   if(q==='admin'){
-    const npps=ORGS.filter(o=>o.phan_loai==='npp');
+    const npps=ORGS.filter(NPP_KYHD);
     tkNPP.innerHTML='<option value="">— '+t('Chọn NPP')+' —</option>'+
       npps.map(o=>`<option value="${o.id}">${esc(o.ten)}${o.quoc_gia&&o.quoc_gia!=='VN'?' ('+o.quoc_gia+')':''}</option>`).join('');
     tkNPP.style.display='';

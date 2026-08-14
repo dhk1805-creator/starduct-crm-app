@@ -157,7 +157,7 @@ function phamViNPP(rows){
 }
 renderDA=function(){
   const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
-  const npps=ORGS.filter(o=>o.phan_loai==='npp');
+  const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
     fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
     fdaNPP.value=cur}

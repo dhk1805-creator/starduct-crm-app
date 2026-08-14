@@ -55,7 +55,7 @@ renderDA=function(){
   NEN_PAGE=0; // đổi lọc/tab → về trang đầu của kho
   const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
   // nạp bộ lọc NPP + người phụ trách
-  const npps=ORGS.filter(o=>o.phan_loai==='npp');
+  const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
     fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
     fdaNPP.value=cur}
@@ -165,7 +165,7 @@ function moPhanCong(i){
   let dlg=document.getElementById('dlgPhanCong');
   if(!dlg){dlg=document.createElement('dialog');dlg.id='dlgPhanCong';dlg.style.maxWidth='460px';
     document.body.appendChild(dlg)}
-  const npps=ORGS.filter(o=>o.phan_loai==='npp');
+  const npps=ORGS.filter(NPP_KYHD);
   const nss=(window.NHANSU||[]).filter(n=>!['npp_lead','npp_staff'].includes(n.vai_tro));
   dlg.innerHTML=`<div class="dhead">👥 ${t('Phân công dự án')}<button class="btn" onclick="dlgPhanCong.close()">✕</button></div>
   <div class="dbody">

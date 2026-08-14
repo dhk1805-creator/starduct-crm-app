@@ -30,6 +30,9 @@ const PHU=['0 · Chưa tiếp cận','1 · Đã tiếp cận','2 · Quan hệ l�
 const PHEU_NPP={chua_tiep_can:['Chưa tiếp cận','p0'],dang_ket_noi:['Đang kết nối','p1'],
   dang_gui_mau:['Đang gửi mẫu','p1'],dang_dam_phan:['Đang đàm phán','p3'],
   da_ky_mou:['Đã ký MOU','p3'],da_ky_hd:['Đã ký HĐ — đang phân phối','p4']};
+// v35.5: bo loc/gan NPP o trang Quoc te CHI hien NPP da ky HD (pheu 'da_ky_hd').
+// Tab Doi tac van giu ca pheu tiem nang. Noi dia giu nguyen (NPP trong nuoc deu da ky).
+const NPP_KYHD=o=>o.phan_loai==='npp'&&(MOD==='nd'||o.pheu_npp==='da_ky_hd');
 const nhanPhu=o=>(o.phan_loai==='npp'&&o.pheu_npp&&PHEU_NPP[o.pheu_npp])
   ?`<span class="pill ${PHEU_NPP[o.pheu_npp][1]}">🤝 ${PHEU_NPP[o.pheu_npp][0]}</span>`
   :`<span class="pill p${o.trang_thai_phu}">${PHU[o.trang_thai_phu]}</span>`;

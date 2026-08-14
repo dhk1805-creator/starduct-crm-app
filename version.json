@@ -1,5 +1,5 @@
 {
-  "version": "35.4",
+  "version": "35.5",
   "build": "14/08/2026",
-  "note": "Tab Thị trường: danh mục 16 thị trường QT + hồ sơ tình báo + NPP đã ký HĐ"
+  "note": "Bộ lọc/gán NPP trang Quốc tế chỉ hiện 9 NPP đã ký HĐ (phễu tiềm năng vẫn ở tab Đối tác)"
 }
