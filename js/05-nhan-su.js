@@ -8,7 +8,7 @@ function renderNS(){
   if(!window.NHANSU||!nsBody)return;
   // v35.4: QT rieng - ND rieng. Trang Quoc te chi hien nhan su khu_vuc='quoc_te';
   // trang Noi dia hien phan con lai. CEO/Manager (lanh dao) hien o ca hai.
-  const NS_MOD=NHANSU.filter(n=>(n.vai_tro==='ceo'||n.vai_tro==='manager')||((n.khu_vuc==='quoc_te')===(MOD==='qt')));
+  const NS_MOD=NHANSU.filter(n=>(n.vai_tro==='ceo'||n.quyen_phe_duyet===true||n.quyen_tiep_nhan===true)||((n.khu_vuc==='quoc_te')===(MOD==='qt'))); // v35.9: lanh dao = theo co quyen
   nsBody.innerHTML='<table><tr><th>Họ tên</th><th>Chức danh</th><th>Vai trò</th><th>Khu vực</th><th>User</th><th>Email</th><th></th></tr>'+
   NS_MOD.map(n=>`<tr class="row" onclick="openNS('${n.id}')">
     <td><b>${esc(n.ho_ten)}</b></td><td>${esc(n.chuc_danh)}</td>

@@ -115,7 +115,7 @@ function mbDealsCuaToi(){
   if(ME&&ME.ho_ten){
     const mine=rows.filter(d=>[d.owner,d.nguoi_phu_trach].includes(ME.ho_ten));
     if(mine.length)return mine;
-    if(ME.vai_tro==='staff'||ME.vai_tro==='npp_staff')return mine;
+    if(typeof laStaffXem==='function'?laStaffXem():(ME.vai_tro==='staff'||ME.vai_tro==='npp_staff'))return mine; // v35.9: tier-3 luon chi cua minh
   }
   return rows;
 }
