@@ -25,6 +25,7 @@ const MB_EN={
 'Gắn vào dự án / khách hàng':'Attach to project / customer','Dự án liên quan':'Related project',
 'Chọn trong danh sách để gắn đúng dự án':'Pick from the list so it attaches to the right project',
 'Khách hàng-Đối tác':'Customers-Partners',
+'Gửi yêu cầu':'Send request','Tác nghiệp của tôi':'My actions',
 'Bản đầy đủ':'Full version','Đăng nhập':'Sign in','Đăng xuất':'Sign out',
 'Đăng nhập để thấy công việc của bạn.':'Sign in to see your work.',
 'dự án quá hạn / đến hạn':'projects overdue / due','ghi nhanh kết quả tiếp xúc':'quick-log your touchpoints',
@@ -164,7 +165,7 @@ function mbRender(){
   const TT={viec:ql?'✅ '+T('Hôm nay'):'✅ '+T('Việc hôm nay'),
             kq:ql?'🛡 '+T('Phê duyệt'):'📝 '+T('Ghi kết quả'),
             ht:ql?'🆘 '+T('Yêu cầu'):'🆘 '+T('Yêu cầu hỗ trợ'),
-            dx:'📨 '+T('Đề xuất')};
+            dx:'📨 '+T('Đề xuất'),ghikq:'📝 '+T('Ghi kết quả'),guiht:'🆘 '+T('Yêu cầu hỗ trợ')};
   el.innerHTML=`<div class="mb-viewbar">
     <button onclick="mbChon('home')">← ${T('Đóng')}</button><b>${TT[MB_TAB]||''}</b></div>
     <div id="mbView"></div>`;
@@ -172,6 +173,9 @@ function mbRender(){
   if(ql){
     if(MB_TAB==='viec')mbQLHomNay(v);
     else if(MB_TAB==='kq')mbQLPheDuyet(v);
+    else if(MB_TAB==='ghikq')mbVeKQ(v);
+    else if(MB_TAB==='dx')mbVeDX(v);
+    else if(MB_TAB==='guiht')mbVeHT(v);
     else mbQLYeuCau(v);
   }else{
     if(MB_TAB==='viec')mbVeViec(v);
@@ -257,7 +261,13 @@ function mbVeHome(el){
       <b>${T('Chào')} ${esc((ME.ho_ten||'').split(' ').pop())} 👋</b>
       <span>${ngay.charAt(0).toUpperCase()+ngay.slice(1)}</span>
     </div>
-    <div class="mb-home">${O(o1,'viec')}${O(o2,ql?'kq':'dx')}${O(o3,'ht')}</div>`;
+    <div class="mb-home">${O(o1,'viec')}${O(o2,ql?'kq':'dx')}${O(o3,'ht')}</div>
+    ${ql?`<div class="mb-sub" style="margin:12px 4px 6px"><b>${T('Tác nghiệp của tôi')}</b></div>
+    <div style="display:flex;gap:8px">
+      <button class="mb-mini" style="flex:1;padding:12px 4px" onclick="mbChon('ghikq')">📝 ${T('Ghi kết quả')}</button>
+      <button class="mb-mini" style="flex:1;padding:12px 4px" onclick="mbChon('dx')">📨 ${T('Đề xuất')}</button>
+      <button class="mb-mini" style="flex:1;padding:12px 4px" onclick="mbChon('guiht')">🆘 ${T('Gửi yêu cầu')}</button>
+    </div>`:''}`;
 }
 
 /* ===== NHÂN VIÊN · VIỆC HÔM NAY ===== */
