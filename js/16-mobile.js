@@ -29,6 +29,8 @@ const MB_EN={
 'Chấp nhận':'Accept','Đã xong':'Done','Trả lời':'Reply','Phản hồi & trao đổi':'Feedback & discussion',
 'Gửi trả lời':'Send reply','Chưa có phản hồi nào.':'No feedback yet.','Nội dung… *':'Message… *',
 'Ý kiến / phản hồi (bác thì bắt buộc)':'Comment / feedback (required if rejecting)',
+'Dự án theo kế hoạch hôm nay':'Today\u2019s planned projects','(quá hạn)':'(overdue)','(hôm nay)':'(today)','(7 ngày tới)':'(next 7 days)',
+'Chưa có hành động nào được kế hoạch đẩy cho hôm nay — danh sách hiện các việc 7 ngày tới.':'No actions scheduled for today \u2014 showing the next 7 days.',
 'Bản đầy đủ':'Full version','Đăng nhập':'Sign in','Đăng xuất':'Sign out',
 'Đăng nhập để thấy công việc của bạn.':'Sign in to see your work.',
 'dự án quá hạn / đến hạn':'projects overdue / due','ghi nhanh kết quả tiếp xúc':'quick-log your touchpoints',
@@ -82,6 +84,30 @@ function mbLa(){
   if(mbEp())return true;
   return window.matchMedia('(max-width:767px)').matches&&localStorage.getItem('crm_mb_off')!=='1'}
 const MB_LINK=()=>location.origin+location.pathname.replace(/index\.html$/,'')+'?m=1';
+
+/* ===== v35.9: KẾ HOẠCH NGÀY — mobile chỉ thao tác trên hành động CRM đẩy ra hôm nay,
+   không mở toàn bộ danh mục. Nguồn: next_action/next_action_han (đổ từ kế hoạch tháng/quý đã duyệt). */
+function mbKeHoachNgay(){
+  const today=new Date().toISOString().slice(0,10);
+  const in7=new Date(Date.now()+7*864e5).toISOString().slice(0,10);
+  const mine=mbDealsCuaToi().filter(d=>d.stage!=='dong'&&d.next_action&&d.next_action_han);
+  const homNay=mine.filter(d=>d.next_action_han<=today);
+  if(homNay.length)return{rows:homNay.sort((a,b)=>(a.next_action_han||'').localeCompare(b.next_action_han||'')),fallback:false};
+  return{rows:mine.filter(d=>d.next_action_han<=in7).slice(0,30),fallback:true};
+}
+function mbKHNgayOpts(){
+  const today=new Date().toISOString().slice(0,10);
+  const {rows}=mbKeHoachNgay();
+  return rows.map(d=>{const tag=d.next_action_han<today?T('(quá hạn)'):(d.next_action_han===today?T('(hôm nay)'):T('(7 ngày tới)'));
+    return `<option value="${esc(d.ten)}">${esc(d.ten)} ${tag}</option>`}).join('');
+}
+function mbKHNgayOrgs(){
+  const {rows}=mbKeHoachNgay();
+  const ten=new Set();rows.forEach(d=>{if(d.cdt_text)ten.add(d.cdt_text);if(d.npp_chi_dinh)ten.add(d.npp_chi_dinh)});
+  const lien=ORGS.filter(o=>ten.has(o.ten));
+  const goc=lien.length?lien:mbOrgsCuaToi().slice(0,30);
+  return goc.map(o=>`<option value="${esc(o.ten)}">${esc(o.ten)}</option>`).join('');
+}
 
 /* ===== phạm vi CỦA TÔI ===== */
 function mbDealsCuaToi(){
@@ -144,7 +170,11 @@ function mbDoiNgonNgu(){
   else{LANG=lg;localStorage.setItem('crm_lang',lg)}
   mbRender();
 }
-function mbChon(tab){MB_TAB=tab;mbRender();window.scrollTo(0,0)}
+let MB_SYNC=0;
+function mbChon(tab){MB_TAB=tab;mbRender();window.scrollTo(0,0);
+  if(tab==='home'&&typeof loadAll==='function'&&sb&&Date.now()-MB_SYNC>60000){MB_SYNC=Date.now();loadAll().catch(()=>{})}}
+document.addEventListener('visibilitychange',()=>{ // mở lại app sau khi rời màn hình → tự làm mới
+  if(!document.hidden&&MB_ON&&typeof loadAll==='function'&&sb&&Date.now()-MB_SYNC>60000){MB_SYNC=Date.now();loadAll().catch(()=>{})}});
 
 /* ===== render ===== */
 if(typeof renderAll==='function'){
@@ -309,10 +339,11 @@ function mbVeKQ(el){
   const loaiOpts=document.getElementById('txLoai')?.innerHTML||'<option value="gap_truc_tiep">Gặp trực tiếp</option>';
   el.innerHTML=`<div class="mb-card">
     <h3>📝 ${T('Ghi kết quả làm việc')}</h3>
-    <label>${T('Dự án (trong danh sách bạn phụ trách)')} *</label>
-    <select id="mbDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="${esc(x.ten)}">${esc(x.ten)}</option>`).join('')}</select>
+    ${mbKeHoachNgay().fallback?`<div class="mb-sub" style="margin-bottom:6px">${T('Chưa có hành động nào được kế hoạch đẩy cho hôm nay — danh sách hiện các việc 7 ngày tới.')}</div>`:''}
+    <label>${T('Dự án theo kế hoạch hôm nay')} *</label>
+    <select id="mbDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbKHNgayOpts()}</select>
     <label>${T('Hoặc / và Khách hàng-Đối tác')}</label>
-    <select id="mbOrg"><option value="">— ${T('Chọn khách hàng/đối tác')} —</option>${mbOrgsCuaToi().map(o=>`<option value="${esc(o.ten)}">${esc(o.ten)}</option>`).join('')}</select>
+    <select id="mbOrg"><option value="">— ${T('Chọn khách hàng/đối tác')} —</option>${mbKHNgayOrgs()}</select>
     <label>${T('Hình thức')}</label>
     <select id="mbLoai">${loaiOpts}</select>
     <label class="mb-check"><input type="checkbox" id="mbQD"> ${T('Gặp CẤP RA QUYẾT ĐỊNH')}</label>
@@ -374,8 +405,8 @@ function mbVeHT(el){
   const today=new Date().toISOString().slice(0,10);
   el.innerHTML=`<div class="mb-card">
     <h3>🆘 ${T('Gửi yêu cầu hỗ trợ')}</h3>
-    <label>${T('Dự án liên quan')} *</label>
-    <select id="mbHtDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="${esc(x.ten)}">${esc(x.ten)}</option>`).join('')}</select>
+    <label>${T('Dự án theo kế hoạch hôm nay')} *</label>
+    <select id="mbHtDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbKHNgayOpts()}</select>
     <label>${T('Gửi tới bộ phận')}</label><select id="mbHtBP">${bpOpts}</select>
     <label>${T('Loại yêu cầu')}</label><select id="mbHtLoai">${loaiOpts}</select>
     <label>${T('Nội dung cần hỗ trợ')} *</label>
@@ -553,8 +584,8 @@ async function mbVeDX(el){
   <div class="mb-card"><h3>📨 ${T('Gửi đề xuất mới')}</h3>
     <label>${T('Gắn vào dự án / khách hàng')} *</label>
     <select id="dxGan" style="width:100%;margin-bottom:8px"><option value="">— ${T('Chọn dự án')} —</option>
-      <optgroup label="🎯 ${T('Dự án')}">${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="deal:${x.id}">${esc(x.ten)}</option>`).join('')}</optgroup>
-      <optgroup label="👥 ${T('Khách hàng-Đối tác')}">${mbOrgsCuaToi().map(o=>`<option value="org:${o.id}">${esc(o.ten)}</option>`).join('')}</optgroup></select>
+      <optgroup label="🎯 ${T('Dự án theo kế hoạch hôm nay')}">${mbKeHoachNgay().rows.map(x=>`<option value="deal:${x.id}">${esc(x.ten)}</option>`).join('')}</optgroup>
+      <optgroup label="👥 ${T('Khách hàng-Đối tác')}">${(()=>{const ten=new Set();mbKeHoachNgay().rows.forEach(x=>{if(x.cdt_text)ten.add(x.cdt_text);if(x.npp_chi_dinh)ten.add(x.npp_chi_dinh)});const l=ORGS.filter(o=>ten.has(o.ten));return(l.length?l:mbOrgsCuaToi().slice(0,30)).map(o=>`<option value="org:${o.id}">${esc(o.ten)}</option>`).join('')})()}</optgroup></select>
     <select id="dxCap" style="width:100%;margin-bottom:8px">
       <option value="manager">${T('Cấp duyệt: Manager')}</option>
       <option value="ceo">${T('Cấp duyệt: CEO')}</option></select>
