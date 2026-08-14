@@ -92,12 +92,28 @@ dlgLogin.showModal=function(){
 };
 
 /* ============ 4. CARD TÀI KHOẢN & PHÂN QUYỀN (thay card v26 khi có phiên email) ============ */
-window.addEventListener('load',()=>{setTimeout(nangCapCardTK,1200)});
+// chờ tới khi sb sẵn sàng VÀ có phiên email (kể cả đăng nhập muộn) rồi mới thay card
+window.addEventListener('load',()=>{
+  let tries=0;
+  const iv=setInterval(async()=>{
+    if(++tries>240){clearInterval(iv);return} // theo dõi tối đa ~6 phút
+    if(!window.sb)return;
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      if(!session)return;
+      const card=document.getElementById('cardNppTk');
+      if(!card)return;
+      if(card.dataset.v27)return void clearInterval(iv);
+      clearInterval(iv);nangCapCardTK();
+    }catch(e){}
+  },1500);
+});
 async function nangCapCardTK(){
   try{
     const {data:{session}}=await sb.auth.getSession();
     if(!session)return; // chưa dùng đăng nhập hợp nhất → giữ card v26
     const card=document.getElementById('cardNppTk');if(!card)return;
+    card.dataset.v27='1';
     card.innerHTML=`<h2>👥 ${t('Tài khoản & phân quyền (đăng nhập hợp nhất)')}</h2>
       <div class="notice">${t('Mỗi người một email + một mật khẩu duy nhất. Tạo hồ sơ tại đây → hệ thống cấp đăng nhập email với mật khẩu tạm → người dùng đăng nhập lần đầu sẽ bị bắt tự đổi. Không cần nhập lại mật khẩu của bạn — hệ thống xác minh qua phiên đăng nhập.')}</div>
       <button class="btn pri" onclick="tk2Tai()">📋 ${t('Tải danh sách người dùng')}</button>
