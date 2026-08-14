@@ -12,7 +12,13 @@
 
 let MB_ON=false, MB_TAB='viec';
 
-function mbLa(){return window.matchMedia('(max-width:767px)').matches&&localStorage.getItem('crm_mb_off')!=='1'}
+/* Link chia sẻ ?m=1 → ép mở bản mobile trên MỌI thiết bị (kể cả desktop) */
+function mbEp(){const p=new URLSearchParams(location.search);
+  return p.has('m')||p.has('mobile')||location.hash==='#mobile'}
+function mbLa(){
+  if(mbEp())return true;
+  return window.matchMedia('(max-width:767px)').matches&&localStorage.getItem('crm_mb_off')!=='1'}
+const MB_LINK=()=>location.origin+location.pathname.replace(/index\.html$/,'')+'?m=1';
 
 /* ===== phạm vi "CỦA TÔI" — theo phân công ===== */
 function mbDealsCuaToi(){
@@ -41,7 +47,7 @@ window.addEventListener('load',()=>{
     <div class="mb-head">
       <b>Starduct CRM</b>
       <span id="mbWho" class="muted" style="font-size:12px"></span>
-      <a href="javascript:void(0)" onclick="localStorage.setItem('crm_mb_off','1');location.reload()" title="${t('Bản đầy đủ')}">🖥</a>
+      <a href="javascript:void(0)" onclick="if(mbEp()){location.href=location.pathname}else{localStorage.setItem('crm_mb_off','1');location.reload()}" title="${t('Bản đầy đủ')}">🖥</a>
     </div>
     <div id="mbBody"></div>
     <div class="mb-tabs">
@@ -55,12 +61,49 @@ window.addEventListener('load',()=>{
 });
 // nút quay lại bản thu gọn khi đang ở bản đầy đủ trên màn hình hẹp
 window.addEventListener('load',()=>{
-  if(window.matchMedia('(max-width:767px)').matches&&localStorage.getItem('crm_mb_off')==='1'){
+  if(window.matchMedia('(max-width:767px)').matches&&localStorage.getItem('crm_mb_off')==='1'&&!mbEp()){
     const b=document.createElement('button');b.id='mbBack';b.textContent='📱';
     b.title='Bản thu gọn';b.onclick=()=>{localStorage.removeItem('crm_mb_off');location.reload()};
     document.body.appendChild(b);
   }
 });
+
+/* ===== NÚT 📱 TRÊN DESKTOP: mở xem thử + sao chép link mobile gửi đi ===== */
+window.addEventListener('load',()=>{
+  if(mbLa())return; // đang ở bản mobile thì thôi
+  const conn=document.querySelector('header .conn');
+  if(!conn||document.getElementById('mbShareBtn'))return;
+  const b=document.createElement('button');
+  b.className='btn';b.id='mbShareBtn';b.textContent='📱 Mobile';
+  b.title=t('Mở bản mobile / lấy link gửi cho nhân sự');
+  b.onclick=mbShareDlg;
+  conn.insertBefore(b,conn.firstChild);
+});
+function mbShareDlg(){
+  let dlg=document.getElementById('dlgMbShare');
+  if(!dlg){
+    dlg=document.createElement('dialog');dlg.id='dlgMbShare';dlg.style.maxWidth='460px';
+    dlg.innerHTML=`<div class="dhead">📱 ${t('Bản mobile — tác nghiệp hiện trường')}
+      <button class="btn" onclick="dlgMbShare.close()">✕</button></div>
+    <div class="dbody">
+      <div class="notice">${t('Gửi link này cho nhân sự / NPP qua Zalo, email… Mở trên điện thoại (hoặc bất kỳ đâu) sẽ ra thẳng bản mobile 3 tab. Trên điện thoại nên bấm "Thêm vào màn hình chính" để dùng như app.')}</div>
+      <input id="mbLinkBox" readonly value="${MB_LINK()}" style="width:100%;font-size:13px" onclick="this.select()">
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn pri" style="flex:1" onclick="mbCopyLink()">📋 ${t('Sao chép link')}</button>
+        <button class="btn" style="flex:1" onclick="window.open(MB_LINK(),'mbPreview','width=400,height=860')">👁 ${t('Mở xem thử')}</button>
+      </div>
+      <div class="muted" id="mbCopyMsg" style="margin-top:8px"></div>
+    </div>`;
+    document.body.appendChild(dlg);
+  }
+  dlg.showModal();
+}
+async function mbCopyLink(){
+  try{await navigator.clipboard.writeText(MB_LINK());
+    document.getElementById('mbCopyMsg').textContent='✓ '+t('Đã sao chép — dán vào Zalo/email để gửi');}
+  catch(e){document.getElementById('mbLinkBox').select();document.execCommand('copy');
+    document.getElementById('mbCopyMsg').textContent='✓ '+t('Đã chọn sẵn — nhấn Ctrl+C để sao chép');}
+}
 
 function mbChon(tab){MB_TAB=tab;
   for(const k of ['viec','kq','ht']){const b=document.getElementById('mbT_'+k);if(b)b.classList.toggle('act',k===tab)}
