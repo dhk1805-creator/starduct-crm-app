@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CRM — NSCA / Starduct</title>
-<!-- ===== PWA (Hybrid Web-App · crm.starduct.online) ===== -->
+<title>CRM â€” NSCA / Starduct</title>
+<!-- ===== PWA (Hybrid Web-App Â· crm.starduct.online) ===== -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f4c81">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -19,139 +19,139 @@
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v34 · 14/08</span></h1>
+  <h1>CRM â€” NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v34 Â· 14/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
-    <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
-    <option value="qt">🌏 THỊ TRƯỜNG QUỐC TẾ</option>
+    <option value="nd">ðŸ‡»ðŸ‡³ THá»Š TRÆ¯á»œNG Ná»˜I Äá»ŠA</option>
+    <option value="qt">ðŸŒ THá»Š TRÆ¯á»œNG QUá»C Táº¾</option>
   </select>
-  <span class="sub">Đối tác · Dự án · Tiếp xúc · Thị trường</span>
+  <span class="sub">Äá»‘i tÃ¡c Â· Dá»± Ã¡n Â· Tiáº¿p xÃºc Â· Thá»‹ trÆ°á»ng</span>
   <div class="conn">
     <span id="whoami" class="tag" style="display:none;font-size:12px;padding:4px 10px"></span>
-    <button class="btn" id="logoutBtn" style="display:none" onclick="logout()">Đăng xuất</button>
+    <button class="btn" id="logoutBtn" style="display:none" onclick="logout()">ÄÄƒng xuáº¥t</button>
     <button class="btn" id="langBtn" onclick="setLang(LANG==='vi'?'en':'vi')"
       style="font-weight:700;min-width:44px">EN</button>
-    <span class="dot" id="dot"></span><span id="connTxt">Chưa kết nối</span>
-    <button class="btn" onclick="dlgCfg.showModal()">Đăng nhập</button>
+    <span class="dot" id="dot"></span><span id="connTxt">ChÆ°a káº¿t ná»‘i</span>
+    <button class="btn" onclick="dlgCfg.showModal()">ÄÄƒng nháº­p</button>
   </div>
 </header>
 
 <nav id="nav">
-  <button data-t="tq" class="act">Tổng quan</button>
-  <button data-t="dt">Đối tác</button>
-  <button data-t="da">Dự án</button>
-  <button data-t="dn">Dự án nền</button>
+  <button data-t="tq" class="act">Tá»•ng quan</button>
+  <button data-t="dt">Äá»‘i tÃ¡c</button>
+  <button data-t="da">Dá»± Ã¡n</button>
+  <button data-t="dn">Dá»± Ã¡n ná»n</button>
   <button data-t="dt2">Doanh thu</button>
-  <button data-t="kh">Kế hoạch</button>
-  <button data-t="kpi">KPI kỳ</button>
-  <button data-t="tx">Tiếp xúc</button>
-  <button data-t="ht">Hỗ trợ</button>
-  <button data-t="sk">Sự kiện</button>
-  <button data-t="ns">Nhân sự</button>
-  <button data-t="im">Nhập dữ liệu</button>
+  <button data-t="kh">Káº¿ hoáº¡ch</button>
+  <button data-t="kpi">KPI ká»³</button>
+  <button data-t="tx">Tiáº¿p xÃºc</button>
+  <button data-t="ht">Há»— trá»£</button>
+  <button data-t="sk">Sá»± kiá»‡n</button>
+  <button data-t="ns">NhÃ¢n sá»±</button>
+  <button data-t="im">Nháº­p dá»¯ liá»‡u</button>
 </nav>
 
 <main>
 
-<!-- ============ TỔNG QUAN ============ -->
+<!-- ============ Tá»”NG QUAN ============ -->
 <section id="tab-tq">
   <div class="grid g4" id="kpis"></div>
   <div class="grid g2" style="margin-top:14px">
-    <div class="card"><h2>Độ phủ theo trạng thái (0→5)</h2><div id="phuChart"></div></div>
-    <div class="card"><h2>Theo thị trường</h2><div id="qgChart" style="max-height:340px;overflow:auto"></div></div>
+    <div class="card"><h2>Äá»™ phá»§ theo tráº¡ng thÃ¡i (0â†’5)</h2><div id="phuChart"></div></div>
+    <div class="card"><h2>Theo thá»‹ trÆ°á»ng</h2><div id="qgChart" style="max-height:340px;overflow:auto"></div></div>
   </div>
-  <div class="card"><h2>🗺 Lớp thị trường nền — dữ liệu tra cứu</h2><div id="nenChart" class="muted">Đang tải…</div></div>
-  <div class="card"><h2>Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng</h2><div id="qhChart"></div></div>
-  <div class="card"><h2>Bước tiếp theo quá hạn / sắp đến hạn</h2><div id="dueList"></div></div>
-  <div class="card"><h2>⏳ Hàng chờ phê duyệt</h2><div id="aprQueue"></div></div>
+  <div class="card"><h2>ðŸ—º Lá»›p thá»‹ trÆ°á»ng ná»n â€” dá»¯ liá»‡u tra cá»©u</h2><div id="nenChart" class="muted">Äang táº£iâ€¦</div></div>
+  <div class="card"><h2>Káº¿t quáº£ theo nhÃ³m quan há»‡ â€” chÄƒm sÃ³c â‰  phÃ¡t triá»ƒn â‰  tiá»m nÄƒng</h2><div id="qhChart"></div></div>
+  <div class="card"><h2>BÆ°á»›c tiáº¿p theo quÃ¡ háº¡n / sáº¯p Ä‘áº¿n háº¡n</h2><div id="dueList"></div></div>
+  <div class="card"><h2>â³ HÃ ng chá» phÃª duyá»‡t</h2><div id="aprQueue"></div></div>
 </section>
 
-<!-- ============ ĐỐI TÁC ============ -->
+<!-- ============ Äá»I TÃC ============ -->
 <section id="tab-dt" hidden>
   <div class="card">
     <div class="filters">
-      <input id="fdtQ" placeholder="Tìm tên công ty…" style="flex:1;min-width:180px">
-      <select id="fdtPL"><option value="">— Phân loại —</option>
-        <option value="cdt">CĐT</option><option value="tvtk">TVTK</option>
-        <option value="thau">Tổng thầu-MEP</option><option value="npp">Nhà phân phối</option></select>
-      <select id="fdtQG"><option value="">— Thị trường —</option></select>
-      <select id="fdtTP"><option value="">— Thành phố —</option></select>
-      <select id="fdtPhu"><option value="">— Kết quả (trạng thái phủ) —</option>
-        <option value="0">0 · Chưa tiếp cận</option><option value="1">1 · Đã tiếp cận</option>
-        <option value="2">2 · Quan hệ làm việc</option><option value="3">3 · Spec-in</option>
-        <option value="4">4 · Đã bán</option><option value="5">5 · Khách thường xuyên</option></select>
-      <select id="fdtLBG"><option value="">— Loại —</option>
-        <option value="muc_tieu">Mục tiêu</option><option value="tinh_bao">Tình báo</option></select>
-      <select id="fdtChu"><option value="">— Người phụ trách —</option>
-        <option value="co">Đã gán</option><option value="khong">Chưa gán</option></select>
-      <select id="fdtQH"><option value="">— Nhóm quan hệ —</option>
-        <option value="npp_hien_huu">NPP hiện hữu</option><option value="npp_moi">NPP mới</option>
-        <option value="kh_truc_tiep">KH trực tiếp</option><option value="kh_tiem_nang">KH tiềm năng</option>
-        <option value="doi_tac_chien_luoc">ĐT chiến lược</option><option value="doi_tac_phan_phoi">Broker/Agent</option>
-        <option value="chua">Chưa phân loại</option></select>
-      <button class="btn pri" onclick="openOrg()">+ Thêm đối tác</button>
-      <button class="btn" onclick="taiFilePhanCong()">⬇ File phân công</button>
-      <button class="btn" onclick="document.getElementById('pcFile').click()">⬆ Nhập phân công</button>
+      <input id="fdtQ" placeholder="TÃ¬m tÃªn cÃ´ng tyâ€¦" style="flex:1;min-width:180px">
+      <select id="fdtPL"><option value="">â€” PhÃ¢n loáº¡i â€”</option>
+        <option value="cdt">CÄT</option><option value="tvtk">TVTK</option>
+        <option value="thau">Tá»•ng tháº§u-MEP</option><option value="npp">NhÃ  phÃ¢n phá»‘i</option></select>
+      <select id="fdtQG"><option value="">â€” Thá»‹ trÆ°á»ng â€”</option></select>
+      <select id="fdtTP"><option value="">â€” ThÃ nh phá»‘ â€”</option></select>
+      <select id="fdtPhu"><option value="">â€” Káº¿t quáº£ (tráº¡ng thÃ¡i phá»§) â€”</option>
+        <option value="0">0 Â· ChÆ°a tiáº¿p cáº­n</option><option value="1">1 Â· ÄÃ£ tiáº¿p cáº­n</option>
+        <option value="2">2 Â· Quan há»‡ lÃ m viá»‡c</option><option value="3">3 Â· Spec-in</option>
+        <option value="4">4 Â· ÄÃ£ bÃ¡n</option><option value="5">5 Â· KhÃ¡ch thÆ°á»ng xuyÃªn</option></select>
+      <select id="fdtLBG"><option value="">â€” Loáº¡i â€”</option>
+        <option value="muc_tieu">Má»¥c tiÃªu</option><option value="tinh_bao">TÃ¬nh bÃ¡o</option></select>
+      <select id="fdtChu"><option value="">â€” NgÆ°á»i phá»¥ trÃ¡ch â€”</option>
+        <option value="co">ÄÃ£ gÃ¡n</option><option value="khong">ChÆ°a gÃ¡n</option></select>
+      <select id="fdtQH"><option value="">â€” NhÃ³m quan há»‡ â€”</option>
+        <option value="npp_hien_huu">NPP hiá»‡n há»¯u</option><option value="npp_moi">NPP má»›i</option>
+        <option value="kh_truc_tiep">KH trá»±c tiáº¿p</option><option value="kh_tiem_nang">KH tiá»m nÄƒng</option>
+        <option value="doi_tac_chien_luoc">ÄT chiáº¿n lÆ°á»£c</option><option value="doi_tac_phan_phoi">Broker/Agent</option>
+        <option value="chua">ChÆ°a phÃ¢n loáº¡i</option></select>
+      <button class="btn pri" onclick="openOrg()">+ ThÃªm Ä‘á»‘i tÃ¡c</button>
+      <button class="btn" onclick="taiFilePhanCong()">â¬‡ File phÃ¢n cÃ´ng</button>
+      <button class="btn" onclick="document.getElementById('pcFile').click()">â¬† Nháº­p phÃ¢n cÃ´ng</button>
       <input type="file" id="pcFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCong(this)">
     </div>
     <div id="dtList"></div>
   </div>
 </section>
 
-<!-- ============ DỰ ÁN ============ -->
+<!-- ============ Dá»° ÃN ============ -->
 <section id="tab-da" hidden>
   <div class="card">
     <div class="filters">
-      <input id="fdaQ" placeholder="Tìm tên dự án…" style="flex:1;min-width:180px">
-      <select id="fdaQG"><option value="">— Thị trường —</option></select>
-      <select id="fdaUT"><option value="">— Ưu tiên —</option>
-        <option value="1">1 · Cao</option><option value="3">3 · Trung bình</option>
-        <option value="4">4 · Thấp</option><option value="5">5 · Theo dõi</option></select>
-      <select id="fdaSt"><option value="">— Stage —</option>
-        <option value="tiep_can">Tiếp cận</option><option value="spec_in">Spec-in</option>
-        <option value="chao_gia">Chào giá</option><option value="dam_phan">Đàm phán</option>
-        <option value="po">PO</option><option value="dong">Đóng</option></select>
-      <input id="fdaTP" placeholder="Địa điểm / thành phố…" style="width:150px">
-      <input id="fdaHM" placeholder="Chủ đề: VAV, EI, ERV…" style="width:140px">
-      <select id="fdaNPP"><option value="">— NPP —</option></select>
-      <select id="fdaPD"><option value="">— Phê duyệt —</option>
-        <option value="cho_tiep_nhan">Chờ tiếp nhận</option>
-        <option value="da_tiep_nhan">Đã tiếp nhận</option>
-        <option value="duoc_chi_dinh">Được chỉ định</option>
-        <option value="phe_duyet">✓ Phê duyệt</option>
-        <option value="khong_phe_duyet">✗ Không phê duyệt</option></select>
-      <select id="fdaNguoi"><option value="">— Người phụ trách —</option></select>
+      <input id="fdaQ" placeholder="TÃ¬m tÃªn dá»± Ã¡nâ€¦" style="flex:1;min-width:180px">
+      <select id="fdaQG"><option value="">â€” Thá»‹ trÆ°á»ng â€”</option></select>
+      <select id="fdaUT"><option value="">â€” Æ¯u tiÃªn â€”</option>
+        <option value="1">1 Â· Cao</option><option value="3">3 Â· Trung bÃ¬nh</option>
+        <option value="4">4 Â· Tháº¥p</option><option value="5">5 Â· Theo dÃµi</option></select>
+      <select id="fdaSt"><option value="">â€” Stage â€”</option>
+        <option value="tiep_can">Tiáº¿p cáº­n</option><option value="spec_in">Spec-in</option>
+        <option value="chao_gia">ChÃ o giÃ¡</option><option value="dam_phan">ÄÃ m phÃ¡n</option>
+        <option value="po">PO</option><option value="dong">ÄÃ³ng</option></select>
+      <input id="fdaTP" placeholder="Äá»‹a Ä‘iá»ƒm / thÃ nh phá»‘â€¦" style="width:150px">
+      <input id="fdaHM" placeholder="Chá»§ Ä‘á»: VAV, EI, ERVâ€¦" style="width:140px">
+      <select id="fdaNPP"><option value="">â€” NPP â€”</option></select>
+      <select id="fdaPD"><option value="">â€” PhÃª duyá»‡t â€”</option>
+        <option value="cho_tiep_nhan">Chá» tiáº¿p nháº­n</option>
+        <option value="da_tiep_nhan">ÄÃ£ tiáº¿p nháº­n</option>
+        <option value="duoc_chi_dinh">ÄÆ°á»£c chá»‰ Ä‘á»‹nh</option>
+        <option value="phe_duyet">âœ“ PhÃª duyá»‡t</option>
+        <option value="khong_phe_duyet">âœ— KhÃ´ng phÃª duyá»‡t</option></select>
+      <select id="fdaNguoi"><option value="">â€” NgÆ°á»i phá»¥ trÃ¡ch â€”</option></select>
       <label style="font-size:12px;display:flex;align-items:center;gap:5px">
-        <input type="checkbox" id="fdaDY" style="width:auto"> 🛑 đứng yên >21 ngày</label>
+        <input type="checkbox" id="fdaDY" style="width:auto"> ðŸ›‘ Ä‘á»©ng yÃªn >21 ngÃ y</label>
       <label style="font-size:12px;display:flex;align-items:center;gap:5px">
-        <input type="checkbox" id="fdaTVTK" style="width:auto"> thiếu TVTK</label>
-      <button class="btn pri" onclick="openDeal()">+ Thêm dự án</button>
-      <button class="btn" onclick="taiFilePhanCongDA()">⬇ File phân công DA</button>
-      <button class="btn" onclick="document.getElementById('pcdaFile').click()">⬆ Nhập phân công DA</button>
+        <input type="checkbox" id="fdaTVTK" style="width:auto"> thiáº¿u TVTK</label>
+      <button class="btn pri" onclick="openDeal()">+ ThÃªm dá»± Ã¡n</button>
+      <button class="btn" onclick="taiFilePhanCongDA()">â¬‡ File phÃ¢n cÃ´ng DA</button>
+      <button class="btn" onclick="document.getElementById('pcdaFile').click()">â¬† Nháº­p phÃ¢n cÃ´ng DA</button>
       <input type="file" id="pcdaFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCongDA(this)">
     </div>
     <div id="daList"></div>
   </div>
 </section>
 
-<!-- ============ DỰ ÁN NỀN (danh mục thị trường) ============ -->
+<!-- ============ Dá»° ÃN Ná»€N (danh má»¥c thá»‹ trÆ°á»ng) ============ -->
 <section id="tab-dn" hidden>
   <div class="card">
-    <div class="notice">Lớp dữ liệu <b>thị trường nền</b> — danh mục dự án theo NPP (nguồn file CẬP NHẬT DA THEO NPP,
-      cập nhật qua nút ⬆ ở tab Nhập dữ liệu). Tra cứu trước khi mở dự án theo dõi mới — quy tắc Bậc 0.</div>
+    <div class="notice">Lá»›p dá»¯ liá»‡u <b>thá»‹ trÆ°á»ng ná»n</b> â€” danh má»¥c dá»± Ã¡n theo NPP (nguá»“n file Cáº¬P NHáº¬T DA THEO NPP,
+      cáº­p nháº­t qua nÃºt â¬† á»Ÿ tab Nháº­p dá»¯ liá»‡u). Tra cá»©u trÆ°á»›c khi má»Ÿ dá»± Ã¡n theo dÃµi má»›i â€” quy táº¯c Báº­c 0.</div>
     <div class="filters">
-      <input id="fdnQ" placeholder="Tìm mã / tên dự án / CĐT…" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter'){DN_PAGE=0;loadDN()}">
-      <select id="fdnNPP" onchange="DN_PAGE=0;loadDN()"><option value="">— NPP chỉ định —</option></select>
-      <select id="fdnTinh" onchange="DN_PAGE=0;loadDN()"><option value="">— Tỉnh —</option></select>
-      <select id="fdnHT" onchange="DN_PAGE=0;loadDN()"><option value="">— Hiện trạng —</option></select>
-      <button class="btn pri" onclick="DN_PAGE=0;loadDN()">Tìm</button>
+      <input id="fdnQ" placeholder="TÃ¬m mÃ£ / tÃªn dá»± Ã¡n / CÄTâ€¦" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter'){DN_PAGE=0;loadDN()}">
+      <select id="fdnNPP" onchange="DN_PAGE=0;loadDN()"><option value="">â€” NPP chá»‰ Ä‘á»‹nh â€”</option></select>
+      <select id="fdnTinh" onchange="DN_PAGE=0;loadDN()"><option value="">â€” Tá»‰nh â€”</option></select>
+      <select id="fdnHT" onchange="DN_PAGE=0;loadDN()"><option value="">â€” Hiá»‡n tráº¡ng â€”</option></select>
+      <button class="btn pri" onclick="DN_PAGE=0;loadDN()">TÃ¬m</button>
     </div>
     <div class="muted" id="dnCount" style="font-size:12px;margin:6px 0"></div>
     <div id="dnList"></div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-      <button class="btn" onclick="if(DN_PAGE>0){DN_PAGE--;loadDN()}">← Trước</button>
+      <button class="btn" onclick="if(DN_PAGE>0){DN_PAGE--;loadDN()}">â† TrÆ°á»›c</button>
       <span class="muted" id="dnPage" style="font-size:12px"></span>
-      <button class="btn" onclick="DN_PAGE++;loadDN()">Sau →</button>
+      <button class="btn" onclick="DN_PAGE++;loadDN()">Sau â†’</button>
     </div>
   </div>
 </section>
@@ -161,336 +161,336 @@
   <div class="card">
     <div class="filters">
       <select id="frvNam"></select>
-      <select id="frvXem"><option value="all">👑 Toàn cảnh (Manager/CEO)</option></select>
-      <select id="frvKenh"><option value="">— Kênh —</option>
+      <select id="frvXem"><option value="all">ðŸ‘‘ ToÃ n cáº£nh (Manager/CEO)</option></select>
+      <select id="frvKenh"><option value="">â€” KÃªnh â€”</option>
         <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
-        <option value="truc_tiep">Trực tiếp</option><option value="oem">OEM</option></select>
-      <span class="muted" style="align-self:center">Chọn tên mình để xem dashboard cá nhân</span>
+        <option value="truc_tiep">Trá»±c tiáº¿p</option><option value="oem">OEM</option></select>
+      <span class="muted" style="align-self:center">Chá»n tÃªn mÃ¬nh Ä‘á»ƒ xem dashboard cÃ¡ nhÃ¢n</span>
     </div>
     <div class="grid g4" id="rvKpis"></div>
   </div>
   <div class="grid g2">
-    <div class="card"><h2>Theo đối tác (NPP · Agent · Broker · Trực tiếp)</h2><div id="rvOrg" style="max-height:380px;overflow:auto"></div></div>
-    <div class="card"><h2>Theo thị trường / vùng</h2><div id="rvQG" style="max-height:380px;overflow:auto"></div></div>
+    <div class="card"><h2>Theo Ä‘á»‘i tÃ¡c (NPP Â· Agent Â· Broker Â· Trá»±c tiáº¿p)</h2><div id="rvOrg" style="max-height:380px;overflow:auto"></div></div>
+    <div class="card"><h2>Theo thá»‹ trÆ°á»ng / vÃ¹ng</h2><div id="rvQG" style="max-height:380px;overflow:auto"></div></div>
   </div>
-  <div class="card"><h2>Theo tháng × ngành hàng</h2><div id="rvThang" style="overflow:auto"></div></div>
+  <div class="card"><h2>Theo thÃ¡ng Ã— ngÃ nh hÃ ng</h2><div id="rvThang" style="overflow:auto"></div></div>
   <div class="card">
-    <h2>Ghi nhận doanh thu (BO nhập hoặc import)</h2>
+    <h2>Ghi nháº­n doanh thu (BO nháº­p hoáº·c import)</h2>
     <div class="grid g4">
-      <div><label class="muted">Tháng *</label><br><input type="month" id="rvT" style="width:100%"></div>
-      <div><label class="muted">Đối tác *</label><br><input id="rvO" list="orgListAll" style="width:100%" placeholder="NPP / Agent / KH…"></div>
-      <div><label class="muted">Ngành hàng *</label><br><select id="rvN" style="width:100%">
-        <option value="CG">Cửa gió</option><option value="EI">Van EI</option>
-        <option value="VCK">Van cơ khí</option><option value="VAV_CAV">VAV/CAV</option>
-        <option value="TAM_NAN">Tấm nan sọt trứng</option><option value="TMC">Thang máng cáp</option>
+      <div><label class="muted">ThÃ¡ng *</label><br><input type="month" id="rvT" style="width:100%"></div>
+      <div><label class="muted">Äá»‘i tÃ¡c *</label><br><input id="rvO" list="orgListAll" style="width:100%" placeholder="NPP / Agent / KHâ€¦"></div>
+      <div><label class="muted">NgÃ nh hÃ ng *</label><br><select id="rvN" style="width:100%">
+        <option value="CG">Cá»­a giÃ³</option><option value="EI">Van EI</option>
+        <option value="VCK">Van cÆ¡ khÃ­</option><option value="VAV_CAV">VAV/CAV</option>
+        <option value="TAM_NAN">Táº¥m nan sá»t trá»©ng</option><option value="TMC">Thang mÃ¡ng cÃ¡p</option>
         <option value="SWAY">Sway Bracing</option><option value="ERV">ERV</option>
-        <option value="KHAC">Khác</option></select></div>
-      <div><label class="muted">Kênh *</label><br><select id="rvK" style="width:100%">
+        <option value="KHAC">KhÃ¡c</option></select></div>
+      <div><label class="muted">KÃªnh *</label><br><select id="rvK" style="width:100%">
         <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
-        <option value="truc_tiep">Trực tiếp</option><option value="oem">OEM</option></select></div>
-      <div><label class="muted">Số tiền (VND) *</label><br><input type="number" id="rvS" style="width:100%"></div>
-      <div><label class="muted">Số bộ VAV</label><br><input type="number" id="rvB" style="width:100%" placeholder="chỉ khi VAV/CAV"></div>
-      <div><label class="muted">Vùng (nội địa)</label><br><select id="rvV" style="width:100%">
-        <option value="">—</option><option>Bắc</option><option>Trung</option><option>Nam</option></select></div>
-      <div><label class="muted">Người nhập</label><br><input id="rvAi" list="nsList" style="width:100%"></div>
+        <option value="truc_tiep">Trá»±c tiáº¿p</option><option value="oem">OEM</option></select></div>
+      <div><label class="muted">Sá»‘ tiá»n (VND) *</label><br><input type="number" id="rvS" style="width:100%"></div>
+      <div><label class="muted">Sá»‘ bá»™ VAV</label><br><input type="number" id="rvB" style="width:100%" placeholder="chá»‰ khi VAV/CAV"></div>
+      <div><label class="muted">VÃ¹ng (ná»™i Ä‘á»‹a)</label><br><select id="rvV" style="width:100%">
+        <option value="">â€”</option><option>Báº¯c</option><option>Trung</option><option>Nam</option></select></div>
+      <div><label class="muted">NgÆ°á»i nháº­p</label><br><input id="rvAi" list="nsList" style="width:100%"></div>
     </div>
-    <div style="margin-top:10px"><button class="btn pri" onclick="saveRev()">Lưu (upsert theo tháng+đối tác+ngành+kênh)</button>
+    <div style="margin-top:10px"><button class="btn pri" onclick="saveRev()">LÆ°u (upsert theo thÃ¡ng+Ä‘á»‘i tÃ¡c+ngÃ nh+kÃªnh)</button>
       <span class="muted" id="rvMsg"></span></div>
     <datalist id="orgListAll"></datalist>
   </div>
 </section>
 
-<!-- ============ KẾ HOẠCH ============ -->
+<!-- ============ Káº¾ HOáº CH ============ -->
 <section id="tab-kh" hidden>
   <div class="card">
-    <h2>Lập kế hoạch từ CSDL thị trường mình phụ trách → trình CEO → triển khai</h2>
-    <div class="notice">Quy trình: ① lọc dự án/đối tác của mình ở tab Dự án & Đối tác → ② tạo kế hoạch,
-      gắn từng dự án với hành động + chỉ tiêu + hạn → ③ bấm <b>Trình CEO</b> → ④ CEO duyệt trong
-      Hàng chờ phê duyệt → hệ thống <b>tự đổ hành động vào cột "Việc tiếp theo"</b> của từng dự án
-      và gán owner — kế hoạch thành việc chạy, không nằm trên giấy.</div>
+    <h2>Láº­p káº¿ hoáº¡ch tá»« CSDL thá»‹ trÆ°á»ng mÃ¬nh phá»¥ trÃ¡ch â†’ trÃ¬nh CEO â†’ triá»ƒn khai</h2>
+    <div class="notice">Quy trÃ¬nh: â‘  lá»c dá»± Ã¡n/Ä‘á»‘i tÃ¡c cá»§a mÃ¬nh á»Ÿ tab Dá»± Ã¡n & Äá»‘i tÃ¡c â†’ â‘¡ táº¡o káº¿ hoáº¡ch,
+      gáº¯n tá»«ng dá»± Ã¡n vá»›i hÃ nh Ä‘á»™ng + chá»‰ tiÃªu + háº¡n â†’ â‘¢ báº¥m <b>TrÃ¬nh CEO</b> â†’ â‘£ CEO duyá»‡t trong
+      HÃ ng chá» phÃª duyá»‡t â†’ há»‡ thá»‘ng <b>tá»± Ä‘á»• hÃ nh Ä‘á»™ng vÃ o cá»™t "Viá»‡c tiáº¿p theo"</b> cá»§a tá»«ng dá»± Ã¡n
+      vÃ  gÃ¡n owner â€” káº¿ hoáº¡ch thÃ nh viá»‡c cháº¡y, khÃ´ng náº±m trÃªn giáº¥y.</div>
     <div style="background:var(--b50);border:1px solid var(--b400);border-radius:8px;padding:12px;margin-bottom:12px">
-      <b>Bước 1 — Lập kế hoạch kỳ theo mẫu</b> <span class="muted">(Sale/BD: kỳ ngắn nhất là Quý)</span>
+      <b>BÆ°á»›c 1 â€” Láº­p káº¿ hoáº¡ch ká»³ theo máº«u</b> <span class="muted">(Sale/BD: ká»³ ngáº¯n nháº¥t lÃ  QuÃ½)</span>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <select id="mauKy"><option value="quy">Quý</option><option value="nua_nam">Nửa năm</option><option value="nam">Năm</option></select>
-        <button class="btn pri" onclick="moMauKH()">📝 Lập ngay trên web</button>
-        <button class="btn" onclick="taiMauKH()">⬇ Tải mẫu Excel (làm offline)</button>
-        <button class="btn" onclick="document.getElementById('mauFile').click()">⬆ Nộp kế hoạch đã điền</button>
+        <select id="mauKy"><option value="quy">QuÃ½</option><option value="nua_nam">Ná»­a nÄƒm</option><option value="nam">NÄƒm</option></select>
+        <button class="btn pri" onclick="moMauKH()">ðŸ“ Láº­p ngay trÃªn web</button>
+        <button class="btn" onclick="taiMauKH()">â¬‡ Táº£i máº«u Excel (lÃ m offline)</button>
+        <button class="btn" onclick="document.getElementById('mauFile').click()">â¬† Ná»™p káº¿ hoáº¡ch Ä‘Ã£ Ä‘iá»n</button>
         <input type="file" id="mauFile" accept=".xlsx,.xls" style="display:none" onchange="nopKHFile(this)">
       </div>
-      <div class="muted" style="margin-top:6px;font-size:12px">Mẫu đã kéo sẵn tài khoản &amp; dự án bạn phụ trách từ CSDL —
-      đánh dấu <b>x</b> vào cột CHỌN, điền hành động, nộp lại là hệ thống tự tạo kế hoạch.</div>
+      <div class="muted" style="margin-top:6px;font-size:12px">Máº«u Ä‘Ã£ kÃ©o sáºµn tÃ i khoáº£n &amp; dá»± Ã¡n báº¡n phá»¥ trÃ¡ch tá»« CSDL â€”
+      Ä‘Ã¡nh dáº¥u <b>x</b> vÃ o cá»™t CHá»ŒN, Ä‘iá»n hÃ nh Ä‘á»™ng, ná»™p láº¡i lÃ  há»‡ thá»‘ng tá»± táº¡o káº¿ hoáº¡ch.</div>
     </div>
-    <details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Hoặc tạo nhanh trên web…</summary>
+    <details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Hoáº·c táº¡o nhanh trÃªn webâ€¦</summary>
     <div class="grid g4" style="margin:8px 0 12px">
-      <input id="khTen" placeholder="Tên kế hoạch * — vd: KH thâm nhập Hàn Quốc Q4">
+      <input id="khTen" placeholder="TÃªn káº¿ hoáº¡ch * â€” vd: KH thÃ¢m nháº­p HÃ n Quá»‘c Q4">
       <input id="khTu" type="date"><input id="khDen" type="date">
-      <button class="btn pri" onclick="taoKH()">+ Tạo kế hoạch</button>
+      <button class="btn pri" onclick="taoKH()">+ Táº¡o káº¿ hoáº¡ch</button>
     </div>
     <div class="grid g4" style="margin-bottom:8px">
-      <select id="khKy"><option value="">— Loại kỳ —</option><option value="tuan">Tuần</option>
-        <option value="thang">Tháng</option><option value="quy">Quý</option>
-        <option value="nua_nam">Nửa năm</option><option value="nam">Năm</option></select>
-      <input id="khCTVAV" type="number" min="0" placeholder="Chỉ tiêu số bộ VAV">
-      <input id="khCTDT" type="number" min="0" placeholder="Doanh thu mục tiêu (VND)">
-      <input id="khCTNPP" type="number" min="0" placeholder="Số NPP / OEM mới">
+      <select id="khKy"><option value="">â€” Loáº¡i ká»³ â€”</option><option value="tuan">Tuáº§n</option>
+        <option value="thang">ThÃ¡ng</option><option value="quy">QuÃ½</option>
+        <option value="nua_nam">Ná»­a nÄƒm</option><option value="nam">NÄƒm</option></select>
+      <input id="khCTVAV" type="number" min="0" placeholder="Chá»‰ tiÃªu sá»‘ bá»™ VAV">
+      <input id="khCTDT" type="number" min="0" placeholder="Doanh thu má»¥c tiÃªu (VND)">
+      <input id="khCTNPP" type="number" min="0" placeholder="Sá»‘ NPP / OEM má»›i">
     </div>
-    <textarea id="khMT" placeholder="Mục tiêu tổng quát…" style="width:100%;min-height:40px"></textarea>
-    <textarea id="khTT" placeholder="Trọng tâm chiến lược của kỳ — vd: đẩy VAV Box AHRI vào phân khúc bệnh viện; hoàn tất kết nối 3 TVTK trọng điểm" style="width:100%;min-height:36px;margin-top:6px"></textarea>
+    <textarea id="khMT" placeholder="Má»¥c tiÃªu tá»•ng quÃ¡tâ€¦" style="width:100%;min-height:40px"></textarea>
+    <textarea id="khTT" placeholder="Trá»ng tÃ¢m chiáº¿n lÆ°á»£c cá»§a ká»³ â€” vd: Ä‘áº©y VAV Box AHRI vÃ o phÃ¢n khÃºc bá»‡nh viá»‡n; hoÃ n táº¥t káº¿t ná»‘i 3 TVTK trá»ng Ä‘iá»ƒm" style="width:100%;min-height:36px;margin-top:6px"></textarea>
     </details>
     <div id="khList" style="margin-top:14px"></div>
   </div>
 </section>
 
 <dialog id="dlgKH" style="max-width:760px">
-  <div class="dhead"><span id="khTitle">Kế hoạch</span><button class="btn" onclick="dlgKH.close()">✕</button></div>
+  <div class="dhead"><span id="khTitle">Káº¿ hoáº¡ch</span><button class="btn" onclick="dlgKH.close()">âœ•</button></div>
   <div class="dbody" id="khBody"></div>
 </dialog>
 
 <dialog id="dlgMau" style="max-width:860px;width:95%">
-  <div class="dhead"><span id="mauTitle">Lập kế hoạch</span><button class="btn" onclick="dlgMau.close()">✕</button></div>
+  <div class="dhead"><span id="mauTitle">Láº­p káº¿ hoáº¡ch</span><button class="btn" onclick="dlgMau.close()">âœ•</button></div>
   <div class="dbody" id="mauBody"></div>
 </dialog>
 
-<!-- ============ KPI KỲ ============ -->
+<!-- ============ KPI Ká»² ============ -->
 <section id="tab-kpi" hidden>
   <div class="card">
     <div class="filters">
-      <select id="kpiKy" onchange="setKy()"><option value="tuan">Tuần</option>
-        <option value="thang" selected>Tháng</option><option value="quy">Quý</option>
-        <option value="6thang">6 tháng</option><option value="nam">Năm</option></select>
+      <select id="kpiKy" onchange="setKy()"><option value="tuan">Tuáº§n</option>
+        <option value="thang" selected>ThÃ¡ng</option><option value="quy">QuÃ½</option>
+        <option value="6thang">6 thÃ¡ng</option><option value="nam">NÄƒm</option></select>
       <input type="date" id="kpiTu"><input type="date" id="kpiDen">
-      <button class="btn" onclick="renderKPI()">Tính</button>
-      <button class="btn pri" onclick="lapBaoCao()">📋 Lập & lưu báo cáo kỳ</button>
-      <button class="btn" onclick="window.print()">🖨 In</button>
-      <span class="muted" style="align-self:center" id="bcMsg">Tự động: pg_cron lập tuần (T7 18:05) & tháng (mùng 1) nếu được bật</span>
+      <button class="btn" onclick="renderKPI()">TÃ­nh</button>
+      <button class="btn pri" onclick="lapBaoCao()">ðŸ“‹ Láº­p & lÆ°u bÃ¡o cÃ¡o ká»³</button>
+      <button class="btn" onclick="window.print()">ðŸ–¨ In</button>
+      <span class="muted" style="align-self:center" id="bcMsg">Tá»± Ä‘á»™ng: pg_cron láº­p tuáº§n (T7 18:05) & thÃ¡ng (mÃ¹ng 1) náº¿u Ä‘Æ°á»£c báº­t</span>
     </div>
     <div id="kpiBody"></div>
   </div>
-  <div class="card"><h2>Tốc độ phản hồi case theo bộ phận (trong kỳ)</h2><div id="kpiCase"></div></div>
-  <div class="card"><h2>Nhận xét tự động theo nhân sự</h2><div id="kpiNX"></div></div>
+  <div class="card"><h2>Tá»‘c Ä‘á»™ pháº£n há»“i case theo bá»™ pháº­n (trong ká»³)</h2><div id="kpiCase"></div></div>
+  <div class="card"><h2>Nháº­n xÃ©t tá»± Ä‘á»™ng theo nhÃ¢n sá»±</h2><div id="kpiNX"></div></div>
 </section>
 
-<!-- ============ TIẾP XÚC ============ -->
+<!-- ============ TIáº¾P XÃšC ============ -->
 <section id="tab-tx" hidden>
   <div class="card">
-    <h2>Ghi tiếp xúc mới</h2>
+    <h2>Ghi tiáº¿p xÃºc má»›i</h2>
     <div class="grid g3">
-      <div><label class="muted">Đối tác *</label><br>
-        <input id="txOrg" list="orgList" placeholder="Gõ tên để chọn…" style="width:100%"></div>
-      <div><label class="muted">Ngày</label><br><input type="date" id="txNgay" style="width:100%"></div>
-      <div><label class="muted">Loại</label><br>
-        <select id="txLoai" style="width:100%"><option value="gap_truc_tiep">Gặp trực tiếp</option>
+      <div><label class="muted">Äá»‘i tÃ¡c *</label><br>
+        <input id="txOrg" list="orgList" placeholder="GÃµ tÃªn Ä‘á»ƒ chá»nâ€¦" style="width:100%"></div>
+      <div><label class="muted">NgÃ y</label><br><input type="date" id="txNgay" style="width:100%"></div>
+      <div><label class="muted">Loáº¡i</label><br>
+        <select id="txLoai" style="width:100%"><option value="gap_truc_tiep">Gáº·p trá»±c tiáº¿p</option>
         <option value="online">Online</option><option value="email">Email</option>
-        <option value="dien_thoai">Điện thoại</option><option value="su_kien">Sự kiện</option>
-        <option value="gui_mau">Gửi mẫu</option><option value="khac">Khác</option></select></div>
-      <div><label class="muted">Người thực hiện *</label><br><input id="txAi" list="nsList" style="width:100%"></div>
-      <div><label class="muted">Người gặp / chức danh</label><br><input id="txGap" style="width:100%"></div>
-      <div><label class="muted">Dự án liên quan (workspace)</label><br>
-        <input id="txDeal" list="dealList" placeholder="Gõ tên dự án (tuỳ chọn)…" style="width:100%"></div>
+        <option value="dien_thoai">Äiá»‡n thoáº¡i</option><option value="su_kien">Sá»± kiá»‡n</option>
+        <option value="gui_mau">Gá»­i máº«u</option><option value="khac">KhÃ¡c</option></select></div>
+      <div><label class="muted">NgÆ°á»i thá»±c hiá»‡n *</label><br><input id="txAi" list="nsList" style="width:100%"></div>
+      <div><label class="muted">NgÆ°á»i gáº·p / chá»©c danh</label><br><input id="txGap" style="width:100%"></div>
+      <div><label class="muted">Dá»± Ã¡n liÃªn quan (workspace)</label><br>
+        <input id="txDeal" list="dealList" placeholder="GÃµ tÃªn dá»± Ã¡n (tuá»³ chá»n)â€¦" style="width:100%"></div>
       <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
-        <input type="checkbox" id="txQD" style="width:auto"><label class="muted">Cấp ra quyết định</label></div>
-      <div style="grid-column:1/-1"><label class="muted">Nội dung</label><br>
+        <input type="checkbox" id="txQD" style="width:auto"><label class="muted">Cáº¥p ra quyáº¿t Ä‘á»‹nh</label></div>
+      <div style="grid-column:1/-1"><label class="muted">Ná»™i dung</label><br>
         <textarea id="txND" style="width:100%;min-height:50px"></textarea></div>
-      <div><label class="muted">Bước tiếp theo</label><br><input id="txBTT" style="width:100%"></div>
-      <div><label class="muted">Hạn bước tiếp theo</label><br><input type="date" id="txHan" style="width:100%"></div>
-      <div><label class="muted">Nâng trạng thái phủ lên</label><br>
-        <select id="txNang" style="width:100%"><option value="">— giữ nguyên —</option>
-        <option value="1">1 · Đã tiếp cận</option><option value="2">2 · Quan hệ làm việc</option>
-        <option value="3">3 · Spec-in</option><option value="4">4 · Đã bán</option>
-        <option value="5">5 · Khách thường xuyên</option></select></div>
+      <div><label class="muted">BÆ°á»›c tiáº¿p theo</label><br><input id="txBTT" style="width:100%"></div>
+      <div><label class="muted">Háº¡n bÆ°á»›c tiáº¿p theo</label><br><input type="date" id="txHan" style="width:100%"></div>
+      <div><label class="muted">NÃ¢ng tráº¡ng thÃ¡i phá»§ lÃªn</label><br>
+        <select id="txNang" style="width:100%"><option value="">â€” giá»¯ nguyÃªn â€”</option>
+        <option value="1">1 Â· ÄÃ£ tiáº¿p cáº­n</option><option value="2">2 Â· Quan há»‡ lÃ m viá»‡c</option>
+        <option value="3">3 Â· Spec-in</option><option value="4">4 Â· ÄÃ£ bÃ¡n</option>
+        <option value="5">5 Â· KhÃ¡ch thÆ°á»ng xuyÃªn</option></select></div>
     </div>
-    <div style="margin-top:12px"><button class="btn pri" onclick="saveTx()">Lưu tiếp xúc</button>
+    <div style="margin-top:12px"><button class="btn pri" onclick="saveTx()">LÆ°u tiáº¿p xÃºc</button>
       <span class="muted" id="txMsg"></span></div>
     <datalist id="orgList"></datalist>
 <datalist id="nsList"></datalist>
   </div>
-  <div class="card"><h2>Tiếp xúc gần đây</h2><div id="txList"></div></div>
+  <div class="card"><h2>Tiáº¿p xÃºc gáº§n Ä‘Ã¢y</h2><div id="txList"></div></div>
 </section>
 
-<!-- ============ HỖ TRỢ LIÊN PHÒNG BAN ============ -->
+<!-- ============ Há»– TRá»¢ LIÃŠN PHÃ’NG BAN ============ -->
 <section id="tab-ht" hidden>
   <div class="card">
-    <h2>Điểm nghẽn theo bộ phận</h2>
+    <h2>Äiá»ƒm ngháº½n theo bá»™ pháº­n</h2>
     <div class="grid g4" id="htBottleneck"></div>
   </div>
   <div class="card">
-    <h2>Tạo yêu cầu hỗ trợ — thay cho hỏi qua Zalo</h2>
+    <h2>Táº¡o yÃªu cáº§u há»— trá»£ â€” thay cho há»i qua Zalo</h2>
     <div class="grid g3">
-      <div><label class="muted">Dự án (tuỳ chọn)</label><br>
-        <input id="htDeal" list="dealList" placeholder="Gõ tên dự án…" style="width:100%"></div>
-      <div><label class="muted">Bộ phận nhận *</label><br>
+      <div><label class="muted">Dá»± Ã¡n (tuá»³ chá»n)</label><br>
+        <input id="htDeal" list="dealList" placeholder="GÃµ tÃªn dá»± Ã¡nâ€¦" style="width:100%"></div>
+      <div><label class="muted">Bá»™ pháº­n nháº­n *</label><br>
         <select id="htBP" style="width:100%"><option value="rd">R&D</option>
-        <option value="qlsx">Sản xuất</option><option value="bo">BO</option>
+        <option value="qlsx">Sáº£n xuáº¥t</option><option value="bo">BO</option>
         <option value="tckt">TCKT</option><option value="kcs">KCS</option>
-        <option value="khac">Khác</option></select></div>
-      <div><label class="muted">Loại</label><br>
-        <select id="htLoai" style="width:100%"><option value="bao_gia">Báo giá</option>
-        <option value="ban_ve">Bản vẽ</option><option value="gia_san_pham_moi">Giá SP mới/phi tiêu chuẩn</option>
-        <option value="tien_do_sx">Tiến độ SX</option><option value="fat">FAT/thử nghiệm</option>
-        <option value="cong_no">Công nợ</option><option value="claim">Claim</option>
-        <option value="khac">Khác</option></select></div>
-      <div><label class="muted">Người yêu cầu *</label><br><input id="htAi" list="nsList" style="width:100%"></div>
-      <div><label class="muted">Ưu tiên</label><br>
+        <option value="khac">KhÃ¡c</option></select></div>
+      <div><label class="muted">Loáº¡i</label><br>
+        <select id="htLoai" style="width:100%"><option value="bao_gia">BÃ¡o giÃ¡</option>
+        <option value="ban_ve">Báº£n váº½</option><option value="gia_san_pham_moi">GiÃ¡ SP má»›i/phi tiÃªu chuáº©n</option>
+        <option value="tien_do_sx">Tiáº¿n Ä‘á»™ SX</option><option value="fat">FAT/thá»­ nghiá»‡m</option>
+        <option value="cong_no">CÃ´ng ná»£</option><option value="claim">Claim</option>
+        <option value="khac">KhÃ¡c</option></select></div>
+      <div><label class="muted">NgÆ°á»i yÃªu cáº§u *</label><br><input id="htAi" list="nsList" style="width:100%"></div>
+      <div><label class="muted">Æ¯u tiÃªn</label><br>
         <select id="htUT" style="width:100%"><option value="cao">Cao</option>
-        <option value="trung_binh" selected>Trung bình</option><option value="thap">Thấp</option></select></div>
-      <div><label class="muted">Hạn phản hồi</label><br><input type="date" id="htHan" style="width:100%"></div>
-      <div style="grid-column:1/-1"><label class="muted">Nội dung *</label><br>
+        <option value="trung_binh" selected>Trung bÃ¬nh</option><option value="thap">Tháº¥p</option></select></div>
+      <div><label class="muted">Háº¡n pháº£n há»“i</label><br><input type="date" id="htHan" style="width:100%"></div>
+      <div style="grid-column:1/-1"><label class="muted">Ná»™i dung *</label><br>
         <textarea id="htND" style="width:100%;min-height:50px"
-        placeholder="VD: Van MD thân L120 khẩu độ cánh 100mm chưa có đơn giá — Galaxy đang chờ để gửi báo giá"></textarea></div>
+        placeholder="VD: Van MD thÃ¢n L120 kháº©u Ä‘á»™ cÃ¡nh 100mm chÆ°a cÃ³ Ä‘Æ¡n giÃ¡ â€” Galaxy Ä‘ang chá» Ä‘á»ƒ gá»­i bÃ¡o giÃ¡"></textarea></div>
     </div>
-    <div style="margin-top:10px"><button class="btn pri" onclick="saveHT()">Gửi yêu cầu</button>
+    <div style="margin-top:10px"><button class="btn pri" onclick="saveHT()">Gá»­i yÃªu cáº§u</button>
       <span class="muted" id="htMsg"></span></div>
     <datalist id="dealList"></datalist>
   </div>
-  <div class="card"><h2>Danh sách yêu cầu</h2>
+  <div class="card"><h2>Danh sÃ¡ch yÃªu cáº§u</h2>
     <div class="filters">
-      <select id="fhtBP" onchange="renderHT()"><option value="">— Bộ phận —</option>
+      <select id="fhtBP" onchange="renderHT()"><option value="">â€” Bá»™ pháº­n â€”</option>
         <option value="rd">R&D</option><option value="qlsx">SX</option><option value="bo">BO</option>
         <option value="tckt">TCKT</option><option value="kcs">KCS</option></select>
-      <select id="fhtTT" onchange="renderHT()"><option value="">— Trạng thái —</option>
-        <option value="mo">Mở</option><option value="dang_xu_ly">Đang xử lý</option>
-        <option value="da_xong">Đã xong</option><option value="tu_choi">Từ chối</option></select>
+      <select id="fhtTT" onchange="renderHT()"><option value="">â€” Tráº¡ng thÃ¡i â€”</option>
+        <option value="mo">Má»Ÿ</option><option value="dang_xu_ly">Äang xá»­ lÃ½</option>
+        <option value="da_xong">ÄÃ£ xong</option><option value="tu_choi">Tá»« chá»‘i</option></select>
     </div>
     <div id="htList"></div></div>
 </section>
 
-<!-- ============ SỰ KIỆN ============ -->
+<!-- ============ Sá»° KIá»†N ============ -->
 <section id="tab-sk" hidden>
   <div class="card"><div id="skList"></div></div>
 </section>
 
-<!-- ============ NHÂN SỰ ============ -->
+<!-- ============ NHÃ‚N Sá»° ============ -->
 <section id="tab-ns" hidden>
   <div class="card">
-    <h2>Đội ngũ & mô tả công việc trong module</h2>
-    <div class="notice">Mô tả viết sẵn từ tài liệu đã đối soát (quy chế, KPI SMART, hợp đồng, báo cáo).
-      Trường <b>Email · Chỉ tiêu kỳ · Ghi chú admin</b> để trống có chủ đích — admin bổ sung dần.</div>
+    <h2>Äá»™i ngÅ© & mÃ´ táº£ cÃ´ng viá»‡c trong module</h2>
+    <div class="notice">MÃ´ táº£ viáº¿t sáºµn tá»« tÃ i liá»‡u Ä‘Ã£ Ä‘á»‘i soÃ¡t (quy cháº¿, KPI SMART, há»£p Ä‘á»“ng, bÃ¡o cÃ¡o).
+      TrÆ°á»ng <b>Email Â· Chá»‰ tiÃªu ká»³ Â· Ghi chÃº admin</b> Ä‘á»ƒ trá»‘ng cÃ³ chá»§ Ä‘Ã­ch â€” admin bá»• sung dáº§n.</div>
     <div id="nsBody"></div>
   </div>
 </section>
 
-<!-- ============ NHẬP DỮ LIỆU ============ -->
+<!-- ============ NHáº¬P Dá»® LIá»†U ============ -->
 <section id="tab-im" hidden>
   <div class="card">
-    <h2>Nhập từ file Excel kế hoạch quốc tế</h2>
-    <div class="notice">Chọn file <b>Ke_hoach_Phat_trien_Thi_truong_Quoc_te_H2-2026_H1-2027.xlsx</b>
-      — hệ thống đọc 3 sheet (Đối tác · Pipeline · Sự kiện), tự chuẩn hoá tên quốc gia về mã ISO,
-      tách trạng thái quan hệ, gộp 2 lớp tên Hàn/Nhật, và nạp theo lô.</div>
-    <div class="notice warn">Dữ liệu nguồn là <b>tài liệu tham khảo (Tầng 3)</b> — sau khi nạp,
-      mọi bản ghi mang <code>nguon = 'kh_qt_v22'</code>. Danh mục chính thức do CEO duyệt bằng cách
-      gán <b>người phụ trách</b> cho từng tài khoản.</div>
+    <h2>Nháº­p tá»« file Excel káº¿ hoáº¡ch quá»‘c táº¿</h2>
+    <div class="notice">Chá»n file <b>Ke_hoach_Phat_trien_Thi_truong_Quoc_te_H2-2026_H1-2027.xlsx</b>
+      â€” há»‡ thá»‘ng Ä‘á»c 3 sheet (Äá»‘i tÃ¡c Â· Pipeline Â· Sá»± kiá»‡n), tá»± chuáº©n hoÃ¡ tÃªn quá»‘c gia vá» mÃ£ ISO,
+      tÃ¡ch tráº¡ng thÃ¡i quan há»‡, gá»™p 2 lá»›p tÃªn HÃ n/Nháº­t, vÃ  náº¡p theo lÃ´.</div>
+    <div class="notice warn">Dá»¯ liá»‡u nguá»“n lÃ  <b>tÃ i liá»‡u tham kháº£o (Táº§ng 3)</b> â€” sau khi náº¡p,
+      má»i báº£n ghi mang <code>nguon = 'kh_qt_v22'</code>. Danh má»¥c chÃ­nh thá»©c do CEO duyá»‡t báº±ng cÃ¡ch
+      gÃ¡n <b>ngÆ°á»i phá»¥ trÃ¡ch</b> cho tá»«ng tÃ i khoáº£n.</div>
     <input type="file" id="impFile" accept=".xlsx">
-    <button class="btn pri" onclick="runImport()" style="margin-left:8px">Nạp vào CRM</button>
-    <div style="margin-top:12px" class="log" id="impLog">Chưa chạy.</div>
+    <button class="btn pri" onclick="runImport()" style="margin-left:8px">Náº¡p vÃ o CRM</button>
+    <div style="margin-top:12px" class="log" id="impLog">ChÆ°a cháº¡y.</div>
   </div>
 
   <div class="card">
-    <h2>⬆ Upload file cập nhật DA &amp; Báo giá</h2>
-    <div class="notice">Nhận 2 loại file, nhận diện tự động theo tên sheet:
-      <b>CẬP NHẬT DA THEO NPP.xlsx</b> (sheet DỰ ÁN → danh mục dự án nền · THÔNG TIN BCI → thị trường BCI ·
-      Bảng tổng hợp 3 → nhật ký cập nhật) và <b>DỮ LIỆU BÁO GIÁ KHÁCH HÀNG XK.xlsx</b> (sheet LIST BG → báo giá theo ngành hàng).
-      Nạp lặp lại an toàn — dòng đã có sẽ được cập nhật, không nhân đôi.</div>
+    <h2>â¬† Upload file cáº­p nháº­t DA &amp; BÃ¡o giÃ¡</h2>
+    <div class="notice">Nháº­n 2 loáº¡i file, nháº­n diá»‡n tá»± Ä‘á»™ng theo tÃªn sheet:
+      <b>Cáº¬P NHáº¬T DA THEO NPP.xlsx</b> (sheet Dá»° ÃN â†’ danh má»¥c dá»± Ã¡n ná»n Â· THÃ”NG TIN BCI â†’ thá»‹ trÆ°á»ng BCI Â·
+      Báº£ng tá»•ng há»£p 3 â†’ nháº­t kÃ½ cáº­p nháº­t) vÃ  <b>Dá»® LIá»†U BÃO GIÃ KHÃCH HÃ€NG XK.xlsx</b> (sheet LIST BG â†’ bÃ¡o giÃ¡ theo ngÃ nh hÃ ng).
+      Náº¡p láº·p láº¡i an toÃ n â€” dÃ²ng Ä‘Ã£ cÃ³ sáº½ Ä‘Æ°á»£c cáº­p nháº­t, khÃ´ng nhÃ¢n Ä‘Ã´i.</div>
     <input type="file" id="daFile" accept=".xlsx">
-    <button class="btn pri" onclick="runImportDA()" style="margin-left:8px">Nạp vào CRM</button>
-    <div style="margin-top:12px" class="log" id="daLog">Chưa chạy.</div>
+    <button class="btn pri" onclick="runImportDA()" style="margin-left:8px">Náº¡p vÃ o CRM</button>
+    <div style="margin-top:12px" class="log" id="daLog">ChÆ°a cháº¡y.</div>
   </div>
 </section>
 
 </main>
 
-<!-- ============ DIALOG CẤU HÌNH ============ -->
+<!-- ============ DIALOG Cáº¤U HÃŒNH ============ -->
 <dialog id="dlgCfg">
-  <div class="dhead">Đăng nhập hệ thống<button class="btn" onclick="dlgCfg.close()">✕</button></div>
+  <div class="dhead">ÄÄƒng nháº­p há»‡ thá»‘ng<button class="btn" onclick="dlgCfg.close()">âœ•</button></div>
   <div class="dbody">
-    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="email công ty — vd: tamntt@nsca.vn"></div>
-    <div class="frow"><label>Mật khẩu</label><input id="cfgPass" type="password" onkeydown="if(event.key==='Enter')connect()"></div>
-    <button class="btn pri" onclick="connect()">Đăng nhập</button>
-    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Cấu hình kết nối (kỹ thuật — không cần đụng tới)</summary>
+    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="email cÃ´ng ty â€” vd: tamntt@nsca.vn"></div>
+    <div class="frow"><label>Máº­t kháº©u</label><input id="cfgPass" type="password" onkeydown="if(event.key==='Enter')connect()"></div>
+    <button class="btn pri" onclick="connect()">ÄÄƒng nháº­p</button>
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Cáº¥u hÃ¬nh káº¿t ná»‘i (ká»¹ thuáº­t â€” khÃ´ng cáº§n Ä‘á»¥ng tá»›i)</summary>
       <div class="frow" style="margin-top:6px"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
-      <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOi…"></div>
+      <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOiâ€¦"></div>
     </details>
     <span class="muted" id="cfgMsg"></span>
   </div>
 </dialog>
 
-<!-- ============ DIALOG ĐỐI TÁC ============ -->
+<!-- ============ DIALOG Äá»I TÃC ============ -->
 <dialog id="dlgOrg">
-  <div class="dhead"><span id="orgTitle">Đối tác</span><button class="btn" onclick="dlgOrg.close()">✕</button></div>
+  <div class="dhead"><span id="orgTitle">Äá»‘i tÃ¡c</span><button class="btn" onclick="dlgOrg.close()">âœ•</button></div>
   <div class="dbody" id="orgBody"></div>
 </dialog>
 
-<!-- ============ DIALOG DỰ ÁN ============ -->
+<!-- ============ DIALOG Dá»° ÃN ============ -->
 <dialog id="dlgDeal">
-  <div class="dhead"><span id="dealTitle">Dự án</span><button class="btn" onclick="dlgDeal.close()">✕</button></div>
+  <div class="dhead"><span id="dealTitle">Dá»± Ã¡n</span><button class="btn" onclick="dlgDeal.close()">âœ•</button></div>
   <div class="dbody" id="dealBody"></div>
 </dialog>
 
-<!-- ============ DIALOG DỰ ÁN NỀN ============ -->
+<!-- ============ DIALOG Dá»° ÃN Ná»€N ============ -->
 <dialog id="dlgDN">
-  <div class="dhead"><span id="dnTitle">Dự án nền</span><button class="btn" onclick="dlgDN.close()">✕</button></div>
+  <div class="dhead"><span id="dnTitle">Dá»± Ã¡n ná»n</span><button class="btn" onclick="dlgDN.close()">âœ•</button></div>
   <div class="dbody" id="dnBody"></div>
 </dialog>
 
-<!-- ============ DIALOG LOGIN CÁ NHÂN ============ -->
+<!-- ============ DIALOG LOGIN CÃ NHÃ‚N ============ -->
 <dialog id="dlgLogin">
-  <div class="dhead">👤 Đăng nhập cá nhân</div>
+  <div class="dhead">ðŸ‘¤ ÄÄƒng nháº­p cÃ¡ nhÃ¢n</div>
   <div class="dbody">
-    <div class="frow"><label>User name</label><input id="lgU" placeholder="user name của bạn"></div>
-    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="mật khẩu của bạn"></div>
-    <button class="btn pri" onclick="doLogin()">Đăng nhập</button>
+    <div class="frow"><label>User name</label><input id="lgU" placeholder="user name cá»§a báº¡n"></div>
+    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="máº­t kháº©u cá»§a báº¡n"></div>
+    <button class="btn pri" onclick="doLogin()">ÄÄƒng nháº­p</button>
     <span class="muted" id="lgMsg"></span>
-    <div class="notice" style="margin-top:12px">Tài khoản do admin cấp. Đăng nhập lần đầu,
-      hệ thống sẽ yêu cầu đổi mật khẩu.</div>
+    <div class="notice" style="margin-top:12px">TÃ i khoáº£n do admin cáº¥p. ÄÄƒng nháº­p láº§n Ä‘áº§u,
+      há»‡ thá»‘ng sáº½ yÃªu cáº§u Ä‘á»•i máº­t kháº©u.</div>
   </div>
 </dialog>
 
-<!-- ============ DIALOG ĐỔI MẬT KHẨU ============ -->
+<!-- ============ DIALOG Äá»”I Máº¬T KHáº¨U ============ -->
 <dialog id="dlgDoiMK">
-  <div class="dhead">🔑 Đổi mật khẩu</div>
+  <div class="dhead">ðŸ”‘ Äá»•i máº­t kháº©u</div>
   <div class="dbody">
-    <div class="frow"><label>Mật khẩu cũ</label><input id="mkCu" type="password"></div>
-    <div class="frow"><label>Mật khẩu mới</label><input id="mkMoi" type="password" placeholder="tối thiểu 8 ký tự"></div>
-    <button class="btn pri" onclick="doDoiMK()">Đổi mật khẩu</button>
+    <div class="frow"><label>Máº­t kháº©u cÅ©</label><input id="mkCu" type="password"></div>
+    <div class="frow"><label>Máº­t kháº©u má»›i</label><input id="mkMoi" type="password" placeholder="tá»‘i thiá»ƒu 8 kÃ½ tá»±"></div>
+    <button class="btn pri" onclick="doDoiMK()">Äá»•i máº­t kháº©u</button>
     <span class="muted" id="mkMsg"></span>
   </div>
 </dialog>
 
-<!-- ============ DIALOG HỒ SƠ NHÂN SỰ ============ -->
+<!-- ============ DIALOG Há»’ SÆ  NHÃ‚N Sá»° ============ -->
 <dialog id="dlgNS" style="max-width:700px">
-  <div class="dhead"><span id="nsTitle">Hồ sơ</span><button class="btn" onclick="dlgNS.close()">✕</button></div>
+  <div class="dhead"><span id="nsTitle">Há»“ sÆ¡</span><button class="btn" onclick="dlgNS.close()">âœ•</button></div>
   <div class="dbody" id="nsDlgBody"></div>
 </dialog>
 
-<!-- ============ DIALOG DEAL WORKSPACE (v22 · Project-Centric) ============ -->
+<!-- ============ DIALOG DEAL WORKSPACE (v22 Â· Project-Centric) ============ -->
 <dialog id="dlgWs" style="max-width:760px">
-  <div class="dhead"><span id="wsTitle">🗂 Workspace</span><button class="btn" onclick="dlgWs.close()">✕</button></div>
+  <div class="dhead"><span id="wsTitle">ðŸ—‚ Workspace</span><button class="btn" onclick="dlgWs.close()">âœ•</button></div>
   <div class="dbody" id="wsBody"></div>
 </dialog>
 
 <!-- ============ DIALOG LOSS REASON (v22) ============ -->
 <dialog id="dlgLoss" style="max-width:440px">
-  <div class="dhead">📉 Lý do Thua / Hủy</div>
+  <div class="dhead">ðŸ“‰ LÃ½ do Thua / Há»§y</div>
   <div class="dbody" id="lossBody"></div>
 </dialog>
 
-<!-- ============ THANH TÁC NGHIỆP MOBILE (v22 · hiện trường) ============ -->
+<!-- ============ THANH TÃC NGHIá»†P MOBILE (v22 Â· hiá»‡n trÆ°á»ng) ============ -->
 <div id="mbBar">
-  <button onclick="mbViecHomNay()">✅<span>Việc hôm nay</span></button>
-  <button onclick="mbGo('tx','txOrg')">⚡<span>Tiếp xúc nhanh</span></button>
-  <button onclick="mbGo('ht','htND')">🆘<span>Hỗ trợ</span></button>
+  <button onclick="mbViecHomNay()">âœ…<span>Viá»‡c hÃ´m nay</span></button>
+  <button onclick="mbGo('tx','txOrg')">âš¡<span>Tiáº¿p xÃºc nhanh</span></button>
+  <button onclick="mbGo('ht','htND')">ðŸ†˜<span>Há»— trá»£</span></button>
 </div>
 
-<!-- ============ DIALOG THẢO LUẬN & PHÊ DUYỆT ============ -->
+<!-- ============ DIALOG THáº¢O LUáº¬N & PHÃŠ DUYá»†T ============ -->
 <dialog id="dlgThread" style="max-width:720px">
-  <div class="dhead"><span id="thrTitle">Thảo luận & phê duyệt</span>
-    <button class="btn" onclick="dlgThread.close()">✕</button></div>
+  <div class="dhead"><span id="thrTitle">Tháº£o luáº­n & phÃª duyá»‡t</span>
+    <button class="btn" onclick="dlgThread.close()">âœ•</button></div>
   <div class="dbody" id="thrBody"></div>
 </dialog>
 
 <!-- ==========================================================================
-     THỨ TỰ NẠP BẮT BUỘC — không đổi, không thêm defer/async.
-     Tất cả file là script cổ điển: hàm & biến vẫn ở phạm vi toàn cục, nên 69
-     handler onclick trong HTML phía trên chạy y nguyên như bản 1 file.
+     THá»¨ Tá»° Náº P Báº®T BUá»˜C â€” khÃ´ng Ä‘á»•i, khÃ´ng thÃªm defer/async.
+     Táº¥t cáº£ file lÃ  script cá»• Ä‘iá»ƒn: hÃ m & biáº¿n váº«n á»Ÿ pháº¡m vi toÃ n cá»¥c, nÃªn 69
+     handler onclick trong HTML phÃ­a trÃªn cháº¡y y nguyÃªn nhÆ° báº£n 1 file.
      ========================================================================== -->
 <script src="js/00-i18n.js"></script>
 <script src="js/01-core.js"></script>
@@ -510,6 +510,6 @@
 <script src="js/15-auth-hop-nhat.js"></script>
 <script src="js/16-mobile.js"></script>
 <script src="js/17-nganh-hang-kh.js"></script>
-<script src="js/18-version.js?v=35.0"></script>
+<script src="js/18-version.js?v=35.1"></script>
 </body>
 </html>
