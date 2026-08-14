@@ -109,17 +109,52 @@ function renderTQ(){
     <td>${esc(org?.ten||'—')}</td><td>${esc(t.buoc_tiep_theo)}</td><td>${esc(t.nguoi_thuc_hien)}</td></tr>`}).join('')+'</table>'
     :'<div class="muted">Chưa có bước tiếp theo nào được ghi. Mọi tiếp xúc nên kết thúc bằng một bước tiếp theo có hạn.</div>';
 
-  // Hàng chờ phê duyệt
-  const oids=new Set(ORGS.map(o=>o.id)),didz=new Set(DEALS.map(d=>d.id));
-  const aq=(window.APRQ||[]).filter(a=>(a.doi_tuong==='support'||oids.has(a.doi_tuong_id)||didz.has(a.doi_tuong_id))&&coQuyenDuyet(a.cap_duyet));
-  aprQueue.innerHTML=aq.length?'<table><tr><th>Chờ</th><th>Loại</th><th>Đối tượng</th><th>Đề xuất</th><th>Người đề xuất</th><th>Cấp</th><th></th></tr>'+
-    aq.slice(0,15).map(a=>`<tr>
-    <td><span class="pill ${a.so_ngay_cho>14?'p3':'p1'}"${a.so_ngay_cho>14?' style="background:var(--bad-bg);color:var(--bad)"':''}>${a.so_ngay_cho} ngày${a.so_ngay_cho>14?' ⚠':''}</span></td>
-    <td>${APR_LOAI[a.loai]||a.loai}</td><td><b>${esc(a.ten_doi_tuong||'—')}</b></td>
-    <td class="muted" style="max-width:240px">${esc(a.noi_dung)}</td>
-    <td>${esc(a.nguoi_de_xuat)}</td><td>${a.cap_duyet.toUpperCase()}</td>
-    <td><button class="btn" style="padding:4px 8px" onclick="openThread('${a.doi_tuong}','${a.doi_tuong_id}','${esc(a.ten_doi_tuong||'')}')">Mở</button></td></tr>`).join('')+'</table>'
-    :'<div class="muted">Không có đề xuất nào chờ duyệt. ✓</div>';
+  // Hàng chờ phê duyệt — v35.9: đọc thẳng crm_approvals (đồng nhất mobile), duyệt ngay tại dashboard
+  renderAprQueue();
 }
 const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+
+/* ===== v35.9: HÀNG CHỜ PHÊ DUYỆT — nguồn thẳng crm_approvals, thao tác tại chỗ ===== */
+async function renderAprQueue(){
+  if(!sb||!aprQueue)return;
+  const r=await sb.from('crm_approvals').select('*').order('created_at',{ascending:true}).limit(100);
+  if(r.error){aprQueue.innerHTML='<div class="notice warn">'+esc(r.error.message)+'</div>';return}
+  const rows=(r.data||[]).filter(a=>a.trang_thai!=='da_duyet'&&a.trang_thai!=='tu_choi');
+  window.__APRQ2=rows;
+  const tenDT=a=>{
+    if(a.doi_tuong==='deal')return ALL_DEALS.find(x=>x.id===a.doi_tuong_id)?.ten||'(dự án)';
+    if(a.doi_tuong==='org')return ALL_ORGS.find(x=>x.id===a.doi_tuong_id)?.ten||'(đối tác)';
+    if(a.doi_tuong==='plan')return (window.PLANS||[]).find(x=>x.id===a.doi_tuong_id)?.ten||'(kế hoạch)';
+    if(a.doi_tuong==='support')return t('Yêu cầu hỗ trợ');
+    return '—'};
+  aprQueue.innerHTML=rows.length?'<table><tr><th>'+t('Chờ')+'</th><th>'+t('Loại')+'</th><th>'+t('Đối tượng')+'</th><th>'+t('Đề xuất')+'</th><th>'+t('Người đề xuất')+'</th><th>'+t('Cấp')+'</th><th style="min-width:280px"></th></tr>'+
+    rows.slice(0,20).map((a,i)=>{
+      const cho=Math.max(0,Math.round((Date.now()-new Date(a.created_at))/864e5));
+      const co=coQuyenDuyet(a.cap_duyet);
+      const moDuoc=['deal','org','plan','support'].includes(a.doi_tuong)&&a.doi_tuong_id;
+      return `<tr>
+      <td><span class="pill ${cho>14?'p3':'p1'}"${cho>14?' style="background:var(--bad-bg);color:var(--bad)"':''}>${cho} ${t('ngày')}</span></td>
+      <td>${(typeof APR_LOAI!=='undefined'&&APR_LOAI[a.loai])||a.loai}</td>
+      <td><b>${esc(tenDT(a))}</b></td>
+      <td class="muted" style="max-width:240px">${esc(a.noi_dung||'')}</td>
+      <td>${esc(a.nguoi_de_xuat||'')}</td><td>${(a.cap_duyet||'').toUpperCase()}</td>
+      <td>${co?`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <input id="aq_yk_${i}" placeholder="${t('Ý kiến (bác thì bắt buộc)')}" style="width:150px">
+        <button class="btn" style="color:var(--ok,#0a7)" onclick="duyetNhanh(${i},'da_duyet')">✔ ${t('Duyệt')}</button>
+        <button class="btn" style="color:var(--bad,#c33)" onclick="duyetNhanh(${i},'tu_choi')">✘ ${t('Từ chối')}</button>
+        ${moDuoc?`<button class="btn" style="padding:4px 8px" onclick="openThread('${a.doi_tuong}','${a.doi_tuong_id}','${esc(tenDT(a))}')">💬</button>`:''}
+      </div>`:`<span class="muted">${t('chờ cấp')} ${(a.cap_duyet||'').toUpperCase()}</span>`}</td></tr>`}).join('')+'</table>'
+    :'<div class="muted">'+t('Không có đề xuất nào chờ duyệt. ✓')+'</div>';
+}
+async function duyetNhanh(i,tt){
+  const a=(window.__APRQ2||[])[i];if(!a)return;
+  const yk=(document.getElementById('aq_yk_'+i)?.value||'').trim();
+  if(tt==='tu_choi'&&!yk){alert(t('Từ chối bắt buộc ghi lý do — quy tắc L4'));return}
+  const r=await sb.from('crm_approvals').update({trang_thai:tt,nguoi_duyet:ME?.ho_ten||null,
+    y_kien_duyet:yk||null,decided_at:new Date().toISOString()}).eq('id',a.id);
+  if(r.error){alert(r.error.message);return}
+  if(a.doi_tuong==='plan')
+    await sb.from('crm_plans').update({trang_thai:tt==='da_duyet'?'da_duyet':'tu_choi'}).eq('id',a.doi_tuong_id);
+  renderAprQueue();
+}
 
