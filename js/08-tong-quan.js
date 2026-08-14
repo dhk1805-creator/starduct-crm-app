@@ -57,12 +57,27 @@ function renderTQ(){
   const nContacts=ORGS.reduce((s,o)=>s+(o._nc||0),0);
   const dealTVTK=DEALS.filter(d=>d.tvtk_id||d.tvtk_text).length;
   const uuCao=DEALS.filter(d=>(d.uu_tien||'').startsWith('1')).length;
+  // ===== V36: bo KPI day du theo yeu cau CEO 15/08 =====
+  const orgTC=ORGS.filter(o=>o.trang_thai_phu>=1||(o.phan_loai==='npp'&&o.pheu_npp&&o.pheu_npp!=='chua_tiep_can')).length;
+  const dealCoTX=new Set(TPS.filter(x=>x.deal_id).map(x=>x.deal_id));
+  const daTX=DEALS.filter(d=>dealCoTX.has(d.id)||d.stage!=='tiep_can').length;
+  const daCD=DEALS.filter(d=>d.owner||d.nguoi_phu_trach||d.npp_dang_ky_id||d.npp_chi_dinh).length;
+  const tongGT=DEALS.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
+  const gtKT=DEALS.filter(d=>d.stage!=='dong'&&(d.owner||d.nguoi_phu_trach||d.npp_dang_ky_id||d.npp_chi_dinh))
+    .reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
+  const thang=DEALS.filter(d=>d.stage==='po'||(d.stage==='dong'&&!d.loss_reason)).length;
+  const thua=DEALS.filter(d=>d.stage==='dong'&&d.loss_reason).length;
   kpis.innerHTML=[
-    ['Đối tác mục tiêu',mt.length,`${mtNPP.length} NPP · ${mtKH.length} khách hàng · ${ORGS.length-mt.length} tình báo`],
+    ['Tổng đối tác',ORGS.length,`${orgTC} đã tiếp cận · ${ORGS.length-orgTC} chưa tiếp cận (${pct(orgTC,ORGS.length)})`],
     ['Độ phủ KH ≥1 / ≥2',`${pct(phu1,mtKH.length)} / ${pct(phu2,mtKH.length)}`,`${phu1} · ${phu2} / ${mtKH.length} tài khoản KH`],
+    ['Tổng dự án',DEALS.length,`${daTX} đã tiếp cận · ${DEALS.length-daTX} chưa tiếp cận (${pct(daTX,DEALS.length)})`],
+    ['Đã chỉ định / phân công',pct(daCD,DEALS.length),`${daCD} đã chỉ định · ${DEALS.length-daCD} chưa chỉ định`],
+    ['Giá trị khai thác',fmtB(gtKT),`tỉ lệ khai thác ${pct(gtKT,tongGT)} trên tổng ${fmtB(tongGT)}`],
+    ['Tỷ lệ win',`${pct(thang,thang+thua)}`,`${thang} Thắng · ${thua} Thua/Hủy — trên dự án đã đóng sổ`],
     ['Có người phụ trách',pct(coChu,mt.length),`${coChu}/${mt.length} — danh mục CEO duyệt`],
     ['Dự án ưu tiên cao',uuCao,`trên ${DEALS.length} dự án · TVTK nối ${pct(dealTVTK,DEALS.length)}`]
   ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
+  renderNppKhaiThac();
 
   phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
     const n=mtKH.filter(o=>o.trang_thai_phu===i).length;
@@ -179,3 +194,28 @@ async function duyetNhanh(i,tt){
   renderAprQueue();
 }
 
+
+
+/* ===== V36: NPP ĐÃ KÝ HĐ — số dự án đang theo, kết quả, tỉ lệ thành công, giá trị khai thác ===== */
+function renderNppKhaiThac(){
+  const el=document.getElementById('nppChart');if(!el)return;
+  const npps=ORGS.filter(NPP_KYHD);
+  if(!npps.length){el.innerHTML='<div class="muted">'+t('Chưa có NPP ký HĐ')+'</div>';return}
+  el.classList.remove('muted');
+  const rows=npps.map(o=>{
+    const cua=DEALS.filter(d=>d.npp_dang_ky_id===o.id||(d.npp_chi_dinh&&d.npp_chi_dinh===o.ten));
+    const dang=cua.filter(d=>d.stage!=='dong');
+    const thangN=cua.filter(d=>d.stage==='po'||(d.stage==='dong'&&!d.loss_reason)).length;
+    const thuaN=cua.filter(d=>d.stage==='dong'&&d.loss_reason).length;
+    const gt=dang.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
+    return {ten:o.ten,qg:o.quoc_gia||'',dang:dang.length,gt,thang:thangN,thua:thuaN};
+  }).sort((a,b)=>b.dang-a.dang||b.gt-a.gt);
+  el.innerHTML='<table><tr><th>NPP</th><th>'+t('Thị trường')+'</th><th class="num">'+t('Đang theo')+'</th><th class="num">'+t('Giá trị ước')+'</th><th class="num">'+t('Thắng')+'</th><th class="num">'+t('Thua/Hủy')+'</th><th class="num">'+t('Tỷ lệ win')+'</th></tr>'+
+    rows.map(r=>{const co=r.thang+r.thua;
+      return `<tr><td><b>${esc(r.ten)}</b></td><td>${esc(r.qg)}</td>
+      <td class="num"><b>${r.dang}</b></td><td class="num">${r.gt?fmtB(r.gt):'—'}</td>
+      <td class="num" style="color:var(--ok,#0a7)">${r.thang}</td>
+      <td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
+      <td class="num">${co?pct(r.thang,co):'<span class="muted">'+t('chưa đủ dữ liệu')+'</span>'}</td></tr>`}).join('')+'</table>'+
+    '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Đang theo')+' = '+t('dự án')+' stage ≠ '+t('Đóng')+' · '+t('Thắng')+' = PO/'+t('Đóng')+' '+t('không kèm')+' loss reason</div>';
+}
