@@ -1,0 +1,23 @@
+{
+  "name": "CRM Starduct — NSCA",
+  "short_name": "Starduct CRM",
+  "description": "Hybrid Web-App CRM: quản trị desktop & tác nghiệp hiện trường mobile",
+  "id": "/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f4c81",
+  "theme_color": "#0f4c81",
+  "lang": "vi",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Việc hôm nay", "url": "./index.html#viec-hom-nay", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Ghi tiếp xúc nhanh", "url": "./index.html#tiep-xuc-nhanh", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Yêu cầu hỗ trợ", "url": "./index.html#ho-tro", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -2,8 +2,16 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CRM — NSCA / Starduct</title>
+<!-- ===== PWA (Hybrid Web-App · crm.starduct.online) ===== -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f4c81">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Starduct CRM">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="css/app.css">
@@ -11,7 +19,7 @@
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v20 · 14/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v22 · 14/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -106,6 +114,15 @@
       <input id="fdaTP" placeholder="Địa điểm / thành phố…" style="width:150px">
       <input id="fdaHM" placeholder="Chủ đề: VAV, EI, ERV…" style="width:140px">
       <select id="fdaNPP"><option value="">— NPP —</option></select>
+      <select id="fdaPD"><option value="">— Phê duyệt —</option>
+        <option value="cho_tiep_nhan">Chờ tiếp nhận</option>
+        <option value="da_tiep_nhan">Đã tiếp nhận</option>
+        <option value="duoc_chi_dinh">Được chỉ định</option>
+        <option value="phe_duyet">✓ Phê duyệt</option>
+        <option value="khong_phe_duyet">✗ Không phê duyệt</option></select>
+      <select id="fdaNguoi"><option value="">— Người phụ trách —</option></select>
+      <label style="font-size:12px;display:flex;align-items:center;gap:5px">
+        <input type="checkbox" id="fdaDY" style="width:auto"> 🛑 đứng yên >21 ngày</label>
       <label style="font-size:12px;display:flex;align-items:center;gap:5px">
         <input type="checkbox" id="fdaTVTK" style="width:auto"> thiếu TVTK</label>
       <button class="btn pri" onclick="openDeal()">+ Thêm dự án</button>
@@ -268,6 +285,8 @@
         <option value="gui_mau">Gửi mẫu</option><option value="khac">Khác</option></select></div>
       <div><label class="muted">Người thực hiện *</label><br><input id="txAi" list="nsList" style="width:100%"></div>
       <div><label class="muted">Người gặp / chức danh</label><br><input id="txGap" style="width:100%"></div>
+      <div><label class="muted">Dự án liên quan (workspace)</label><br>
+        <input id="txDeal" list="dealList" placeholder="Gõ tên dự án (tuỳ chọn)…" style="width:100%"></div>
       <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
         <input type="checkbox" id="txQD" style="width:auto"><label class="muted">Cấp ra quyết định</label></div>
       <div style="grid-column:1/-1"><label class="muted">Nội dung</label><br>
@@ -442,6 +461,25 @@
   <div class="dbody" id="nsDlgBody"></div>
 </dialog>
 
+<!-- ============ DIALOG DEAL WORKSPACE (v22 · Project-Centric) ============ -->
+<dialog id="dlgWs" style="max-width:760px">
+  <div class="dhead"><span id="wsTitle">🗂 Workspace</span><button class="btn" onclick="dlgWs.close()">✕</button></div>
+  <div class="dbody" id="wsBody"></div>
+</dialog>
+
+<!-- ============ DIALOG LOSS REASON (v22) ============ -->
+<dialog id="dlgLoss" style="max-width:440px">
+  <div class="dhead">📉 Lý do Thua / Hủy</div>
+  <div class="dbody" id="lossBody"></div>
+</dialog>
+
+<!-- ============ THANH TÁC NGHIỆP MOBILE (v22 · hiện trường) ============ -->
+<div id="mbBar">
+  <button onclick="mbViecHomNay()">✅<span>Việc hôm nay</span></button>
+  <button onclick="mbGo('tx','txOrg')">⚡<span>Tiếp xúc nhanh</span></button>
+  <button onclick="mbGo('ht','htND')">🆘<span>Hỗ trợ</span></button>
+</div>
+
 <!-- ============ DIALOG THẢO LUẬN & PHÊ DUYỆT ============ -->
 <dialog id="dlgThread" style="max-width:720px">
   <div class="dhead"><span id="thrTitle">Thảo luận & phê duyệt</span>
@@ -466,5 +504,6 @@
 <script src="js/09-doi-tac.js"></script>
 <script src="js/10-du-an-tiep-xuc.js"></script>
 <script src="js/11-import.js"></script>
+<script src="js/12-hybrid.js"></script>
 </body>
 </html>

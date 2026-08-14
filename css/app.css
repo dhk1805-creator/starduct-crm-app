@@ -60,3 +60,38 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 .notice{background:var(--b50);border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px}
 .warn{background:var(--warn-bg);border-color:#fde68a}
 @media(max-width:900px){.g4,.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+
+/* ==========================================================================
+   v22 HYBRID — Mobile tác nghiệp hiện trường (PRD: max-width 767px)
+   ========================================================================== */
+#mbBar{display:none}
+@media(max-width:767px){
+  body{padding-bottom:66px}
+  header{flex-wrap:wrap;gap:6px;padding:10px 12px}
+  header h1{font-size:15px}
+  header .sub{display:none}
+  nav{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding:6px 8px}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex:0 0 auto}
+  .g4,.g3{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}
+  .filters{gap:6px}
+  .filters input,.filters select{font-size:13px}
+  table{font-size:12px}
+  th,td{padding:6px 6px}
+  .frow{grid-template-columns:1fr;gap:3px}
+  dialog{width:96%;max-width:96%}
+  .dbody{max-height:76vh}
+  /* Thanh tác nghiệp 3 nút — Xem việc hôm nay · Tiếp xúc nhanh · Hỗ trợ */
+  #mbBar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
+    background:var(--card,#fff);border-top:1px solid var(--border);
+    box-shadow:0 -4px 16px rgba(15,23,42,.08);
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  #mbBar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    background:none;border:0;font-size:19px;padding:4px 2px;cursor:pointer;color:var(--text,#0f172a)}
+  #mbBar button span{font-size:10.5px;font-weight:600;color:var(--text-3)}
+}
+@media(max-width:420px){
+  .g4,.g3{grid-template-columns:1fr}
+  main{padding:10px}
+}
