@@ -4,7 +4,7 @@
    fallback cache khi mất mạng để vỏ ứng dụng vẫn mở được ngoài hiện trường.
    KHÔNG cache request Supabase (dữ liệu động).
    ========================================================================== */
-const CACHE = 'starduct-crm-v27';
+const CACHE = 'starduct-crm-v28';
 const SHELL = [
   './index.html',
   './css/app.css',
@@ -14,7 +14,7 @@ const SHELL = [
   './js/00-i18n.js', './js/01-core.js', './js/02-du-an-nen.js', './js/03-auth.js',
   './js/04-ke-hoach.js', './js/05-nhan-su.js', './js/06-doanh-thu-kpi.js',
   './js/07-ho-tro-duyet.js', './js/08-tong-quan.js', './js/09-doi-tac.js',
-  './js/10-du-an-tiep-xuc.js', './js/11-import.js', './js/12-hybrid.js', './js/13-du-an-hop-nhat.js', './js/14-npp-taikhoan.js', './js/15-auth-hop-nhat.js'
+  './js/10-du-an-tiep-xuc.js', './js/11-import.js', './js/12-hybrid.js', './js/13-du-an-hop-nhat.js', './js/14-npp-taikhoan.js', './js/15-auth-hop-nhat.js', './js/16-mobile.js'
 ];
 
 self.addEventListener('install', e => {
