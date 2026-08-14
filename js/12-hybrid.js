@@ -159,7 +159,7 @@ renderDA=function(){
   const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
   const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
-    fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
     fdaNPP.value=cur}
   // nạp bộ lọc người phụ trách (nhân sự + owner distinct)
   const owners=[...new Set(DEALS.flatMap(d=>[d.owner,d.nguoi_phu_trach]).filter(Boolean))].sort();
@@ -183,7 +183,7 @@ renderDA=function(){
   const npByid=Object.fromEntries(ORGS.filter(o=>o.phan_loai==='npp').map(n=>[n.id,n.ten]));
   const today=new Date().toISOString().slice(0,10);
   daList.innerHTML=`<div class="muted" style="margin-bottom:6px">${rows.length} ${t('dự án · tổng giá trị ước')} ${fmtB(rows.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0))}</div>`+
-  '<table><tr><th>'+t('Dự án')+'</th><th>TT</th><th>Stage</th><th>TVTK</th><th>NPP / Owner</th><th>'+t('Việc tiếp theo')+'</th><th class="num">'+t('Giá trị')+'</th></tr>'+
+  '<table><tr><th>'+t('Dự án')+'</th><th>TT</th><th>Stage</th><th>TVTK</th><th>'+t('NPP / Owner')+'</th><th>'+t('Việc tiếp theo')+'</th><th class="num">'+t('Giá trị')+'</th></tr>'+
   rows.slice(0,300).map(d=>{
     const naLate=d.next_action&&d.next_action_han&&d.next_action_han<today;
     const dy=laDungYen(d),nDY=dy?soNgayDung(d):0;
@@ -212,7 +212,7 @@ if(_renderTQ_v20)renderTQ=function(){
     document.getElementById('tab-tq').appendChild(card)}
   const dy=DEALS.filter(laDungYen).sort((a,b)=>soNgayDung(b)-soNgayDung(a));
   card.innerHTML=`<h2>🛑 ${t('Dự án đứng yên > 21 ngày')} (${dy.length})</h2>`+
-    (dy.length?'<table><tr><th>'+t('Dự án')+'</th><th>Stage</th><th>NPP/Owner</th><th class="num">'+t('Số ngày')+'</th></tr>'+
+    (dy.length?'<table><tr><th>'+t('Dự án')+'</th><th>Stage</th><th>'+t('NPP/Owner')+'</th><th class="num">'+t('Số ngày')+'</th></tr>'+
     dy.slice(0,10).map(d=>`<tr class="row" onclick="openDeal('${d.id}')">
       <td><b>${esc(d.ten)}</b></td><td>${STG[d.stage]||d.stage}</td>
       <td>${esc(d.npp_chi_dinh||d.owner||'—')}</td>

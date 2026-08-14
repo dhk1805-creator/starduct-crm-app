@@ -57,7 +57,7 @@ renderDA=function(){
   // nạp bộ lọc NPP + người phụ trách
   const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
-    fdaNPP.innerHTML='<option value="">— NPP —</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
     fdaNPP.value=cur}
   const owners=[...new Set(DEALS.flatMap(d=>[d.owner,d.nguoi_phu_trach]).filter(Boolean))].sort();
   if(fdaNguoi.options.length-1!==owners.length){const cur=fdaNguoi.value;
@@ -89,7 +89,7 @@ renderDA=function(){
     <td><span class="tag" title="${t('Đang bám sát trong pipeline')}">🎯</span></td></tr>`};
   daList.innerHTML=
     `<div class="muted" style="margin:2px 0 6px">🎯 <b>${rows.length}</b> ${t('đang bám sát')} · ${t('tổng giá trị ước')} ${fmtB(rows.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0))} · 🗺 <span id="nenDem">…</span> ${t('trong kho thị trường (cuộn xuống, phân trang)')}</div>`+
-    '<table><tr><th>'+t('Dự án')+'</th><th>'+t('Địa bàn')+'</th><th>NPP</th><th>'+t('Người phụ trách')+'</th><th>'+t('Trạng thái')+'</th><th class="num">'+t('Giá trị')+'</th><th>'+t('Nguồn')+'</th></tr>'+
+    '<table><tr><th>'+t('Dự án')+'</th><th>'+t('Địa bàn')+'</th><th>'+t('NPP')+'</th><th>'+t('Người phụ trách')+'</th><th>'+t('Trạng thái')+'</th><th class="num">'+t('Giá trị')+'</th><th>'+t('Nguồn')+'</th></tr>'+
     rows.slice(0,300).map(dealTr).join('')+
     '<tbody id="nenTbody"><tr><td colspan="7" class="muted">'+t('Đang tải kho thị trường…')+'</td></tr></tbody></table>'+
     '<div id="nenPager" style="display:flex;gap:8px;align-items:center;margin-top:10px"></div>';
@@ -238,7 +238,7 @@ async function loadTrungLap(){
 function veTrungLap(){
   const rows=TRUNG_ROWS||[];
   daList.innerHTML=`<div class="notice">${t('Cặp nghi trùng giữa dữ liệu tình báo thu thập và dữ liệu có sẵn. GỘP sẽ: chuyển nhật ký + BCI + liên kết pipeline về bản GIỮ, điền bù trường trống, xóa bản BỎ. Không hoàn tác được — soi kỹ trước khi gộp.')}</div>`+
-  (rows.length?'<table><tr><th>'+t('Giống')+'</th><th>'+t('GIỮ (mã cũ hơn)')+'</th><th>'+t('BỎ (gộp vào)')+'</th><th>'+t('Tỉnh')+'</th><th>NPP</th><th></th></tr>'+
+  (rows.length?'<table><tr><th>'+t('Giống')+'</th><th>'+t('GIỮ (mã cũ hơn)')+'</th><th>'+t('BỎ (gộp vào)')+'</th><th>'+t('Tỉnh')+'</th><th>'+t('NPP')+'</th><th></th></tr>'+
   rows.map((p,i)=>`<tr>
     <td><span class="pill ${p.do_giong>=0.95?'p4':'p3'}">${Math.round(p.do_giong*100)}%</span></td>
     <td><b>${esc(p.ma_giu)}</b><div class="muted" style="max-width:260px">${esc(p.ten_giu)}</div></td>

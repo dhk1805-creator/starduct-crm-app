@@ -791,7 +791,11 @@ FRAG.push(
 ['Chưa có NPP ký HĐ','No signed distributor yet'],
 ['Kết nối & đăng nhập để xem dữ liệu thị trường.','Connect & sign in to view market data.'],
 ['cần chạy migration v37','run migration v37 first'],
-['quê nhà','home market']
+['quê nhà','home market'],
+['— NPP —','— Distributor —'],
+['NPP / Owner','Distributor / Owner'],
+['NPP/Owner','Distributor/Owner'],
+['NPP','Distributor']
 );
 
 // ===== Bộ dịch v35.3: MỘT LƯỢT duy nhất + chặn biên từ + không dịch nửa vời dữ liệu =====
