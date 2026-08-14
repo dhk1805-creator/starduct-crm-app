@@ -1,515 +1,1429 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CRM â€” NSCA / Starduct</title>
-<!-- ===== PWA (Hybrid Web-App Â· crm.starduct.online) ===== -->
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0f4c81">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Starduct CRM">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="css/app.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP VAV Box Calibration & FAT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .nav-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+        .nav-tabs button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .nav-tabs button.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+            background: white;
+        }
+        .nav-tabs button:hover {
+            background: white;
+            color: #2a5298;
+        }
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.3s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .section {
+            margin-bottom: 35px;
+        }
+        .section h2 {
+            color: #1e3c72;
+            font-size: 22px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .section h3 {
+            color: #2a5298;
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+        .section p, .section li {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .section ul {
+            margin-left: 25px;
+        }
+        .section ol {
+            margin-left: 25px;
+        }
+        .section ol li {
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table thead {
+            background: #2a5298;
+            color: white;
+        }
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #ddd;
+        }
+        table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        table tbody tr:hover {
+            background: #f0f0f0;
+        }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            margin: 10px 10px 10px 0;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        .formula-box {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            overflow-x: auto;
+        }
+        .equipment-list {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .equipment-list h4 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+        .equipment-list ul {
+            margin-left: 20px;
+        }
+        .chart-container {
+            width: 100%;
+            margin: 30px 0;
+            text-align: center;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .excel-template {
+            background: #e8f5e9;
+            border: 2px dashed #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .excel-template h4 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .step-number {
+            display: inline-block;
+            background: #2a5298;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .button-group {
+            margin: 30px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            .nav-tabs button {
+                flex: 1 1 45%;
+            }
+            .header {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .tab-content {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 SOP VAV Box Calibration & Factory Acceptance Test (FAT)</h1>
+            <p>STARDUCT Mechanical Factory - Hà Nội, Việt Nam | Phiên bản: 02/10/2025</p>
+        </div>
 
-<header>
-  <h1>CRM â€” NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v34 Â· 14/08</span></h1>
-  <select id="modSel" onchange="setMod(this.value)"
-    style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
-    <option value="nd">ðŸ‡»ðŸ‡³ THá»Š TRÆ¯á»œNG Ná»˜I Äá»ŠA</option>
-    <option value="qt">ðŸŒ THá»Š TRÆ¯á»œNG QUá»C Táº¾</option>
-  </select>
-  <span class="sub">Äá»‘i tÃ¡c Â· Dá»± Ã¡n Â· Tiáº¿p xÃºc Â· Thá»‹ trÆ°á»ng</span>
-  <div class="conn">
-    <span id="whoami" class="tag" style="display:none;font-size:12px;padding:4px 10px"></span>
-    <button class="btn" id="logoutBtn" style="display:none" onclick="logout()">ÄÄƒng xuáº¥t</button>
-    <button class="btn" id="langBtn" onclick="setLang(LANG==='vi'?'en':'vi')"
-      style="font-weight:700;min-width:44px">EN</button>
-    <span class="dot" id="dot"></span><span id="connTxt">ChÆ°a káº¿t ná»‘i</span>
-    <button class="btn" onclick="dlgCfg.showModal()">ÄÄƒng nháº­p</button>
-  </div>
-</header>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('sop')">SOP & Quy Trình</button>
+            <button class="tab-btn" onclick="switchTab('equipment')">Thiết Bị & Yêu Cầu</button>
+            <button class="tab-btn" onclick="switchTab('formula')">Công Thức K-Factor</button>
+            <button class="tab-btn" onclick="switchTab('fat-form')">Mẫu Biểu FAT</button>
+            <button class="tab-btn" onclick="switchTab('excel')">Template Excel</button>
+            <button class="tab-btn" onclick="switchTab('guide')">Hướng Dẫn</button>
+        </div>
 
-<nav id="nav">
-  <button data-t="tq" class="act">Tá»•ng quan</button>
-  <button data-t="dt">Äá»‘i tÃ¡c</button>
-  <button data-t="da">Dá»± Ã¡n</button>
-  <button data-t="dn">Dá»± Ã¡n ná»n</button>
-  <button data-t="dt2">Doanh thu</button>
-  <button data-t="kh">Káº¿ hoáº¡ch</button>
-  <button data-t="kpi">KPI ká»³</button>
-  <button data-t="tx">Tiáº¿p xÃºc</button>
-  <button data-t="ht">Há»— trá»£</button>
-  <button data-t="sk">Sá»± kiá»‡n</button>
-  <button data-t="ns">NhÃ¢n sá»±</button>
-  <button data-t="im">Nháº­p dá»¯ liá»‡u</button>
-</nav>
+        <!-- TAB 1: SOP & QUY TRÌNH -->
+        <div id="sop" class="tab-content active">
+            <div class="section">
+                <h2>1. MỤC ĐÍCH - PHẠM VI - ĐỊNH NGHĨA</h2>
+                
+                <h3>1.1 Mục Đích</h3>
+                <p>Thực hiện hiệu chuẩn (calibration) hộp VAV (Variable Air Volume) tại nhà máy trước khi xuất xưởng, nhằm đảm bảo độ chính xác đo lưu lượng nằm trong giới hạn ±5% và tuân thủ tiêu chuẩn Factory Acceptance Test (FAT) của khách hàng.</p>
 
-<main>
+                <h3>1.2 Phạm Vi</h3>
+                <p>SOP này áp dụng cho tất cả các size VAV box được sản xuất tại STARDUCT Mechanical Factory trước khi đóng gói và xuất xưởng, bao gồm:</p>
+                <ul>
+                    <li>VAV box với damper điều khiển lưu lượng</li>
+                    <li>Lắp cảm biến ΔP (differential pressure sensor)</li>
+                    <li>Kết hợp với controller BMS hoặc bộ điều khiển tại chỗ</li>
+                    <li>Dải lưu lượng: từ 20% đến 100% dung tích danh nghĩa</li>
+                </ul>
 
-<!-- ============ Tá»”NG QUAN ============ -->
-<section id="tab-tq">
-  <div class="grid g4" id="kpis"></div>
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card"><h2>Äá»™ phá»§ theo tráº¡ng thÃ¡i (0â†’5)</h2><div id="phuChart"></div></div>
-    <div class="card"><h2>Theo thá»‹ trÆ°á»ng</h2><div id="qgChart" style="max-height:340px;overflow:auto"></div></div>
-  </div>
-  <div class="card"><h2>ðŸ—º Lá»›p thá»‹ trÆ°á»ng ná»n â€” dá»¯ liá»‡u tra cá»©u</h2><div id="nenChart" class="muted">Äang táº£iâ€¦</div></div>
-  <div class="card"><h2>Káº¿t quáº£ theo nhÃ³m quan há»‡ â€” chÄƒm sÃ³c â‰  phÃ¡t triá»ƒn â‰  tiá»m nÄƒng</h2><div id="qhChart"></div></div>
-  <div class="card"><h2>BÆ°á»›c tiáº¿p theo quÃ¡ háº¡n / sáº¯p Ä‘áº¿n háº¡n</h2><div id="dueList"></div></div>
-  <div class="card"><h2>â³ HÃ ng chá» phÃª duyá»‡t</h2><div id="aprQueue"></div></div>
-</section>
+                <h3>1.3 Định Nghĩa</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="20%">Thuật Ngữ</th>
+                            <th width="80%">Định Nghĩa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>K-Factor</strong></td>
+                            <td>Hệ số hiệu chuẩn để điều chỉnh giá trị lưu lượng đo được từ cảm biến ΔP của VAV sao cho phù hợp với lưu lượng thực tế đo bằng thiết bị chuẩn (pitot tube grid, flow hood).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Calibration</strong></td>
+                            <td>Quá trình điều chỉnh hệ số K-Factor để làm cho giá trị VAV đọc được trùng với giá trị chuẩn trên ống test.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Flow Setpoint</strong></td>
+                            <td>Giá trị lưu lượng mong muốn được set trên controller (%, m³/h, CFM).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actual Flow</strong></td>
+                            <td>Giá trị lưu lượng thực tế đo được từ cảm biến lưu lượng chuẩn trên ống test rig.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ΔP (Differential Pressure)</strong></td>
+                            <td>Chênh lệch áp suất động giữa hai điểm trên ống, dùng để tính lưu lượng.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FAT (Factory Acceptance Test)</strong></td>
+                            <td>Bài kiểm tra chính thức tại nhà máy trước khi bàn giao sản phẩm cho khách hàng.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error (Sai Số)</strong></td>
+                            <td>% chênh lệch giữa lưu lượng VAV đo được và lưu lượng chuẩn: Error (%) = [(VAV Flow - Std Flow) / Std Flow] × 100</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-<!-- ============ Äá»I TÃC ============ -->
-<section id="tab-dt" hidden>
-  <div class="card">
-    <div class="filters">
-      <input id="fdtQ" placeholder="TÃ¬m tÃªn cÃ´ng tyâ€¦" style="flex:1;min-width:180px">
-      <select id="fdtPL"><option value="">â€” PhÃ¢n loáº¡i â€”</option>
-        <option value="cdt">CÄT</option><option value="tvtk">TVTK</option>
-        <option value="thau">Tá»•ng tháº§u-MEP</option><option value="npp">NhÃ  phÃ¢n phá»‘i</option></select>
-      <select id="fdtQG"><option value="">â€” Thá»‹ trÆ°á»ng â€”</option></select>
-      <select id="fdtTP"><option value="">â€” ThÃ nh phá»‘ â€”</option></select>
-      <select id="fdtPhu"><option value="">â€” Káº¿t quáº£ (tráº¡ng thÃ¡i phá»§) â€”</option>
-        <option value="0">0 Â· ChÆ°a tiáº¿p cáº­n</option><option value="1">1 Â· ÄÃ£ tiáº¿p cáº­n</option>
-        <option value="2">2 Â· Quan há»‡ lÃ m viá»‡c</option><option value="3">3 Â· Spec-in</option>
-        <option value="4">4 Â· ÄÃ£ bÃ¡n</option><option value="5">5 Â· KhÃ¡ch thÆ°á»ng xuyÃªn</option></select>
-      <select id="fdtLBG"><option value="">â€” Loáº¡i â€”</option>
-        <option value="muc_tieu">Má»¥c tiÃªu</option><option value="tinh_bao">TÃ¬nh bÃ¡o</option></select>
-      <select id="fdtChu"><option value="">â€” NgÆ°á»i phá»¥ trÃ¡ch â€”</option>
-        <option value="co">ÄÃ£ gÃ¡n</option><option value="khong">ChÆ°a gÃ¡n</option></select>
-      <select id="fdtQH"><option value="">â€” NhÃ³m quan há»‡ â€”</option>
-        <option value="npp_hien_huu">NPP hiá»‡n há»¯u</option><option value="npp_moi">NPP má»›i</option>
-        <option value="kh_truc_tiep">KH trá»±c tiáº¿p</option><option value="kh_tiem_nang">KH tiá»m nÄƒng</option>
-        <option value="doi_tac_chien_luoc">ÄT chiáº¿n lÆ°á»£c</option><option value="doi_tac_phan_phoi">Broker/Agent</option>
-        <option value="chua">ChÆ°a phÃ¢n loáº¡i</option></select>
-      <button class="btn pri" onclick="openOrg()">+ ThÃªm Ä‘á»‘i tÃ¡c</button>
-      <button class="btn" onclick="taiFilePhanCong()">â¬‡ File phÃ¢n cÃ´ng</button>
-      <button class="btn" onclick="document.getElementById('pcFile').click()">â¬† Nháº­p phÃ¢n cÃ´ng</button>
-      <input type="file" id="pcFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCong(this)">
+                <h3>1.4 Tiêu Chuẩn Chấp Nhận</h3>
+                <div class="success-box">
+                    <strong>✓ VAV box được coi là PASS nếu:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Sai số đo lưu lượng ≤ ±5% tại toàn dải lưu lượng (từ 20% đến 100%)</li>
+                        <li>Không có rò rỉ khí tại các mối kết nối</li>
+                        <li>Damper hoạt động trơn tru không bị kẹt</li>
+                        <li>Cảm biến ΔP phản hồi đúng và ổn định (±2% trong 30 giây)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>2. QUY TRÌNH THỰC HIỆN CALIBRATION</h2>
+
+                <h3>2.1 CHUẨN BỊ VÀ LẮP ĐẶT</h3>
+                <ol>
+                    <li>
+                        <strong>Kiểm tra độ kín thiết bị:</strong> Rửa sạch VAV box, kiểm tra gioăng kín khí, vệ sinh ống test rig bằng khí nén hoặc nước sạch.
+                    </li>
+                    <li>
+                        <strong>Lắp đặt VAV vào ống test:</strong> 
+                        <ul style="margin: 10px 0;">
+                            <li>Căn chỉnh trục VAV song song với ống test (độ lệch &lt; 2 mm)</li>
+                            <li>Kết nối bằng côn thu theo kích thước thực tế, siết chặt bulong M8×20 với gioăng kín khí</li>
+                            <li>Kiểm tra damper xoay nhẹ, không bị kẹt</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Kết nối cảm biến ΔP của VAV:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Kết nối dây tín hiệu (4-20mA, 0-10V hoặc wireless tùy controller)</li>
+                            <li>Kiểm tra pin nếu là wireless</li>
+                            <li>Đặt VAV controller trong chế độ "Commissioning" hoặc "Manual" để có thể điều khiển damper từ 0% đến 100%</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Kết nối cảm biến lưu lượng chuẩn trên ống test:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Kết nối pitot tube grid hoặc flow meter vào đầu đọc/logger</li>
+                            <li>Thực hiện zero calibration cho cảm biến (đóng van cô lập, đặt về 0)</li>
+                            <li>Bật logger hoặc ghi chép giá trị thủ công</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Kiểm tra quạt ly tâm:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Kiểm tra dầu chứa đủ</li>
+                            <li>Xoay tay nhẹ để chắc quạt không bị kẹt</li>
+                            <li>Sẵn sàng khởi động</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h3>2.2 KHỞI ĐỘNG HỆ THỐNG</h3>
+                <ol>
+                    <li>
+                        <strong>Đặt damper VAV ở vị trí 100% mở:</strong> Thông qua controller, điều chỉnh damper position sang 100% (full open).
+                    </li>
+                    <li>
+                        <strong>Khởi động quạt:</strong> Bật quạt ly tâm, bắt đầu từ tốc độ thấp (~30% RPM).
+                    </li>
+                    <li>
+                        <strong>Tăng dần tốc độ quạt:</strong> Trong 2–3 phút, tăng RPM sao cho hệ thống đạt dải lưu lượng mong muốn (thường 8.000–10.000 m³/h hoặc theo range VAV).
+                    </li>
+                    <li>
+                        <strong>Ổn định:</strong> Giữ tốc độ quạt ổn định trong 10 phút để hệ thống ổn định nhiệt độ, áp suất trước khi bắt đầu đo.
+                    </li>
+                    <li>
+                        <strong>Kiểm tra không rò rỉ:</strong> Lắng nghe và quan sát xung quanh các mối kết nối có khí thoát ra không. Nếu có, siết chặt hoặc thay gioăng.
+                    </li>
+                </ol>
+
+                <h3>2.3 LẬP BẢNG CALIBRATION</h3>
+                <p>Thực hiện đo tại 5 điểm setpoint: <strong>20%, 40%, 60%, 80%, 100%</strong> của lưu lượng danh nghĩa.</p>
+                <p>Ở mỗi điểm setpoint:</p>
+                <ol>
+                    <li>
+                        <strong>Điều chỉnh damper:</strong> Dùng controller để set damper position tương ứng với flow setpoint (ví dụ: damper 20% → setpoint 20% flow).
+                    </li>
+                    <li>
+                        <strong>Chờ ổn định:</strong> Đợi 5–10 giây để hệ thống cân bằng áp lực, lưu lượng.
+                    </li>
+                    <li>
+                        <strong>Ghi nhận ba giá trị:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li><strong>Flow Setpoint (%):</strong> % damper position từ controller</li>
+                            <li><strong>VAV Flow (m³/h):</strong> Giá trị lưu lượng VAV đọc được từ controller</li>
+                            <li><strong>Standard Flow (m³/h):</strong> Giá trị lưu lượng chuẩn từ pitot tube grid trên ống test</li>
+                            <li><strong>ΔP VAV (Pa):</strong> Áp suất chênh lệch đo bởi cảm biến ΔP trên VAV</li>
+                            <li><strong>ΔP Std (Pa):</strong> Áp suất chênh lệch từ ống test (nếu có)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Tính sai số (Error):</strong> 
+                        <div class="formula-box">
+                            Error (%) = [(VAV Flow - Std Flow) / Std Flow] × 100
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Ghi vào bảng calibration:</strong> Lưu toàn bộ vào mẫu excel hoặc giấy theo form FAT.
+                    </li>
+                </ol>
+
+                <h3>2.4 PHÂN TÍCH KẾT QUẢ & ĐIỀU CHỈNH K-FACTOR</h3>
+                <p><strong>Nếu Error ≤ ±5% ở tất cả các điểm:</strong> VAV đã hiệu chuẩn tốt, skip bước điều chỉnh, chuyển sang ký duyệt FAT.</p>
+                
+                <p><strong>Nếu Error &gt; ±5% ở một số điểm:</strong> Cần điều chỉnh K-Factor.</p>
+                <div class="warning-box">
+                    <strong>⚠ Công thức tính K-Factor mới:</strong>
+                    <div class="formula-box" style="margin-top: 10px;">
+K_new = K_old × (VAV Flow / Std Flow)<br>
+<br>
+Hoặc: K_new = K_old × (1 + Error % / 100)
+                    </div>
+                </div>
+
+                <p><strong>Ví dụ:</strong></p>
+                <ul>
+                    <li>K_old = 1.00 (mặc định)</li>
+                    <li>Ở 100% setpoint: VAV Flow = 11.000 m³/h, Std Flow = 10.000 m³/h</li>
+                    <li>Error = (11.000 - 10.000) / 10.000 × 100 = +10%</li>
+                    <li>K_new = 1.00 × (10.000 / 11.000) = 0.909</li>
+                </ul>
+
+                <p>Nhập K_new vào controller VAV (thường qua menu Commissioning hoặc BMS), lưu cấu hình.</p>
+
+                <h3>2.5 VÒng LẶP LẠI CALIBRATION</h3>
+                <ol>
+                    <li>
+                        <strong>Chạy lại 5 điểm setpoint</strong> với K_new đã lưu.
+                    </li>
+                    <li>
+                        <strong>Kiểm tra sai số mới:</strong> Nếu error &le; ±5% tại tất cả điểm → <strong>PASS</strong>, tiếp tục ký duyệt FAT.
+                    </li>
+                    <li>
+                        <strong>Nếu vẫn >5%:</strong> Điều chỉnh K_new lần 2 (ít khi xảy ra nếu tính toán chính xác).
+                    </li>
+                </ol>
+
+                <h3>2.6 KỂ CHÉP VÀ KÝ DUYỆT FAT</h3>
+                <ol>
+                    <li>
+                        <strong>Ghi chép kết quả:</strong> Lập biên bản FAT bao gồm:
+                        <ul style="margin: 10px 0;">
+                            <li>Thông tin VAV (Model, Size, Part No)</li>
+                            <li>Dải lưu lượng danh nghĩa (Nominal Flow Range)</li>
+                            <li>Bảng calibration trước/sau K-factor</li>
+                            <li>Biểu đồ flow curve (trục x: setpoint, trục y: actual flow)</li>
+                            <li>K-Factor cuối cùng được nhập vào controller</li>
+                            <li>Nhân xét về chất lượng (PASS/FAIL), sai số max/min</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Ký duyệt:</strong> 
+                        <ul style="margin: 10px 0;">
+                            <li>Kỹ sư kiểm tra (QA) ký xác nhận kết quả</li>
+                            <li>Người test (Technician) ký ngày giờ</li>
+                            <li>Lưu bản gốc hoặc scan vào hệ thống quản lý chất lượng</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>💡 Lưu ý quan trọng:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Nếu damper bị kẹt hoặc cảm biến ΔP không phản ứng: STOP test, kiểm tra lại VAV trước khi tiếp tục.</li>
+                        <li>Mỗi lần điều chỉnh K-Factor, <strong>phải lưu cấu hình vào controller</strong> (confirm trên màn hình BMS hoặc bộ điều khiển).</li>
+                        <li>Nếu khách hàng yêu cầu error ≤ ±3%, áp dụng tiêu chuẩn khắt khe hơn khi phân tích kết quả.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: THIẾT BỊ & YÊU CẦU -->
+        <div id="equipment" class="tab-content">
+            <div class="section">
+                <h2>3. MÔ TẢ THIẾT BỊ TEST RIG & CẢM BIẾN</h2>
+
+                <h3>3.1 Sơ Đồ Test Rig VAV Box</h3>
+                <p><em>Xem hình vẽ chi tiết từ bản vẽ kỹ thuật Sheet 1/2 & 2/2</em></p>
+
+                <div class="equipment-list">
+                    <h4>🔧 Danh Sách Thiết Bị Chính của Test Rig</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="15%">STT</th>
+                                <th width="35%">Thiết Bị / Linh Kiện</th>
+                                <th width="50%">Thông Số Kỹ Thuật & Chức Năng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><strong>Quạt Ly Tâm</strong></td>
+                                <td>Q = 8.000–10.000 m³/h; Cung cấp dòng khí ổn định qua hệ ống test. Có van throttle hoặc biến tần để điều chỉnh tốc độ.</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><strong>Ống Test Tròn (Smooth)</strong></td>
+                                <td>Đường kính ngoài 200–203 mm (Size 8"), dài ~3000 mm. Ống được hàn laser kín, sơn Jotun RAL7016. Chia làm 4 đoạn 1000 mm để dễ lắp đặt cảm biến.</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td><strong>Mặt Bích Kết Nối</strong></td>
+                                <td>Mặt bích 3 mm, 6 cái mỗi đoạn ống. Kết nối bằng bulong M8×20 với gioăng kín khí (PTFE hoặc neoprene).</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td><strong>Côn Thu (Venturi)</strong></td>
+                                <td>Tại vị trí inlet quạt và outlet VAV. Giảm xung sóc khí, ổn định dòng chảy trước khi vào ống test.</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td><strong>Hệ Đỡ Unistar 41×41×2</strong></td>
+                                <td>Thanh thép hộp kích thước 41×41×2 mm. Đỡ cho VAV, ống hút, quạt. Có ghi chú cân đối chiều cao thực tế.</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><strong>Khung Có Bánh Xe</strong></td>
+                                <td>Khung di động 3000×1000×1000 mm, có 4 bánh xe (2 bánh khóa). Mặt phủ thảm chống xước sản phẩm.</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td><strong>Ống Phụ (Ø21.2×1.4 mm)</strong></td>
+                                <td>Ống dùng để hàn vào thành ống test, tạo điểm lắp cảm biến áp/lưu lượng. Có nhiều ví trí chuẩn bị sẵn.</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><strong>Cảm Biến Lưu Lượng (Flow Sensor)</strong></td>
+                                <td>Pitot tube grid hoặc flow meter grid. Đo lưu lượng thực tế (m³/h, L/s, CFM). Xuất tín hiệu analog (4-20mA) hoặc digital.</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td><strong>Cảm Biến Áp Suất (Pressure Transducer)</strong></td>
+                                <td>Đo chênh lệch áp (ΔP) hoặc áp tĩnh (Static P) tại các điểm trên ống. Range: 0–500 Pa hoặc 0–1000 Pa. Xuất 4-20mA hoặc 0-10V.</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td><strong>Thiết Bị Đọc Dữ Liệu</strong></td>
+                                <td>Logger dữ liệu kỹ thuật số, multimeter, hoặc BMS controller. Ghi nhận tín hiệu từ cảm biến real-time.</td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td><strong>Ống Dẫn Áp (Pressure Tubing)</strong></td>
+                                <td>Ống mềm nylon hoặc PTFE, đường kính 4–6 mm. Kết nối cảm biến áp từ các điểm trên ống test đến transducer.</td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td><strong>Van Throttle / Needle Valve</strong></td>
+                                <td>Điều chỉnh lưu lượng trên ống exhaust (sau VAV) để fine-tune áp suất hệ thống. Tùy chọn.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>3.2 Yêu Cầu Hiệu Chuẩn Cảm Biến Trước Test</h3>
+                
+                <div class="warning-box">
+                    <strong>⚠ BẮTBUỘC trước mỗi lần test:</strong>
+                </div>
+
+                <h4>Cảm Biến Lưu Lượng (Flow Sensor - Pitot Tube Grid)</h4>
+                <ul>
+                    <li><strong>Hiệu chuẩn zero:</strong> 
+                        <ul style="margin: 10px 0;">
+                            <li>Đóng van cô lập ở inlet/outlet, xả khí từ hệ thống.</li>
+                            <li>Đợi 2–3 phút cho áp suất ổn định (hệ thống yên tĩnh, không có dòng khí).</li>
+                            <li>Đặt thiết bị đọc về 0 m³/h hoặc 0 L/s (theo hướng dẫn cảm biến).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Kiểm tra độ chính xác:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>So sánh với giá trị chuẩn hoặc cảm biến reference (nếu có). Sai lệch &lt; 2%.</li>
+                            <li>Nếu sai &gt; 2%, kiểm tra xem pitot tube có bị bẩn, tắc không. Rửa sạch bằng khí nén hoặc nước.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Thời gian hiệu chuẩn:</strong> 6 tháng / lần hoặc theo lịch hiệu chuẩn từ nhà sản xuất.</li>
+                </ul>
+
+                <h4>Cảm Biến Áp Suất (Pressure Transducer)</h4>
+                <ul>
+                    <li><strong>Hiệu chuẩn zero:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Ngắt kết nối ống dẫn áp (hoặc kết nối cả hai cổng vào cùng một điểm áp để ΔP = 0).</li>
+                            <li>Đặt thiết bị đọc về 0 Pa.</li>
+                            <li>Confirm trên màn hình hoặc logger: "Zero OK".</li>
+                        </ul>
+                    </li>
+                    <li><strong>Kiểm tra span (áp suất cực đại):</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Nếu có thiết bị span chuẩn (calibration pump), kiểm tra ở 50% và 100% range cảm biến.</li>
+                            <li>Sai lệch ≤ 1%.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Thời gian hiệu chuẩn:</strong> Hàng năm hoặc theo hướng dẫn nhà sản xuất.</li>
+                </ul>
+
+                <h4>Controller VAV / BMS</h4>
+                <ul>
+                    <li><strong>Kiểm tra chế độ hoạt động:</strong> Đặt vào "Commissioning" mode để có thể điều khiển damper từ 0–100% bằng tay (bypass chế độ auto).</li>
+                    <li><strong>Kiểm tra hiển thị:</strong> Flow, ΔP, damper position hiển thị chính xác.</li>
+                    <li><strong>Test thủ công damper:</strong> Điều khiển từ 0% → 100% → 0%, kiểm tra damper xoay trơn tru, không bị kẹt, không rơi ra.</li>
+                </ul>
+
+                <h3>3.3 Sơ Đồ Khối Hệ Thống Test</h3>
+                <div class="formula-box">
+[Quạt] ──→ [Côn Thu] ──→ [Ống Test 4000mm] ──→ [VAV] ──→ [Exhaust]<br>
+            ↓ (có Pitot Grid)      ↓ (ΔP points)      ↓ (ΔP sensor)<br>
+        [Flow Logger]     [Pressure Trans.]   [Controller]<br>
+            ↓                    ↓                     ↓<br>
+        [Data Record]   [ΔP Display]     [Flow Display]
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 3: CÔNG THỨC K-FACTOR -->
+        <div id="formula" class="tab-content">
+            <div class="section">
+                <h2>4. CÔNG THỨC TÍNH TOÁN & K-FACTOR</h2>
+
+                <h3>4.1 Công Thức Tính Lưu Lượng Từ ΔP</h3>
+                <p>Cảm biến ΔP trên VAV hoạt động dựa trên nguyên lý Bernoulli, tính lưu lượng từ chênh lệch áp suất:</p>
+                
+                <div class="formula-box">
+                    <strong>Q = K × √(ΔP) × A</strong><br>
+                    <br>
+                    Trong đó:<br>
+                    Q = Lưu lượng khí (m³/h hoặc CFM)<br>
+                    K = K-Factor (hệ số hiệu chuẩn) [CFM/√(inH₂O)] hoặc [m³/h/√(Pa)]<br>
+                    ΔP = Chênh lệch áp suất (Pa hoặc inH₂O)<br>
+                    A = Diện tích ống test (m² hoặc ft²)<br>
+                </div>
+
+                <h3>4.2 Công Thức Tính K-Factor Mới</h3>
+                <p>Khi đo được lưu lượng VAV (Q_VAV) và lưu lượng chuẩn (Q_STD), tính K-Factor mới:</p>
+
+                <div class="formula-box">
+                    <strong>K_new = K_old × (Q_STD / Q_VAV)</strong><br>
+                    <br>
+                    Hoặc: <strong>K_new = K_old × [1 / (1 + Error/100)]</strong><br>
+                    <br>
+                    Ví dụ:<br>
+                    K_old = 1.0<br>
+                    Q_VAV = 11.000 m³/h<br>
+                    Q_STD = 10.000 m³/h<br>
+                    K_new = 1.0 × (10.000 / 11.000) = <strong>0.909</strong>
+                </div>
+
+                <h3>4.3 Công Thức Tính Sai Số (Error)</h3>
+                <div class="formula-box">
+                    <strong>Error (%) = [(Q_VAV - Q_STD) / Q_STD] × 100</strong><br>
+                    <br>
+                    <strong>Hoặc:</strong><br>
+                    <strong>Error (%) = [(ΔP_VAV / ΔP_STD)² - 1] × 100</strong> (nếu K-Factor đồng nhất)<br>
+                    <br>
+                    Tiêu chuẩn PASS:<br>
+                    ✓ Error ≤ ±5% (tiêu chuẩn mặc định)<br>
+                    ✓ Error ≤ ±3% (yêu cầu khắt khe)
+                </div>
+
+                <h3>4.4 Công Thức Diện Tích Ống Test</h3>
+                <p>Nếu cần tính toán diện tích tiếp xúc của ống test:</p>
+                <div class="formula-box">
+                    <strong>A = π × (D_in / 2)²</strong><br>
+                    <br>
+                    Trong đó:<br>
+                    D_in = Đường kính trong ống (mm)<br>
+                    <br>
+                    Ví dụ: D ngoài = 203.2 mm, D trong ≈ 200 mm<br>
+                    A = π × (100)² = 31.416 cm² ≈ 0.00314 m²
+                </div>
+
+                <h3>4.5 Quy Tắc Điều Chỉnh K-Factor</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="20%">Error (%) ở 100% Flow</th>
+                            <th width="30%">Điều Chỉnh K-Factor</th>
+                            <th width="50%">Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>-10% đến +10%</td>
+                            <td>Chia đôi sai số, điều chỉnh K tương ứng</td>
+                            <td>K_new = K_old × [1 - (Error/100)/2]</td>
+                        </tr>
+                        <tr>
+                            <td>+15% hoặc hơn (VAV đọc cao)</td>
+                            <td>Giảm K-Factor: K_new = K_old × 0.85–0.90</td>
+                            <td>VAV đo cao thường do ΔP được khuếch đại quá mức</td>
+                        </tr>
+                        <tr>
+                            <td>-15% hoặc hơn (VAV đọc thấp)</td>
+                            <td>Tăng K-Factor: K_new = K_old × 1.10–1.15</td>
+                            <td>VAV đo thấp có thể do cảm biến ΔP non-linear</td>
+                        </tr>
+                        <tr>
+                            <td>Trong ±5%</td>
+                            <td>Không cần điều chỉnh</td>
+                            <td>VAV đã hiệu chuẩn, PASS FAT</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>4.6 Ví Dụ Tính Toán Chi Tiết</h3>
+                <div class="info-box">
+                    <strong>📊 Ví dụ: Calibrate VAV Size 6 (2000 m³/h nominal)</strong><br>
+                    <br>
+                    <strong>Dữ liệu đo ở 100% setpoint:</strong><br>
+                    • VAV Position: 100%<br>
+                    • VAV Flow Display: 2.200 m³/h<br>
+                    • Standard Flow (Pitot Grid): 2.000 m³/h<br>
+                    • ΔP_VAV: 245 Pa<br>
+                    • ΔP_STD: 200 Pa<br>
+                    • K_old: 1.0 (mặc định)<br>
+                    <br>
+                    <strong>Tính toán:</strong><br>
+                    Error = (2.200 - 2.000) / 2.000 × 100 = +10%<br>
+                    K_new = 1.0 × (2.000 / 2.200) = 0.909<br>
+                    <br>
+                    <strong>Hành động:</strong><br>
+                    1. Nhập K_new = 0.909 vào controller VAV<br>
+                    2. Lưu cấu hình<br>
+                    3. Chạy lại test 100% setpoint<br>
+                    4. Kết quả mong đợi: VAV Flow ≈ 2.000 m³/h (error ≈ 0%)
+                </div>
+
+                <h3>4.7 Bảng Tham Khảo K-Factor Theo Size VAV</h3>
+                <p><em>Giá trị K-Factor điển hình sau hiệu chuẩn (dùng làm reference):</em></p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="15%">VAV Size</th>
+                            <th width="15%">Flow Range (m³/h)</th>
+                            <th width="15%">Duct Dia. (mm)</th>
+                            <th width="15%">Typical K (before)</th>
+                            <th width="20%">Typical K (after)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Size 4</td>
+                            <td>1.000–1.500</td>
+                            <td>100</td>
+                            <td>1.0–1.1</td>
+                            <td>0.90–0.98</td>
+                        </tr>
+                        <tr>
+                            <td>Size 6</td>
+                            <td>1.500–2.500</td>
+                            <td>150</td>
+                            <td>1.0–1.1</td>
+                            <td>0.88–0.96</td>
+                        </tr>
+                        <tr>
+                            <td>Size 8</td>
+                            <td>2.500–4.000</td>
+                            <td>200</td>
+                            <td>1.0–1.1</td>
+                            <td>0.85–0.95</td>
+                        </tr>
+                        <tr>
+                            <td>Size 10</td>
+                            <td>4.000–6.000</td>
+                            <td>250</td>
+                            <td>1.0–1.1</td>
+                            <td>0.80–0.92</td>
+                        </tr>
+                        <tr>
+                            <td>Size 12</td>
+                            <td>6.000–8.000</td>
+                            <td>300</td>
+                            <td>1.0–1.1</td>
+                            <td>0.78–0.90</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><em>Lưu ý: Các giá trị trên là tham khảo. K-Factor thực tế phụ thuộc vào thiết kế cảm biến ΔP, độ kín hệ ống, và điều kiện test.</em></p>
+            </div>
+        </div>
+
+        <!-- TAB 4: MẪU BIỂU FAT -->
+        <div id="fat-form" class="tab-content">
+            <div class="section">
+                <h2>5. MẪU BIỂU FACTORY ACCEPTANCE TEST (FAT)</h2>
+
+                <div class="excel-template">
+                    <h4>📋 Biểu Ghi Nhận Kết Quả FAT VAV Box</h4>
+                    <p style="margin-bottom: 15px;"><em>Sử dụng mẫu này cho mỗi VAV box được test tại nhà máy trước khi xuất xưởng.</em></p>
+
+                    <div class="code-block">
+<strong>═══════════════════════════════════════════════════════════════</strong>
+<strong>FACTORY ACCEPTANCE TEST (FAT) - VAV BOX CALIBRATION REPORT</strong>
+<strong>═══════════════════════════════════════════════════════════════</strong>
+
+<strong>I. THÔNG TIN CHUNG</strong>
+
+Tên công ty:  STARDUCT MECHANICAL FACTORY - Hà Nội, Vietnam
+Ngày test:  ____/____/2025
+Người test (Technician):  ________________________________
+Người kiểm tra (QA):  ________________________________
+
+VAV Box Information:
+├─ Model/Type:  ___________________________
+├─ Part Number:  ___________________________
+├─ Serial Number:  ___________________________
+├─ Size (Nominal):  ___________________________
+├─ Nominal Flow Range:  __________ ~ __________ m³/h
+├─ Controller Type:  ___________________________
+└─ Sensor Type (ΔP):  ___________________________
+
+Test Rig Equipment:
+├─ Quạt Q:  8.000–10.000 m³/h
+├─ Ống Test Diameter:  Ø203.2 mm (Size 8")
+├─ Flow Standard Device:  Pitot Tube Grid (Calibrated ____/____/____)
+└─ Pressure Transducer:  0–500 Pa range (Calibrated ____/____/____)
+
+<strong>II. ĐIỀU KIỆN TEST</strong>
+
+Nhiệt độ phòng:  __________ °C
+Áp suất khí quyển:  __________ mbar (hPa)
+Độ ẩm:  __________ %
+Ghi chú điều kiện:  _________________________________________________
+
+<strong>III. BẢNG SỐ LIỆU CALIBRATION (TRƯỚC ĐIỀU CHỈNH K-FACTOR)</strong>
+
+┌────┬──────────┬─────────┬──────────┬────────┬────────┬──────────┐
+│Set│ VAV Pos │ VAV Flow│ Std Flow│  ΔP_V │ ΔP_S  │ Error  │
+│Pt │   (%)   │ (m³/h)  │ (m³/h)  │ (Pa)  │ (Pa)  │  (%)   │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│20% │  20     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│40% │  40     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│60% │  60     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│80% │  80     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│100%│  100    │ _______ │ _______ │ _____ │ _____ │ ______ │
+└────┴──────────┴─────────┴──────────┴────────┴────────┴──────────┘
+
+Max Error Before:  __________ %
+Min Error Before:  __________ %
+Average Error Before:  __________ %
+
+<strong>IV. PHÂN TÍCH & ĐIỀU CHỈNH K-FACTOR</strong>
+
+K-Factor Before:  __________
+K-Factor Calculated:  __________  [Công thức: K_new = K_old × (Std Flow / VAV Flow)]
+K-Factor Applied:  __________
+
+Ghi chú điều chỉnh:  _________________________________________________
+
+<strong>V. BẢNG SỐ LIỆU SAU HIỆU CHUẨN (SAU ĐIỀU CHỈNH K-FACTOR)</strong>
+
+┌────┬──────────┬─────────┬──────────┬────────┬────────┬──────────┐
+│Set│ VAV Pos │ VAV Flow│ Std Flow│  ΔP_V │ ΔP_S  │ Error  │
+│Pt │   (%)   │ (m³/h)  │ (m³/h)  │ (Pa)  │ (Pa)  │  (%)   │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│20% │  20     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│40% │  40     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│60% │  60     │ _______ │ _______ │ _____ │ _____ │ ______ │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│80% │  80     │ _______ │ _______ │ _____ │ _____ │ ____── │
+├────┼──────────┼─────────┼──────────┼────────┼────────┼──────────┤
+│100%│  100    │ _______ │ _______ │ _____ │ _____ │ ______ │
+└────┴──────────┴─────────┴──────────┴────────┴────────┴──────────┘
+
+Max Error After:  __________ %
+Min Error After:  __________ %
+Average Error After:  __________ %
+
+<strong>VI. KẾT LUẬN FAT</strong>
+
+Tiêu chuẩn chấp nhận:  Error ≤ ±5% tại tất cả điểm setpoint
+
+Kết quả:  ☐ PASS      ☐ FAIL
+Ghi chú:  _________________________________________________
+
+<strong>VII. KIỂM TRA CHẤT LƯỢNG KHÁC</strong>
+
+Damper hoạt động:  ☐ Tốt  ☐ Có rầy / Kẹt
+Rò rỉ khí tại VAV:  ☐ Không  ☐ Có (vị trí: ______________)
+Cảm biến ΔP phản hồi:  ☐ Bình thường  ☐ Chậm / Không ổn định
+Gioăng kín khí:  ☐ Tốt  ☐ Cần thay mới
+Vệ sinh bên trong:  ☐ Sạch  ☐ Bẩn (cần rửa)
+
+<strong>VIII. KY DUYỆT</strong>
+
+Kỹ sư kiểm tra (QA):  ____________________  Ngày: ____/____/2025
+
+Người test (Technician):  ____________________  Ngày: ____/____/2025
+
+Ghi chú thêm:
+_________________________________________________________________
+_________________________________________________________________
+
+═══════════════════════════════════════════════════════════════
+Bản gốc lưu tại: ☐ Hộp sản phẩm  ☐ Hệ thống QMS  ☐ Khách hàng
+                    </div>
+                </div>
+
+                <h3>5.1 Hướng Dẫn Điền Biểu FAT</h3>
+                <ol>
+                    <li>
+                        <strong>Thông tin chung:</strong> Ghi đầy đủ ngày tháng, người test, thông số VAV, thiết bị chuẩn được sử dụng.
+                    </li>
+                    <li>
+                        <strong>Bảng sổ liệu:</strong> Ghi 5 điểm (20%, 40%, 60%, 80%, 100%), các cột: position, VAV flow, standard flow, ΔP, error %.
+                    </li>
+                    <li>
+                        <strong>Công thức error:</strong> Error (%) = [(VAV Flow - Std Flow) / Std Flow] × 100
+                    </li>
+                    <li>
+                        <strong>Tính K-Factor mới:</strong> K_new = K_old × (Std Flow / VAV Flow) – áp dụng ở điểm 100% hoặc trung bình các điểm nếu error không đồng nhất.
+                    </li>
+                    <li>
+                        <strong>Lặp lại test:</strong> Sau khi nhập K_new vào controller và lưu, chạy lại 5 điểm và ghi vào bảng "Sau hiệu chuẩn".
+                    </li>
+                    <li>
+                        <strong>Kết luận:</strong> Nếu max error ≤ ±5%, ghi PASS. Nếu >5%, ghi FAIL và kiểm tra lại nguyên nhân.
+                    </li>
+                </ol>
+
+                <h3>5.2 Tiêu Chuẩn PASS / FAIL</h3>
+                <div class="success-box">
+                    <strong>✓ PASS FAT nếu:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Max error ≤ ±5% ở toàn bộ 5 điểm setpoint sau hiệu chuẩn</li>
+                        <li>Damper hoạt động trơn tru, không bị kẹt</li>
+                        <li>Không rò rỉ khí tại các mối nối</li>
+                        <li>Cảm biến ΔP ổn định, phản hồi nhanh</li>
+                    </ul>
+                </div>
+                <div class="warning-box">
+                    <strong>✗ FAIL FAT nếu:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Max error > ±5% (thường do cảm biến ΔP hỏng hoặc K-Factor không thể điều chỉnh)</li>
+                        <li>Damper kẹt, rơi, hoặc không xoay được</li>
+                        <li>Rò rỉ khí lớn tại VAV hoặc các kết nối</li>
+                        <li>Cảm biến ΔP không phản hồi hoặc tín hiệu nhiễu</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 5: TEMPLATE EXCEL -->
+        <div id="excel" class="tab-content">
+            <div class="section">
+                <h2>6. TEMPLATE EXCEL - TÍNH TOÁN TỰ ĐỘNG & VẼ BIỂU ĐỒ</h2>
+
+                <div class="warning-box">
+                    <strong>📊 Mô Tả File Excel:</strong><br><br>
+                    File Excel này giúp <strong>tự động tính toán K-Factor và vẽ biểu đồ calibration</strong> dựa trên dữ liệu đầu vào. Gồm 3 sheet:<br>
+                    • <strong>Sheet 1 "Data Entry":</strong> Nhập dữ liệu test<br>
+                    • <strong>Sheet 2 "Calculations":</strong> Tính toán tự động error, K-Factor mới<br>
+                    • <strong>Sheet 3 "Chart":</strong> Vẽ biểu đồ flow curve trước/sau hiệu chuẩn
+                </div>
+
+                <h3>6.1 Hướng Dẫn Sử Dụng File Excel</h3>
+
+                <h4>📄 Sheet 1: Data Entry (Nhập Dữ Liệu)</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cột</th>
+                            <th>Tên Ô</th>
+                            <th>Kiểu Dữ Liệu</th>
+                            <th>Hướng Dẫn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>Model</td>
+                            <td>Text</td>
+                            <td>Ghi tên model VAV (ví dụ: "VAV-Size6-2000")</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td>Serial No</td>
+                            <td>Text</td>
+                            <td>Số serial hoặc lô sản xuất</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td>Test Date</td>
+                            <td>Date (dd/mm/yyyy)</td>
+                            <td>Ngày test</td>
+                        </tr>
+                        <tr>
+                            <td>D</td>
+                            <td>K_Factor_Old</td>
+                            <td>Number</td>
+                            <td>K-Factor ban đầu (mặc định 1.0)</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="background: #e8f5e9; font-weight: bold;">BẢNG DỮ LIỆU 5 ĐIỂM SETPOINT (VÀ TRƯỚC HIỆU CHUẨN)</td>
+                        </tr>
+                        <tr>
+                            <td>E</td>
+                            <td>Setpoint (%)</td>
+                            <td>Number: 20, 40, 60, 80, 100</td>
+                            <td>Nhập lần lượt 5 giá trị</td>
+                        </tr>
+                        <tr>
+                            <td>F</td>
+                            <td>VAV_Flow_Before (m³/h)</td>
+                            <td>Number</td>
+                            <td>Lưu lượng VAV đọc được TRƯỚC hiệu chuẩn</td>
+                        </tr>
+                        <tr>
+                            <td>G</td>
+                            <td>Std_Flow (m³/h)</td>
+                            <td>Number</td>
+                            <td>Lưu lượng chuẩn từ Pitot Grid</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td>DP_VAV_Before (Pa)</td>
+                            <td>Number</td>
+                            <td>Áp suất chênh lệch từ cảm biến VAV trước hiệu chuẩn</td>
+                        </tr>
+                        <tr>
+                            <td>I</td>
+                            <td>VAV_Flow_After (m³/h)</td>
+                            <td>Number</td>
+                            <td>Lưu lượng VAV SAU hiệu chuẩn (nhập sau khi điều chỉnh K)</td>
+                        </tr>
+                        <tr>
+                            <td>J</td>
+                            <td>DP_VAV_After (Pa)</td>
+                            <td>Number</td>
+                            <td>Áp suất SAU hiệu chuẩn</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>📊 Sheet 2: Calculations (Tính Toán Tự Động)</h4>
+                <p>Sheet này chứa các công thức tính toán (tự động, không cần nhập lại):</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="25%">Cột Tính</th>
+                            <th width="50%">Công Thức</th>
+                            <th width="25%">Ví Dụ Kết Quả</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Error_Before (%)</strong></td>
+                            <td>=[(F-G)/G]*100</td>
+                            <td>+10%, -3%, ...ưu</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error_After (%)</strong></td>
+                            <td>=[(I-G)/G]*100</td>
+                            <td>+1.5%, -0.8%, ...</td>
+                        </tr>
+                        <tr>
+                            <td><strong>K_Factor_New</strong></td>
+                            <td>=K_old × (G/F) ở 100%</td>
+                            <td>0.909, 0.952, ...</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Max_Error_Before</strong></td>
+                            <td>=MAX(Error_Before)</td>
+                            <td>+15%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Max_Error_After</strong></td>
+                            <td>=MAX(Error_After)</td>
+                            <td>+2.5%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FAT_Result</strong></td>
+                            <td>=IF(Max_Error_After<=5%, "PASS", "FAIL")</td>
+                            <td>PASS hoặc FAIL</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>📈 Sheet 3: Chart (Vẽ Biểu Đồ)</h4>
+                <p>Sheet này chứa biểu đồ XY scatter tự động update khi dữ liệu thay đổi:</p>
+                <ul>
+                    <li><strong>Trục X:</strong> Flow Setpoint (m³/h)</li>
+                    <li><strong>Trục Y:</strong> Actual Flow (m³/h)</li>
+                    <li><strong>Đường 1 (tham chiếu):</strong> y = x (Perfect Match)</li>
+                    <li><strong>Đường 2:</strong> Data Before Calibration (điểm đỏ hoặc xanh)</li>
+                    <li><strong>Đường 3:</strong> Data After Calibration (điểm xanh hoặc tím)</li>
+                    <li><strong>Vùng tô:</strong> ±5% tolerance band (xung quanh đường tham chiếu)</li>
+                </ul>
+
+                <h3>6.2 Ví Dụ Điền Dữ Liệu Vào Excel</h3>
+                <div class="code-block">
+<strong>Sheet 1: Data Entry</strong>
+
+Model: VAV-Size6-2000
+Serial No: SN-2025-001
+Test Date: 02/10/2025
+K_Factor_Old: 1.0
+
+Setpoint (%)  | VAV_Flow_Bef | Std_Flow | DP_VAV_Bef | VAV_Flow_Aft | DP_VAV_Aft
+─────────────────────────────────────────────────────────────────────────────
+    20        |   400        |   385    |   15       |   375        |   14
+    40        |   800        |   790    |   60       |   785        |   59
+    60        |   1210       |   1200   |   140      |   1200       |   139
+    80        |   1620       |   1600   |   250      |   1600       |   248
+    100       |   2200       |   2000   |   430      |   2010       |   435
+
+K_Factor_New (auto-calculated): 0.909 (= 1.0 × 2000/2200)
+                </div>
+
+                <h3>6.3 Biểu Đồ Calibration Mẫu</h3>
+                <p>Dưới đây là hình ảnh biểu đồ calibration tự động sinh từ dữ liệu:</p>
+                <div class="chart-container">
+                    <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/38a2378c8f8dcb119bae9c6b788c5933/dc0eb851-5141-462a-acd4-dfe203c35379/2c5673b4.png" alt="VAV Calibration Curve">
+                    <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                        Biểu đồ cho thấy: dữ liệu "Before" nằm phía trên đường tham chiếu (VAV đo cao 10%), <br>sau khi điều chỉnh K-Factor thành 0.909, dữ liệu "After" chạy sát với đường tham chiếu và nằm trong ±5% tolerance zone.
+                    </p>
+                </div>
+
+                <h3>6.4 Download Template Excel (Mẫu)</h3>
+                <div class="button-group">
+                    <button class="download-btn" onclick="downloadExcelTemplate()">
+                        📥 Tải Template Excel (VN)
+                    </button>
+                    <button class="download-btn" onclick="downloadFATForm()">
+                        📋 Tải Mẫu Biểu FAT (PDF)
+                    </button>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 Ghi chú:</strong><br><br>
+                    File Excel được thiết kế để:<br>
+                    ✓ Tự động tính toán error % cho mỗi điểm setpoint<br>
+                    ✓ Tính K-Factor mới dựa trên công thức chuẩn<br>
+                    ✓ Vẽ biểu đồ flow curve tự động (không cần nhập lại)<br>
+                    ✓ Kiểm tra PASS/FAIL tự động (error ≤ ±5%)<br>
+                    <br>
+                    <strong>Yêu cầu:</strong> Microsoft Excel 2010+ hoặc Google Sheets (tương thích)
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 6: HƯỚNG DẪN CHUNG -->
+        <div id="guide" class="tab-content">
+            <div class="section">
+                <h2>7. CÂU HỎI THƯỜNG GẶP & HƯỚNG DẪN NHANH</h2>
+
+                <h3>7.1 Các Lỗi Phổ Biến Và Cách Khắc Phục</h3>
+                
+                <h4>❌ VAV Flow luôn cao hơn Standard Flow (Error > +10%)</h4>
+                <ul>
+                    <li><strong>Nguyên nhân:</strong> Cảm biến ΔP khuếch đại quá mức (Amplification Factor quá cao), hoặc K-Factor ban đầu quá lớn.</li>
+                    <li><strong>Khắc phục:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Giảm K-Factor: K_new = K_old × 0.85–0.90</li>
+                            <li>Kiểm tra cài đặt Amplification Factor trên controller, giảm xuống nếu có thể.</li>
+                            <li>Kiểm tra xem cảm biến ΔP có bị bẩn hay bị tắc không (rửa sạch).</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>❌ VAV Flow luôn thấp hơn Standard Flow (Error < -10%)</h4>
+                <ul>
+                    <li><strong>Nguyên nhân:</strong> Cảm biến ΔP khuếch đại không đủ, hoặc ống test bị tắc/bẩn làm giảm lưu lượng thực tế.</li>
+                    <li><strong>Khắc phục:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Tăng K-Factor: K_new = K_old × 1.10–1.15</li>
+                            <li>Vệ sinh ống test bằng khí nén hoặc nước sạch.</li>
+                            <li>Kiểm tra mối kết nối VAV – ống test (rò rỉ khí?).</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>❌ Error không đồng nhất (thay đổi lớn ở các điểm setpoint khác nhau)</h4>
+                <ul>
+                    <li><strong>Nguyên nhân:</strong> Cảm biến ΔP non-linear (không tuyến tính), hoặc có rò rỉ khí lớn ở một trong các mối nối.</li>
+                    <li><strong>Khắc phục:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Kiểm tra độ kín tất cả bulong, gioăng kín khí.</li>
+                            <li>Thay cảm biến ΔP bằng một cảm biến mới nếu vấn đề vẫn tiếp tục.</li>
+                            <li>Sử dụng giá trị K trung bình của 5 điểm thay vì chỉ lấy ở 100% setpoint.</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>❌ Damper bị kẹt, xoay khó</h4>
+                <ul>
+                    <li><strong>Nguyên nhân:</strong> VAV bị rơi trong quá trình vận chuyển/lắp đặt, hoặc có bụi trong damper.</li>
+                    <li><strong>Khắc phục:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Tháo VAV ra khỏi ống test, vệ sinh bụi bẩn bên trong damper bằng khí nén.</li>
+                            <li>Xoay damper tay nhẹ nhàng để kiểm tra (không dùng lực mạnh).</li>
+                            <li>Nếu vẫn kẹt, thay VAV bằng một cái mới (WARRANTY issue).</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>❌ Rò rỉ khí tại mối kết nối VAV – ống test</h4>
+                <ul>
+                    <li><strong>Nguyên nhân:</strong> Gioăng kín khí cũ, bị nứt, hoặc bulong không siết chặt.</li>
+                    <li><strong>Khắc phục:</strong>
+                        <ul style="margin: 10px 0;">
+                            <li>Siết chặt bulong M8×20 (moment ~15–20 Nm, tránh siết quá mạnh).</li>
+                            <li>Nếu vẫn rò rỉ, thay gioăng PTFE hoặc neoprene mới.</li>
+                            <li>Kiểm tra lại độ phẳng của mặt bích VAV và ống test (nếu cong, phải thay).</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>7.2 Câu Hỏi Thường Gặp (FAQ)</h3>
+
+                <h4>❓ Tại sao phải calibrate VAV tại nhà máy?</h4>
+                <p>Vì mỗi VAV box có cảm biến ΔP khác nhau, vị trí ống vào/ra khác nhau, và điều kiện lắp đặt trên site sẽ khác so với xưởng. Hiệu chuẩn tại xưởng giúp xác định K-Factor chính xác, để khi lắp tại site chỉ cần commissioning nhẹ mà không phải hiệu chuẩn lại.</p>
+
+                <h4>❓ K-Factor là gì? Tại sao quan trọng?</h4>
+                <p>K-Factor là hệ số hiệu chuẩn dùng để điều chỉnh giá trị lưu lượng tính từ cảm biến ΔP sao cho phù hợp với lưu lượng thực tế. Nếu K-Factor sai, lưu lượng VAV đo được sẽ không chính xác, dẫn đến không điều khiển được nhiệt độ phòng.</p>
+
+                <h4>❓ Standard Flow (Pitot Grid) được hiệu chuẩn bao lâu?</h4>
+                <p>Thường 6 tháng / lần hoặc theo hướng dẫn nhà sản xuất. Trước mỗi lần test FAT, phải kiểm tra xem Pitot Grid có bị bẩn, tắc không. Nếu có nghi vấn, so sánh với một cảm biến reference khác hoặc gửi đi hiệu chuẩn tại công ty chuẩn.</p>
+
+                <h4>❓ Nếu sai số > ±5%, VAV có bán được không?</h4>
+                <p>Không. VAV phải PASS FAT (error ≤ ±5%) mới được bàn giao. Nếu FAIL, phải kiểm tra lại lý do (cảm biến hỏng? K-Factor không thể điều chỉnh?), sửa chữa hoặc thay cảm biến, rồi test lại.</p>
+
+                <h4>❓ Có cách nào để test mà không cần Pitot Grid?</h4>
+                <p>Có thể dùng flow hood (Balometer), anemometer trên site. Tuy nhiên, Pitot Grid trên test rig chuẩn hơn vì ống test được thiết kế, hiệu chuẩn sẵn. Flow hood thường dùng khi commissioning tại site sau khi VAV được lắp vào.</p>
+
+                <h4>❓ Nếu quạt ly tâm bị hỏng, có ảnh hưởng đến kết quả FAT không?</h4>
+                <p>Quạt bị hỏng (chạy chậm, không đều) sẽ làm cho lưu lượng không ổn định, dẫn đến sai số lớn hoặc kết quả không lặp lại được. Phải sửa chữa hoặc thay quạt trước khi test tiếp.</p>
+
+                <h4>❓ Đơn vị flow là m³/h hay CFM?</h4>
+                <p>Tùy vào yêu cầu khách hàng. Nếu công trình là metric (VN, EU), dùng m³/h. Nếu công trình Mỹ, dùng CFM (1 m³/h = 0.588 CFM, hoặc 1 CFM = 1.699 m³/h). Công thức tính vẫn tương tự, chỉ khác đơn vị.</p>
+
+                <h4>❓ Có cần test lúc nhiệt độ cao/thấp không?</h4>
+                <p>Theo tiêu chuẩn FAT, test ở nhiệt độ phòng bình thường (20–25°C) là đủ. Nếu khách hàng yêu cầu đặc biệt (ví dụ: test ở 40°C, 5°C), phải ghi rõ trong hợp đồng và ghi chú vào biên bản FAT.</p>
+
+                <h3>7.3 Bảng Kiểm Tra Trước Test (Pre-Test Checklist)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="5%">✓</th>
+                            <th width="50%">Mục Kiểm Tra</th>
+                            <th width="45%">Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>☐</td>
+                            <td>Pitot Grid được hiệu chuẩn trong vòng 6 tháng gần nhất</td>
+                            <td>Xem chứng chỉ hiệu chuẩn, ngày hết hạn</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Pressure Transducer được hiệu chuẩn (zero + span)</td>
+                            <td>Thực hiện zero calibration trước test</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>VAV box sạch, không có bụi bẩn bên ngoài/trong</td>
+                            <td>Rửa sạch bằng nước, lau khô bằng khăn sạch</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Damper hoạt động trơn tru, không kẹt</td>
+                            <td>Xoay tay từ 0% → 100% kiểm tra</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Gioăng kín khí không bị nứt, có độ đàn hồi</td>
+                            <td>Nếu cũ, thay mới (PTFE hoặc neoprene)</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Ống test sạch, không bị tắc, cong vêch</td>
+                            <td>Rửa bằng khí nén, kiểm tra bằng thước</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Quạt ly tâm chạy bình thường, không rung lắc</td>
+                            <td>Chạy thử 5 phút ở tốc độ bình thường</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Controller VAV trong chế độ "Commissioning" hoặc "Manual"</td>
+                            <td>Có thể điều khiển damper 0–100% từ bàn phím</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Logger hoặc thiết bị đọc dữ liệu sẵn sàng, pin đầy</td>
+                            <td>Kiểm tra pin, kết nối dây tín hiệu</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Bảng tính Excel / Biểu FAT chuẩn bị sẵn</td>
+                            <td>In hoặc chuẩn bị file điện tử để nhập dữ liệu</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Khu vực test sạch, không có dòng khí bên ngoài (cửa sổ, máy lạnh)</td>
+                            <td>Đóng cửa sổ, tắt máy lạnh trong khi test</td>
+                        </tr>
+                        <tr>
+                            <td>☐</td>
+                            <td>Nhiệt độ phòng ổn định (20–25°C)</td>
+                            <td>Để hệ thống ổn định 30 phút trước khi bắt đầu</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>7.4 Quy Trình Nhanh (Quick Reference)</h3>
+                <div class="formula-box">
+<strong>QUYTRÌNH TEST FAT VAV BOX - TÓM TẮT 10 BƯỚC</strong>
+
+1️⃣ Chuẩn bị: Kiểm tra Pitot Grid, Pressure Trans., VAV, quạt, controller
+2️⃣ Lắp VAV vào test rig: Kết nối côn thu, siết bulong M8×20, kiểm tra damper
+3️⃣ Khởi động: Damper 100% mở, chạy quạt từ 30% → 100% RPM (2–3 phút)
+4️⃣ Ổn định: Chạy 10 phút ở full load để hệ thống cân bằng
+5️⃣ Đo điểm 1: Damper 20%, chờ 5s, ghi: VAV Flow, Std Flow, ΔP_VAV, ΔP_Std
+6️⃣ Đo điểm 2–5: Lặp lại với 40%, 60%, 80%, 100% setpoint
+7️⃣ Tính toán: Nhập dữ liệu vào Excel, tính error % cho mỗi điểm
+8️⃣ Điều chỉnh K: Nếu max error > ±5%, tính K_new = K_old × (Std/VAV) @ 100%
+9️⃣ Lặp lại: Nhập K_new vào controller, chạy lại 5 điểm test
+🔟 Ký duyệt: Nếu max error ≤ ±5%, ghi PASS, ký biểu FAT
+                </div>
+
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>STARDUCT MECHANICAL FACTORY - Hà Nội, Vietnam</strong></p>
+            <p>SOP VAV Box Calibration & Factory Acceptance Test (FAT) | Version 02/10/2025</p>
+            <p>Contact: engineering@starduct.com | Phone: +84-24-XXXX-XXXX</p>
+        </div>
     </div>
-    <div id="dtList"></div>
-  </div>
-</section>
 
-<!-- ============ Dá»° ÃN ============ -->
-<section id="tab-da" hidden>
-  <div class="card">
-    <div class="filters">
-      <input id="fdaQ" placeholder="TÃ¬m tÃªn dá»± Ã¡nâ€¦" style="flex:1;min-width:180px">
-      <select id="fdaQG"><option value="">â€” Thá»‹ trÆ°á»ng â€”</option></select>
-      <select id="fdaUT"><option value="">â€” Æ¯u tiÃªn â€”</option>
-        <option value="1">1 Â· Cao</option><option value="3">3 Â· Trung bÃ¬nh</option>
-        <option value="4">4 Â· Tháº¥p</option><option value="5">5 Â· Theo dÃµi</option></select>
-      <select id="fdaSt"><option value="">â€” Stage â€”</option>
-        <option value="tiep_can">Tiáº¿p cáº­n</option><option value="spec_in">Spec-in</option>
-        <option value="chao_gia">ChÃ o giÃ¡</option><option value="dam_phan">ÄÃ m phÃ¡n</option>
-        <option value="po">PO</option><option value="dong">ÄÃ³ng</option></select>
-      <input id="fdaTP" placeholder="Äá»‹a Ä‘iá»ƒm / thÃ nh phá»‘â€¦" style="width:150px">
-      <input id="fdaHM" placeholder="Chá»§ Ä‘á»: VAV, EI, ERVâ€¦" style="width:140px">
-      <select id="fdaNPP"><option value="">â€” NPP â€”</option></select>
-      <select id="fdaPD"><option value="">â€” PhÃª duyá»‡t â€”</option>
-        <option value="cho_tiep_nhan">Chá» tiáº¿p nháº­n</option>
-        <option value="da_tiep_nhan">ÄÃ£ tiáº¿p nháº­n</option>
-        <option value="duoc_chi_dinh">ÄÆ°á»£c chá»‰ Ä‘á»‹nh</option>
-        <option value="phe_duyet">âœ“ PhÃª duyá»‡t</option>
-        <option value="khong_phe_duyet">âœ— KhÃ´ng phÃª duyá»‡t</option></select>
-      <select id="fdaNguoi"><option value="">â€” NgÆ°á»i phá»¥ trÃ¡ch â€”</option></select>
-      <label style="font-size:12px;display:flex;align-items:center;gap:5px">
-        <input type="checkbox" id="fdaDY" style="width:auto"> ðŸ›‘ Ä‘á»©ng yÃªn >21 ngÃ y</label>
-      <label style="font-size:12px;display:flex;align-items:center;gap:5px">
-        <input type="checkbox" id="fdaTVTK" style="width:auto"> thiáº¿u TVTK</label>
-      <button class="btn pri" onclick="openDeal()">+ ThÃªm dá»± Ã¡n</button>
-      <button class="btn" onclick="taiFilePhanCongDA()">â¬‡ File phÃ¢n cÃ´ng DA</button>
-      <button class="btn" onclick="document.getElementById('pcdaFile').click()">â¬† Nháº­p phÃ¢n cÃ´ng DA</button>
-      <input type="file" id="pcdaFile" accept=".xlsx,.xls" style="display:none" onchange="nhapPhanCongDA(this)">
-    </div>
-    <div id="daList"></div>
-  </div>
-</section>
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
 
-<!-- ============ Dá»° ÃN Ná»€N (danh má»¥c thá»‹ trÆ°á»ng) ============ -->
-<section id="tab-dn" hidden>
-  <div class="card">
-    <div class="notice">Lá»›p dá»¯ liá»‡u <b>thá»‹ trÆ°á»ng ná»n</b> â€” danh má»¥c dá»± Ã¡n theo NPP (nguá»“n file Cáº¬P NHáº¬T DA THEO NPP,
-      cáº­p nháº­t qua nÃºt â¬† á»Ÿ tab Nháº­p dá»¯ liá»‡u). Tra cá»©u trÆ°á»›c khi má»Ÿ dá»± Ã¡n theo dÃµi má»›i â€” quy táº¯c Báº­c 0.</div>
-    <div class="filters">
-      <input id="fdnQ" placeholder="TÃ¬m mÃ£ / tÃªn dá»± Ã¡n / CÄTâ€¦" style="flex:1;min-width:200px" onkeydown="if(event.key==='Enter'){DN_PAGE=0;loadDN()}">
-      <select id="fdnNPP" onchange="DN_PAGE=0;loadDN()"><option value="">â€” NPP chá»‰ Ä‘á»‹nh â€”</option></select>
-      <select id="fdnTinh" onchange="DN_PAGE=0;loadDN()"><option value="">â€” Tá»‰nh â€”</option></select>
-      <select id="fdnHT" onchange="DN_PAGE=0;loadDN()"><option value="">â€” Hiá»‡n tráº¡ng â€”</option></select>
-      <button class="btn pri" onclick="DN_PAGE=0;loadDN()">TÃ¬m</button>
-    </div>
-    <div class="muted" id="dnCount" style="font-size:12px;margin:6px 0"></div>
-    <div id="dnList"></div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-      <button class="btn" onclick="if(DN_PAGE>0){DN_PAGE--;loadDN()}">â† TrÆ°á»›c</button>
-      <span class="muted" id="dnPage" style="font-size:12px"></span>
-      <button class="btn" onclick="DN_PAGE++;loadDN()">Sau â†’</button>
-    </div>
-  </div>
-</section>
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
 
-<!-- ============ DOANH THU ============ -->
-<section id="tab-dt2" hidden>
-  <div class="card">
-    <div class="filters">
-      <select id="frvNam"></select>
-      <select id="frvXem"><option value="all">ðŸ‘‘ ToÃ n cáº£nh (Manager/CEO)</option></select>
-      <select id="frvKenh"><option value="">â€” KÃªnh â€”</option>
-        <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
-        <option value="truc_tiep">Trá»±c tiáº¿p</option><option value="oem">OEM</option></select>
-      <span class="muted" style="align-self:center">Chá»n tÃªn mÃ¬nh Ä‘á»ƒ xem dashboard cÃ¡ nhÃ¢n</span>
-    </div>
-    <div class="grid g4" id="rvKpis"></div>
-  </div>
-  <div class="grid g2">
-    <div class="card"><h2>Theo Ä‘á»‘i tÃ¡c (NPP Â· Agent Â· Broker Â· Trá»±c tiáº¿p)</h2><div id="rvOrg" style="max-height:380px;overflow:auto"></div></div>
-    <div class="card"><h2>Theo thá»‹ trÆ°á»ng / vÃ¹ng</h2><div id="rvQG" style="max-height:380px;overflow:auto"></div></div>
-  </div>
-  <div class="card"><h2>Theo thÃ¡ng Ã— ngÃ nh hÃ ng</h2><div id="rvThang" style="overflow:auto"></div></div>
-  <div class="card">
-    <h2>Ghi nháº­n doanh thu (BO nháº­p hoáº·c import)</h2>
-    <div class="grid g4">
-      <div><label class="muted">ThÃ¡ng *</label><br><input type="month" id="rvT" style="width:100%"></div>
-      <div><label class="muted">Äá»‘i tÃ¡c *</label><br><input id="rvO" list="orgListAll" style="width:100%" placeholder="NPP / Agent / KHâ€¦"></div>
-      <div><label class="muted">NgÃ nh hÃ ng *</label><br><select id="rvN" style="width:100%">
-        <option value="CG">Cá»­a giÃ³</option><option value="EI">Van EI</option>
-        <option value="VCK">Van cÆ¡ khÃ­</option><option value="VAV_CAV">VAV/CAV</option>
-        <option value="TAM_NAN">Táº¥m nan sá»t trá»©ng</option><option value="TMC">Thang mÃ¡ng cÃ¡p</option>
-        <option value="SWAY">Sway Bracing</option><option value="ERV">ERV</option>
-        <option value="KHAC">KhÃ¡c</option></select></div>
-      <div><label class="muted">KÃªnh *</label><br><select id="rvK" style="width:100%">
-        <option value="npp">NPP</option><option value="agent_broker">Agent/Broker</option>
-        <option value="truc_tiep">Trá»±c tiáº¿p</option><option value="oem">OEM</option></select></div>
-      <div><label class="muted">Sá»‘ tiá»n (VND) *</label><br><input type="number" id="rvS" style="width:100%"></div>
-      <div><label class="muted">Sá»‘ bá»™ VAV</label><br><input type="number" id="rvB" style="width:100%" placeholder="chá»‰ khi VAV/CAV"></div>
-      <div><label class="muted">VÃ¹ng (ná»™i Ä‘á»‹a)</label><br><select id="rvV" style="width:100%">
-        <option value="">â€”</option><option>Báº¯c</option><option>Trung</option><option>Nam</option></select></div>
-      <div><label class="muted">NgÆ°á»i nháº­p</label><br><input id="rvAi" list="nsList" style="width:100%"></div>
-    </div>
-    <div style="margin-top:10px"><button class="btn pri" onclick="saveRev()">LÆ°u (upsert theo thÃ¡ng+Ä‘á»‘i tÃ¡c+ngÃ nh+kÃªnh)</button>
-      <span class="muted" id="rvMsg"></span></div>
-    <datalist id="orgListAll"></datalist>
-  </div>
-</section>
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
 
-<!-- ============ Káº¾ HOáº CH ============ -->
-<section id="tab-kh" hidden>
-  <div class="card">
-    <h2>Láº­p káº¿ hoáº¡ch tá»« CSDL thá»‹ trÆ°á»ng mÃ¬nh phá»¥ trÃ¡ch â†’ trÃ¬nh CEO â†’ triá»ƒn khai</h2>
-    <div class="notice">Quy trÃ¬nh: â‘  lá»c dá»± Ã¡n/Ä‘á»‘i tÃ¡c cá»§a mÃ¬nh á»Ÿ tab Dá»± Ã¡n & Äá»‘i tÃ¡c â†’ â‘¡ táº¡o káº¿ hoáº¡ch,
-      gáº¯n tá»«ng dá»± Ã¡n vá»›i hÃ nh Ä‘á»™ng + chá»‰ tiÃªu + háº¡n â†’ â‘¢ báº¥m <b>TrÃ¬nh CEO</b> â†’ â‘£ CEO duyá»‡t trong
-      HÃ ng chá» phÃª duyá»‡t â†’ há»‡ thá»‘ng <b>tá»± Ä‘á»• hÃ nh Ä‘á»™ng vÃ o cá»™t "Viá»‡c tiáº¿p theo"</b> cá»§a tá»«ng dá»± Ã¡n
-      vÃ  gÃ¡n owner â€” káº¿ hoáº¡ch thÃ nh viá»‡c cháº¡y, khÃ´ng náº±m trÃªn giáº¥y.</div>
-    <div style="background:var(--b50);border:1px solid var(--b400);border-radius:8px;padding:12px;margin-bottom:12px">
-      <b>BÆ°á»›c 1 â€” Láº­p káº¿ hoáº¡ch ká»³ theo máº«u</b> <span class="muted">(Sale/BD: ká»³ ngáº¯n nháº¥t lÃ  QuÃ½)</span>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <select id="mauKy"><option value="quy">QuÃ½</option><option value="nua_nam">Ná»­a nÄƒm</option><option value="nam">NÄƒm</option></select>
-        <button class="btn pri" onclick="moMauKH()">ðŸ“ Láº­p ngay trÃªn web</button>
-        <button class="btn" onclick="taiMauKH()">â¬‡ Táº£i máº«u Excel (lÃ m offline)</button>
-        <button class="btn" onclick="document.getElementById('mauFile').click()">â¬† Ná»™p káº¿ hoáº¡ch Ä‘Ã£ Ä‘iá»n</button>
-        <input type="file" id="mauFile" accept=".xlsx,.xls" style="display:none" onchange="nopKHFile(this)">
-      </div>
-      <div class="muted" style="margin-top:6px;font-size:12px">Máº«u Ä‘Ã£ kÃ©o sáºµn tÃ i khoáº£n &amp; dá»± Ã¡n báº¡n phá»¥ trÃ¡ch tá»« CSDL â€”
-      Ä‘Ã¡nh dáº¥u <b>x</b> vÃ o cá»™t CHá»ŒN, Ä‘iá»n hÃ nh Ä‘á»™ng, ná»™p láº¡i lÃ  há»‡ thá»‘ng tá»± táº¡o káº¿ hoáº¡ch.</div>
-    </div>
-    <details style="margin-bottom:12px"><summary class="muted" style="cursor:pointer">Hoáº·c táº¡o nhanh trÃªn webâ€¦</summary>
-    <div class="grid g4" style="margin:8px 0 12px">
-      <input id="khTen" placeholder="TÃªn káº¿ hoáº¡ch * â€” vd: KH thÃ¢m nháº­p HÃ n Quá»‘c Q4">
-      <input id="khTu" type="date"><input id="khDen" type="date">
-      <button class="btn pri" onclick="taoKH()">+ Táº¡o káº¿ hoáº¡ch</button>
-    </div>
-    <div class="grid g4" style="margin-bottom:8px">
-      <select id="khKy"><option value="">â€” Loáº¡i ká»³ â€”</option><option value="tuan">Tuáº§n</option>
-        <option value="thang">ThÃ¡ng</option><option value="quy">QuÃ½</option>
-        <option value="nua_nam">Ná»­a nÄƒm</option><option value="nam">NÄƒm</option></select>
-      <input id="khCTVAV" type="number" min="0" placeholder="Chá»‰ tiÃªu sá»‘ bá»™ VAV">
-      <input id="khCTDT" type="number" min="0" placeholder="Doanh thu má»¥c tiÃªu (VND)">
-      <input id="khCTNPP" type="number" min="0" placeholder="Sá»‘ NPP / OEM má»›i">
-    </div>
-    <textarea id="khMT" placeholder="Má»¥c tiÃªu tá»•ng quÃ¡tâ€¦" style="width:100%;min-height:40px"></textarea>
-    <textarea id="khTT" placeholder="Trá»ng tÃ¢m chiáº¿n lÆ°á»£c cá»§a ká»³ â€” vd: Ä‘áº©y VAV Box AHRI vÃ o phÃ¢n khÃºc bá»‡nh viá»‡n; hoÃ n táº¥t káº¿t ná»‘i 3 TVTK trá»ng Ä‘iá»ƒm" style="width:100%;min-height:36px;margin-top:6px"></textarea>
-    </details>
-    <div id="khList" style="margin-top:14px"></div>
-  </div>
-</section>
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
 
-<dialog id="dlgKH" style="max-width:760px">
-  <div class="dhead"><span id="khTitle">Káº¿ hoáº¡ch</span><button class="btn" onclick="dlgKH.close()">âœ•</button></div>
-  <div class="dbody" id="khBody"></div>
-</dialog>
+        function downloadExcelTemplate() {
+            alert('📥 File Excel Template sẽ được tải từ server.\n\nFile bao gồm:\n• Sheet "Data Entry": Nhập dữ liệu test\n• Sheet "Calculations": Công thức tự động\n• Sheet "Chart": Biểu đồ flow curve\n\n(Trong thực tế, thêm link tải hoặc sinh file động)');
+        }
 
-<dialog id="dlgMau" style="max-width:860px;width:95%">
-  <div class="dhead"><span id="mauTitle">Láº­p káº¿ hoáº¡ch</span><button class="btn" onclick="dlgMau.close()">âœ•</button></div>
-  <div class="dbody" id="mauBody"></div>
-</dialog>
+        function downloadFATForm() {
+            alert('📋 Mẫu biểu FAT sẽ được xuất ra PDF.\n\nBiểu bao gồm:\n• Thông tin chung\n• Bảng sổ liệu trước/sau\n• Phân tích K-Factor\n• Kết luận & ký duyệt\n\n(Trong thực tế, sinh PDF động từ server)');
+        }
 
-<!-- ============ KPI Ká»² ============ -->
-<section id="tab-kpi" hidden>
-  <div class="card">
-    <div class="filters">
-      <select id="kpiKy" onchange="setKy()"><option value="tuan">Tuáº§n</option>
-        <option value="thang" selected>ThÃ¡ng</option><option value="quy">QuÃ½</option>
-        <option value="6thang">6 thÃ¡ng</option><option value="nam">NÄƒm</option></select>
-      <input type="date" id="kpiTu"><input type="date" id="kpiDen">
-      <button class="btn" onclick="renderKPI()">TÃ­nh</button>
-      <button class="btn pri" onclick="lapBaoCao()">ðŸ“‹ Láº­p & lÆ°u bÃ¡o cÃ¡o ká»³</button>
-      <button class="btn" onclick="window.print()">ðŸ–¨ In</button>
-      <span class="muted" style="align-self:center" id="bcMsg">Tá»± Ä‘á»™ng: pg_cron láº­p tuáº§n (T7 18:05) & thÃ¡ng (mÃ¹ng 1) náº¿u Ä‘Æ°á»£c báº­t</span>
-    </div>
-    <div id="kpiBody"></div>
-  </div>
-  <div class="card"><h2>Tá»‘c Ä‘á»™ pháº£n há»“i case theo bá»™ pháº­n (trong ká»³)</h2><div id="kpiCase"></div></div>
-  <div class="card"><h2>Nháº­n xÃ©t tá»± Ä‘á»™ng theo nhÃ¢n sá»±</h2><div id="kpiNX"></div></div>
-</section>
-
-<!-- ============ TIáº¾P XÃšC ============ -->
-<section id="tab-tx" hidden>
-  <div class="card">
-    <h2>Ghi tiáº¿p xÃºc má»›i</h2>
-    <div class="grid g3">
-      <div><label class="muted">Äá»‘i tÃ¡c *</label><br>
-        <input id="txOrg" list="orgList" placeholder="GÃµ tÃªn Ä‘á»ƒ chá»nâ€¦" style="width:100%"></div>
-      <div><label class="muted">NgÃ y</label><br><input type="date" id="txNgay" style="width:100%"></div>
-      <div><label class="muted">Loáº¡i</label><br>
-        <select id="txLoai" style="width:100%"><option value="gap_truc_tiep">Gáº·p trá»±c tiáº¿p</option>
-        <option value="online">Online</option><option value="email">Email</option>
-        <option value="dien_thoai">Äiá»‡n thoáº¡i</option><option value="su_kien">Sá»± kiá»‡n</option>
-        <option value="gui_mau">Gá»­i máº«u</option><option value="khac">KhÃ¡c</option></select></div>
-      <div><label class="muted">NgÆ°á»i thá»±c hiá»‡n *</label><br><input id="txAi" list="nsList" style="width:100%"></div>
-      <div><label class="muted">NgÆ°á»i gáº·p / chá»©c danh</label><br><input id="txGap" style="width:100%"></div>
-      <div><label class="muted">Dá»± Ã¡n liÃªn quan (workspace)</label><br>
-        <input id="txDeal" list="dealList" placeholder="GÃµ tÃªn dá»± Ã¡n (tuá»³ chá»n)â€¦" style="width:100%"></div>
-      <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
-        <input type="checkbox" id="txQD" style="width:auto"><label class="muted">Cáº¥p ra quyáº¿t Ä‘á»‹nh</label></div>
-      <div style="grid-column:1/-1"><label class="muted">Ná»™i dung</label><br>
-        <textarea id="txND" style="width:100%;min-height:50px"></textarea></div>
-      <div><label class="muted">BÆ°á»›c tiáº¿p theo</label><br><input id="txBTT" style="width:100%"></div>
-      <div><label class="muted">Háº¡n bÆ°á»›c tiáº¿p theo</label><br><input type="date" id="txHan" style="width:100%"></div>
-      <div><label class="muted">NÃ¢ng tráº¡ng thÃ¡i phá»§ lÃªn</label><br>
-        <select id="txNang" style="width:100%"><option value="">â€” giá»¯ nguyÃªn â€”</option>
-        <option value="1">1 Â· ÄÃ£ tiáº¿p cáº­n</option><option value="2">2 Â· Quan há»‡ lÃ m viá»‡c</option>
-        <option value="3">3 Â· Spec-in</option><option value="4">4 Â· ÄÃ£ bÃ¡n</option>
-        <option value="5">5 Â· KhÃ¡ch thÆ°á»ng xuyÃªn</option></select></div>
-    </div>
-    <div style="margin-top:12px"><button class="btn pri" onclick="saveTx()">LÆ°u tiáº¿p xÃºc</button>
-      <span class="muted" id="txMsg"></span></div>
-    <datalist id="orgList"></datalist>
-<datalist id="nsList"></datalist>
-  </div>
-  <div class="card"><h2>Tiáº¿p xÃºc gáº§n Ä‘Ã¢y</h2><div id="txList"></div></div>
-</section>
-
-<!-- ============ Há»– TRá»¢ LIÃŠN PHÃ’NG BAN ============ -->
-<section id="tab-ht" hidden>
-  <div class="card">
-    <h2>Äiá»ƒm ngháº½n theo bá»™ pháº­n</h2>
-    <div class="grid g4" id="htBottleneck"></div>
-  </div>
-  <div class="card">
-    <h2>Táº¡o yÃªu cáº§u há»— trá»£ â€” thay cho há»i qua Zalo</h2>
-    <div class="grid g3">
-      <div><label class="muted">Dá»± Ã¡n (tuá»³ chá»n)</label><br>
-        <input id="htDeal" list="dealList" placeholder="GÃµ tÃªn dá»± Ã¡nâ€¦" style="width:100%"></div>
-      <div><label class="muted">Bá»™ pháº­n nháº­n *</label><br>
-        <select id="htBP" style="width:100%"><option value="rd">R&D</option>
-        <option value="qlsx">Sáº£n xuáº¥t</option><option value="bo">BO</option>
-        <option value="tckt">TCKT</option><option value="kcs">KCS</option>
-        <option value="khac">KhÃ¡c</option></select></div>
-      <div><label class="muted">Loáº¡i</label><br>
-        <select id="htLoai" style="width:100%"><option value="bao_gia">BÃ¡o giÃ¡</option>
-        <option value="ban_ve">Báº£n váº½</option><option value="gia_san_pham_moi">GiÃ¡ SP má»›i/phi tiÃªu chuáº©n</option>
-        <option value="tien_do_sx">Tiáº¿n Ä‘á»™ SX</option><option value="fat">FAT/thá»­ nghiá»‡m</option>
-        <option value="cong_no">CÃ´ng ná»£</option><option value="claim">Claim</option>
-        <option value="khac">KhÃ¡c</option></select></div>
-      <div><label class="muted">NgÆ°á»i yÃªu cáº§u *</label><br><input id="htAi" list="nsList" style="width:100%"></div>
-      <div><label class="muted">Æ¯u tiÃªn</label><br>
-        <select id="htUT" style="width:100%"><option value="cao">Cao</option>
-        <option value="trung_binh" selected>Trung bÃ¬nh</option><option value="thap">Tháº¥p</option></select></div>
-      <div><label class="muted">Háº¡n pháº£n há»“i</label><br><input type="date" id="htHan" style="width:100%"></div>
-      <div style="grid-column:1/-1"><label class="muted">Ná»™i dung *</label><br>
-        <textarea id="htND" style="width:100%;min-height:50px"
-        placeholder="VD: Van MD thÃ¢n L120 kháº©u Ä‘á»™ cÃ¡nh 100mm chÆ°a cÃ³ Ä‘Æ¡n giÃ¡ â€” Galaxy Ä‘ang chá» Ä‘á»ƒ gá»­i bÃ¡o giÃ¡"></textarea></div>
-    </div>
-    <div style="margin-top:10px"><button class="btn pri" onclick="saveHT()">Gá»­i yÃªu cáº§u</button>
-      <span class="muted" id="htMsg"></span></div>
-    <datalist id="dealList"></datalist>
-  </div>
-  <div class="card"><h2>Danh sÃ¡ch yÃªu cáº§u</h2>
-    <div class="filters">
-      <select id="fhtBP" onchange="renderHT()"><option value="">â€” Bá»™ pháº­n â€”</option>
-        <option value="rd">R&D</option><option value="qlsx">SX</option><option value="bo">BO</option>
-        <option value="tckt">TCKT</option><option value="kcs">KCS</option></select>
-      <select id="fhtTT" onchange="renderHT()"><option value="">â€” Tráº¡ng thÃ¡i â€”</option>
-        <option value="mo">Má»Ÿ</option><option value="dang_xu_ly">Äang xá»­ lÃ½</option>
-        <option value="da_xong">ÄÃ£ xong</option><option value="tu_choi">Tá»« chá»‘i</option></select>
-    </div>
-    <div id="htList"></div></div>
-</section>
-
-<!-- ============ Sá»° KIá»†N ============ -->
-<section id="tab-sk" hidden>
-  <div class="card"><div id="skList"></div></div>
-</section>
-
-<!-- ============ NHÃ‚N Sá»° ============ -->
-<section id="tab-ns" hidden>
-  <div class="card">
-    <h2>Äá»™i ngÅ© & mÃ´ táº£ cÃ´ng viá»‡c trong module</h2>
-    <div class="notice">MÃ´ táº£ viáº¿t sáºµn tá»« tÃ i liá»‡u Ä‘Ã£ Ä‘á»‘i soÃ¡t (quy cháº¿, KPI SMART, há»£p Ä‘á»“ng, bÃ¡o cÃ¡o).
-      TrÆ°á»ng <b>Email Â· Chá»‰ tiÃªu ká»³ Â· Ghi chÃº admin</b> Ä‘á»ƒ trá»‘ng cÃ³ chá»§ Ä‘Ã­ch â€” admin bá»• sung dáº§n.</div>
-    <div id="nsBody"></div>
-  </div>
-</section>
-
-<!-- ============ NHáº¬P Dá»® LIá»†U ============ -->
-<section id="tab-im" hidden>
-  <div class="card">
-    <h2>Nháº­p tá»« file Excel káº¿ hoáº¡ch quá»‘c táº¿</h2>
-    <div class="notice">Chá»n file <b>Ke_hoach_Phat_trien_Thi_truong_Quoc_te_H2-2026_H1-2027.xlsx</b>
-      â€” há»‡ thá»‘ng Ä‘á»c 3 sheet (Äá»‘i tÃ¡c Â· Pipeline Â· Sá»± kiá»‡n), tá»± chuáº©n hoÃ¡ tÃªn quá»‘c gia vá» mÃ£ ISO,
-      tÃ¡ch tráº¡ng thÃ¡i quan há»‡, gá»™p 2 lá»›p tÃªn HÃ n/Nháº­t, vÃ  náº¡p theo lÃ´.</div>
-    <div class="notice warn">Dá»¯ liá»‡u nguá»“n lÃ  <b>tÃ i liá»‡u tham kháº£o (Táº§ng 3)</b> â€” sau khi náº¡p,
-      má»i báº£n ghi mang <code>nguon = 'kh_qt_v22'</code>. Danh má»¥c chÃ­nh thá»©c do CEO duyá»‡t báº±ng cÃ¡ch
-      gÃ¡n <b>ngÆ°á»i phá»¥ trÃ¡ch</b> cho tá»«ng tÃ i khoáº£n.</div>
-    <input type="file" id="impFile" accept=".xlsx">
-    <button class="btn pri" onclick="runImport()" style="margin-left:8px">Náº¡p vÃ o CRM</button>
-    <div style="margin-top:12px" class="log" id="impLog">ChÆ°a cháº¡y.</div>
-  </div>
-
-  <div class="card">
-    <h2>â¬† Upload file cáº­p nháº­t DA &amp; BÃ¡o giÃ¡</h2>
-    <div class="notice">Nháº­n 2 loáº¡i file, nháº­n diá»‡n tá»± Ä‘á»™ng theo tÃªn sheet:
-      <b>Cáº¬P NHáº¬T DA THEO NPP.xlsx</b> (sheet Dá»° ÃN â†’ danh má»¥c dá»± Ã¡n ná»n Â· THÃ”NG TIN BCI â†’ thá»‹ trÆ°á»ng BCI Â·
-      Báº£ng tá»•ng há»£p 3 â†’ nháº­t kÃ½ cáº­p nháº­t) vÃ  <b>Dá»® LIá»†U BÃO GIÃ KHÃCH HÃ€NG XK.xlsx</b> (sheet LIST BG â†’ bÃ¡o giÃ¡ theo ngÃ nh hÃ ng).
-      Náº¡p láº·p láº¡i an toÃ n â€” dÃ²ng Ä‘Ã£ cÃ³ sáº½ Ä‘Æ°á»£c cáº­p nháº­t, khÃ´ng nhÃ¢n Ä‘Ã´i.</div>
-    <input type="file" id="daFile" accept=".xlsx">
-    <button class="btn pri" onclick="runImportDA()" style="margin-left:8px">Náº¡p vÃ o CRM</button>
-    <div style="margin-top:12px" class="log" id="daLog">ChÆ°a cháº¡y.</div>
-  </div>
-</section>
-
-</main>
-
-<!-- ============ DIALOG Cáº¤U HÃŒNH ============ -->
-<dialog id="dlgCfg">
-  <div class="dhead">ÄÄƒng nháº­p há»‡ thá»‘ng<button class="btn" onclick="dlgCfg.close()">âœ•</button></div>
-  <div class="dbody">
-    <div class="frow"><label>Email</label><input id="cfgEmail" placeholder="email cÃ´ng ty â€” vd: tamntt@nsca.vn"></div>
-    <div class="frow"><label>Máº­t kháº©u</label><input id="cfgPass" type="password" onkeydown="if(event.key==='Enter')connect()"></div>
-    <button class="btn pri" onclick="connect()">ÄÄƒng nháº­p</button>
-    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:12px">Cáº¥u hÃ¬nh káº¿t ná»‘i (ká»¹ thuáº­t â€” khÃ´ng cáº§n Ä‘á»¥ng tá»›i)</summary>
-      <div class="frow" style="margin-top:6px"><label>URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
-      <div class="frow"><label>Anon key</label><input id="cfgKey" placeholder="eyJhbGciOiâ€¦"></div>
-    </details>
-    <span class="muted" id="cfgMsg"></span>
-  </div>
-</dialog>
-
-<!-- ============ DIALOG Äá»I TÃC ============ -->
-<dialog id="dlgOrg">
-  <div class="dhead"><span id="orgTitle">Äá»‘i tÃ¡c</span><button class="btn" onclick="dlgOrg.close()">âœ•</button></div>
-  <div class="dbody" id="orgBody"></div>
-</dialog>
-
-<!-- ============ DIALOG Dá»° ÃN ============ -->
-<dialog id="dlgDeal">
-  <div class="dhead"><span id="dealTitle">Dá»± Ã¡n</span><button class="btn" onclick="dlgDeal.close()">âœ•</button></div>
-  <div class="dbody" id="dealBody"></div>
-</dialog>
-
-<!-- ============ DIALOG Dá»° ÃN Ná»€N ============ -->
-<dialog id="dlgDN">
-  <div class="dhead"><span id="dnTitle">Dá»± Ã¡n ná»n</span><button class="btn" onclick="dlgDN.close()">âœ•</button></div>
-  <div class="dbody" id="dnBody"></div>
-</dialog>
-
-<!-- ============ DIALOG LOGIN CÃ NHÃ‚N ============ -->
-<dialog id="dlgLogin">
-  <div class="dhead">ðŸ‘¤ ÄÄƒng nháº­p cÃ¡ nhÃ¢n</div>
-  <div class="dbody">
-    <div class="frow"><label>User name</label><input id="lgU" placeholder="user name cá»§a báº¡n"></div>
-    <div class="frow"><label>Password</label><input id="lgP" type="password" placeholder="máº­t kháº©u cá»§a báº¡n"></div>
-    <button class="btn pri" onclick="doLogin()">ÄÄƒng nháº­p</button>
-    <span class="muted" id="lgMsg"></span>
-    <div class="notice" style="margin-top:12px">TÃ i khoáº£n do admin cáº¥p. ÄÄƒng nháº­p láº§n Ä‘áº§u,
-      há»‡ thá»‘ng sáº½ yÃªu cáº§u Ä‘á»•i máº­t kháº©u.</div>
-  </div>
-</dialog>
-
-<!-- ============ DIALOG Äá»”I Máº¬T KHáº¨U ============ -->
-<dialog id="dlgDoiMK">
-  <div class="dhead">ðŸ”‘ Äá»•i máº­t kháº©u</div>
-  <div class="dbody">
-    <div class="frow"><label>Máº­t kháº©u cÅ©</label><input id="mkCu" type="password"></div>
-    <div class="frow"><label>Máº­t kháº©u má»›i</label><input id="mkMoi" type="password" placeholder="tá»‘i thiá»ƒu 8 kÃ½ tá»±"></div>
-    <button class="btn pri" onclick="doDoiMK()">Äá»•i máº­t kháº©u</button>
-    <span class="muted" id="mkMsg"></span>
-  </div>
-</dialog>
-
-<!-- ============ DIALOG Há»’ SÆ  NHÃ‚N Sá»° ============ -->
-<dialog id="dlgNS" style="max-width:700px">
-  <div class="dhead"><span id="nsTitle">Há»“ sÆ¡</span><button class="btn" onclick="dlgNS.close()">âœ•</button></div>
-  <div class="dbody" id="nsDlgBody"></div>
-</dialog>
-
-<!-- ============ DIALOG DEAL WORKSPACE (v22 Â· Project-Centric) ============ -->
-<dialog id="dlgWs" style="max-width:760px">
-  <div class="dhead"><span id="wsTitle">ðŸ—‚ Workspace</span><button class="btn" onclick="dlgWs.close()">âœ•</button></div>
-  <div class="dbody" id="wsBody"></div>
-</dialog>
-
-<!-- ============ DIALOG LOSS REASON (v22) ============ -->
-<dialog id="dlgLoss" style="max-width:440px">
-  <div class="dhead">ðŸ“‰ LÃ½ do Thua / Há»§y</div>
-  <div class="dbody" id="lossBody"></div>
-</dialog>
-
-<!-- ============ THANH TÃC NGHIá»†P MOBILE (v22 Â· hiá»‡n trÆ°á»ng) ============ -->
-<div id="mbBar">
-  <button onclick="mbViecHomNay()">âœ…<span>Viá»‡c hÃ´m nay</span></button>
-  <button onclick="mbGo('tx','txOrg')">âš¡<span>Tiáº¿p xÃºc nhanh</span></button>
-  <button onclick="mbGo('ht','htND')">ðŸ†˜<span>Há»— trá»£</span></button>
-</div>
-
-<!-- ============ DIALOG THáº¢O LUáº¬N & PHÃŠ DUYá»†T ============ -->
-<dialog id="dlgThread" style="max-width:720px">
-  <div class="dhead"><span id="thrTitle">Tháº£o luáº­n & phÃª duyá»‡t</span>
-    <button class="btn" onclick="dlgThread.close()">âœ•</button></div>
-  <div class="dbody" id="thrBody"></div>
-</dialog>
-
-<!-- ==========================================================================
-     THá»¨ Tá»° Náº P Báº®T BUá»˜C â€” khÃ´ng Ä‘á»•i, khÃ´ng thÃªm defer/async.
-     Táº¥t cáº£ file lÃ  script cá»• Ä‘iá»ƒn: hÃ m & biáº¿n váº«n á»Ÿ pháº¡m vi toÃ n cá»¥c, nÃªn 69
-     handler onclick trong HTML phÃ­a trÃªn cháº¡y y nguyÃªn nhÆ° báº£n 1 file.
-     ========================================================================== -->
-<script src="js/00-i18n.js"></script>
-<script src="js/01-core.js"></script>
-<script src="js/02-du-an-nen.js"></script>
-<script src="js/03-auth.js"></script>
-<script src="js/04-ke-hoach.js"></script>
-<script src="js/05-nhan-su.js"></script>
-<script src="js/06-doanh-thu-kpi.js"></script>
-<script src="js/07-ho-tro-duyet.js"></script>
-<script src="js/08-tong-quan.js"></script>
-<script src="js/09-doi-tac.js"></script>
-<script src="js/10-du-an-tiep-xuc.js"></script>
-<script src="js/11-import.js"></script>
-<script src="js/12-hybrid.js"></script>
-<script src="js/13-du-an-hop-nhat.js"></script>
-<script src="js/14-npp-taikhoan.js"></script>
-<script src="js/15-auth-hop-nhat.js"></script>
-<script src="js/16-mobile.js"></script>
-<script src="js/17-nganh-hang-kh.js"></script>
-<script src="js/18-version.js?v=35.1"></script>
+        // Optional: Log tab switch for analytics
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('SOP VAV Calibration & FAT System loaded successfully');
+        });
+    </script>
 </body>
 </html>
+
