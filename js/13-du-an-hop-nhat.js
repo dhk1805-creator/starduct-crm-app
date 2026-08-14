@@ -259,6 +259,24 @@ async function gopNen(i){
   await loadTrungLap();
 }
 
+/* ============ DASHBOARD: thẻ KPI "Dự án đã phân công" + làm rõ nhãn ============ */
+const _renderTQ_v23=typeof renderTQ==='function'?renderTQ:null;
+if(_renderTQ_v23)renderTQ=function(){
+  _renderTQ_v23();
+  try{
+    // làm rõ: thẻ cũ đo ĐỐI TÁC, không phải dự án
+    const h3s=kpis.querySelectorAll('.kpi h3');
+    for(const h of h3s)if(h.textContent==='Có người phụ trách')h.textContent=t('Đối tác có người phụ trách');
+    // thẻ mới: tiến độ phân công DỰ ÁN (pipeline)
+    const nGiao=DEALS.filter(daGiao).length;
+    const nNPPg=DEALS.filter(coNPP).length;
+    kpis.insertAdjacentHTML('beforeend',
+      `<div class="kpi"><h3>${t('Dự án đã phân công')}</h3>
+       <div class="v">${pct(nGiao,DEALS.length)}</div>
+       <div class="m">${nGiao}/${DEALS.length} — ${nNPPg} ${t('qua NPP')} · ${nGiao-nNPPg} ${t('nội bộ')}</div></div>`);
+  }catch(e){}
+};
+
 /* ============ WORKSPACE: tab Tổng quan hiện luôn CSDL NỀN đã nối ============ */
 const _renderWs_v22=renderWs;
 renderWs=function(d,quots,tps,hts,files){
