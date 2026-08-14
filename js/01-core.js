@@ -100,7 +100,7 @@ async function autoMe(){
 }
 async function loadAll(){
   const [o,d,e,t,h,q,rv]=await Promise.all([
-    sb.from('crm_org').select('*').order('ten').limit(3000),
+    sb.from('crm_org').select('*').order('ten').limit(5000),
     sb.from('crm_deals').select('*').order('uu_tien').limit(2000),
     sb.from('crm_events').select('*'),
     sb.from('crm_touchpoints').select('*').order('ngay',{ascending:false}).limit(300),
@@ -109,6 +109,9 @@ async function loadAll(){
     sb.from('v_crm_doanh_thu').select('*').limit(5000)
   ]);
   ALL_ORGS=o.data||[];ALL_DEALS=d.data||[];ALL_EVENTS=e.data||[];ALL_TPS=t.data||[];ALL_HTS=h.data||[];
+  // v35.6: dam bao 9 NPP da ky HD luon co trong bo nho du danh muc vuot limit (bi cat theo ABC)
+  try{const kyhd=await sb.from('crm_org').select('*').eq('pheu_npp','da_ky_hd');
+    for(const x of (kyhd.data||[])) if(!ALL_ORGS.some(y=>y.id===x.id)) ALL_ORGS.push(x);}catch(e){}
   window.APRQ=q.data||[];ALL_REVS=rv.data||[];
   const ns=await sb.from('crm_user_roles').select('*').order('ho_ten');
   window.NHANSU=ns.data||[];

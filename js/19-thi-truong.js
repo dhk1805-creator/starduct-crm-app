@@ -9,7 +9,7 @@ let MK_INIT=false,MK_ROWS=[];
 async function initMK(){
   MK_INIT=true;
   const box=document.getElementById('mkList');
-  if(!window.sb){box.innerHTML='<div class="muted">'+t('Kết nối & đăng nhập để xem dữ liệu thị trường.')+'</div>';MK_INIT=false;return}
+  if(typeof sb==='undefined'||!sb){box.innerHTML='<div class="muted">'+t('Kết nối & đăng nhập để xem dữ liệu thị trường.')+'</div>';MK_INIT=false;return}
   box.innerHTML='<div class="muted">'+t('Đang tải…')+'</div>';
   const r=await sb.from('crm_thi_truong').select('ma,ten,dac_diem,npp_ky_hd,ma_npp,ghi_chu_tham_khao,cap_nhat').order('ten');
   if(r.error){box.innerHTML='<div class="muted">'+esc(r.error.message)+' — '+t('cần chạy migration v37')+'</div>';MK_INIT=false;return}
