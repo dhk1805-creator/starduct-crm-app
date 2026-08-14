@@ -73,7 +73,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 <body>
 
 <header>
-  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v18 · 14/08</span></h1>
+  <h1>CRM — NSCA / Starduct <span id="verTag" style="font-size:10px;font-weight:400;color:var(--text-3);vertical-align:super">v19 · 14/08</span></h1>
   <select id="modSel" onchange="setMod(this.value)"
     style="font-weight:700;font-size:13px;padding:6px 10px;border:1.5px solid var(--b400);border-radius:7px;color:var(--b400)">
     <option value="nd">🇻🇳 THỊ TRƯỜNG NỘI ĐỊA</option>
@@ -114,6 +114,7 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
     <div class="card"><h2>Độ phủ theo trạng thái (0→5)</h2><div id="phuChart"></div></div>
     <div class="card"><h2>Theo thị trường</h2><div id="qgChart" style="max-height:340px;overflow:auto"></div></div>
   </div>
+  <div class="card"><h2>🗺 Lớp thị trường nền — dữ liệu tra cứu</h2><div id="nenChart" class="muted">Đang tải…</div></div>
   <div class="card"><h2>Kết quả theo nhóm quan hệ — chăm sóc ≠ phát triển ≠ tiềm năng</h2><div id="qhChart"></div></div>
   <div class="card"><h2>Bước tiếp theo quá hạn / sắp đến hạn</h2><div id="dueList"></div></div>
   <div class="card"><h2>⏳ Hàng chờ phê duyệt</h2><div id="aprQueue"></div></div>
@@ -512,9 +513,18 @@ padding:12px;max-height:260px;overflow:auto;white-space:pre-wrap}
 
 <script>
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v18 · 14/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v19 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
+// ---- bổ sung 14/08 v19: lớp nền trên Tổng quan ----
+['🗺 Lớp thị trường nền — dữ liệu tra cứu','🗺 Base market layer — reference data'],
+['Đang tải…','Loading…'],
+[' dự án trong danh mục nền',' projects in the base catalog'],
+['tra cứu chi tiết ở tab','browse details in the'],
+['Số dự án','Projects'],['Số BG','Quotes'],
+['Báo giá XK 2026: ','Export quotations 2026: '],[' báo giá',' quotations'],
+['tổng giá trị ','total value '],['đối tác quốc tế: ','international partners: '],
+['Quốc gia','Country'],
 // ---- bổ sung 14/08 v18: dự án nền + upload DA & báo giá ----
 ['Dự án nền','Base projects'],
 ['Lớp dữ liệu','Data layer'],['thị trường nền','base market'],
@@ -2297,7 +2307,39 @@ async function loadAprQueue(){
 }
 
 /* ================= TỔNG QUAN ================= */
+async function renderNen(){
+  const el=document.getElementById('nenChart');if(!el||!sb)return;
+  try{
+    if(MOD==='nd'){
+      const [npp,bci,cn]=await Promise.all([
+        sb.from('crm_v_nen_theo_npp').select('*'),
+        sb.from('crm_bci').select('id',{count:'exact',head:true}),
+        sb.from('crm_du_an_cap_nhat').select('id',{count:'exact',head:true})]);
+      const rows=(npp.data||[]).sort((a,b)=>b.n-a.n);
+      const tong=rows.reduce((s,r)=>s+r.n,0);
+      el.classList.remove('muted');
+      el.innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:8px">${t('Tổng ')}<b>${tong.toLocaleString('vi')}</b>${t(' dự án trong danh mục nền')} · BCI: <b>${bci.count||0}</b> · ${t('nhật ký cập nhật')}: <b>${cn.count||0}</b> — ${t('tra cứu chi tiết ở tab')} <b>${t('Dự án nền')}</b></div>`+
+        '<table><tr><th>'+t('NPP chỉ định')+'</th><th class="num">'+t('Số dự án')+'</th><th style="width:45%"></th></tr>'+
+        rows.slice(0,8).map(r=>`<tr><td>${esc(r.npp)}</td><td class="num"><b>${r.n.toLocaleString('vi')}</b></td>
+          <td><div class="bar"><i style="width:${Math.round(r.n/rows[0].n*100)}%"></i></div></td></tr>`).join('')+'</table>';
+    }else{
+      const [bg,orgQT]=await Promise.all([
+        sb.from('crm_v_bg_theo_quoc_gia').select('*'),
+        sb.from('crm_org').select('id',{count:'exact',head:true}).eq('khu_vuc','quoc_te').eq('loai_ban_ghi','muc_tieu')]);
+      const rows=(bg.data||[]).sort((a,b)=>(b.tong||0)-(a.tong||0));
+      const tongN=rows.reduce((s,r)=>s+r.n,0),tongV=rows.reduce((s,r)=>s+(+r.tong||0),0);
+      el.classList.remove('muted');
+      el.innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:8px">${t('Báo giá XK 2026: ')}<b>${tongN}</b>${t(' báo giá')} · ${t('tổng giá trị ')}<b>${fmtB(tongV)}</b> · ${t('đối tác quốc tế: ')}<b>${orgQT.count||0}</b></div>`+
+        '<table><tr><th>'+t('Quốc gia')+'</th><th class="num">'+t('Số BG')+'</th><th class="num">'+t('Giá trị')+'</th><th class="num">VAV/CAV</th><th class="num">Van EI</th></tr>'+
+        rows.map(r=>`<tr><td><b>${esc(r.quoc_gia)}</b></td><td class="num">${r.n}</td>
+          <td class="num">${fmtB(+r.tong||0)}</td><td class="num">${fmtB(+r.vav_cav||0)}</td><td class="num">${fmtB(+r.van_gio_ei||0)}</td></tr>`).join('')+'</table>';
+    }
+    applyLang();
+  }catch(e){el.textContent='⚠ '+e.message}
+}
+
 function renderTQ(){
+  renderNen();
   const mt=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu');
   const phu1=mt.filter(o=>o.trang_thai_phu>=1).length;
   const phu2=mt.filter(o=>o.trang_thai_phu>=2).length;
