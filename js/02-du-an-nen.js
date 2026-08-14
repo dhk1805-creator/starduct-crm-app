@@ -5,12 +5,14 @@
    ========================================================================== */
 /* ================= DỰ ÁN NỀN (danh mục thị trường) ================= */
 let DN_INIT=false,DN_PAGE=0;const DN_SIZE=50;
+const nenKV=q=>(MOD==='qt')?q.eq('khu_vuc','quoc_te'):q.or('khu_vuc.is.null,khu_vuc.neq.quoc_te'); // v35.4: QT riêng — ND riêng cho kho nền
+modSel.addEventListener('change',()=>{DN_INIT=false}); // đổi module → nạp lại tab nền với bộ lọc đúng
 async function initDN(){
   if(!sb)return;DN_INIT=true;
   const [npp,tinh,ht]=await Promise.all([
-    sb.from('crm_du_an_nen').select('npp_chi_dinh').not('npp_chi_dinh','is',null),
-    sb.from('crm_du_an_nen').select('tinh').not('tinh','is',null),
-    sb.from('crm_du_an_nen').select('hien_trang').not('hien_trang','is',null)]);
+    nenKV(sb.from('crm_du_an_nen').select('npp_chi_dinh').not('npp_chi_dinh','is',null)),
+    nenKV(sb.from('crm_du_an_nen').select('tinh').not('tinh','is',null)),
+    nenKV(sb.from('crm_du_an_nen').select('hien_trang').not('hien_trang','is',null))]);
   const uniq=(r,k)=>[...new Set((r.data||[]).map(x=>(x[k]||'').trim()).filter(Boolean))].sort();
   fdnNPP.innerHTML='<option value="">— NPP chỉ định —</option>'+uniq(npp,'npp_chi_dinh').map(x=>`<option>${esc(x)}</option>`).join('');
   fdnTinh.innerHTML='<option value="">— Tỉnh —</option>'+uniq(tinh,'tinh').map(x=>`<option>${esc(x)}</option>`).join('');
@@ -19,7 +21,7 @@ async function initDN(){
 }
 async function loadDN(){
   if(!sb)return;
-  let q=sb.from('crm_du_an_nen').select('*',{count:'exact'});
+  let q=nenKV(sb.from('crm_du_an_nen').select('*',{count:'exact'}));
   const s=fdnQ.value.trim();
   if(s)q=q.or(`ma_du_an.ilike.%${s}%,ten_du_an.ilike.%${s}%,cdt.ilike.%${s}%`);
   if(fdnNPP.value)q=q.eq('npp_chi_dinh',fdnNPP.value);

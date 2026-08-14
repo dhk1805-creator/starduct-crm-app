@@ -101,7 +101,7 @@ renderDA=function(){
 async function loadNenHopNhat(){
   if(!sb)return;
   const daNoi=new Set(DEALS.map(d=>d.ma_du_an_nen).filter(Boolean));
-  let q=sb.from('crm_du_an_nen').select('*',{count:'exact'});
+  let q=nenKV(sb.from('crm_du_an_nen').select('*',{count:'exact'})); // v35.4: QT riêng — ND riêng
   if(DA_MODE==='chidinh')q=q.not('npp_chi_dinh','is',null).neq('npp_chi_dinh','');
   else q=q.is('npp_chi_dinh',null);
   const s=fdaQ.value.trim();
