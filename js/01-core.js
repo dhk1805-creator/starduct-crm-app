@@ -33,8 +33,13 @@ const PHEU_NPP={chua_tiep_can:['Chưa tiếp cận','p0'],dang_ket_noi:['Đang k
 // v35.5: bo loc/gan NPP o trang Quoc te CHI hien NPP da ky HD (pheu 'da_ky_hd').
 // Tab Doi tac van giu ca pheu tiem nang. Noi dia giu nguyen (NPP trong nuoc deu da ky).
 const NPP_KYHD=o=>o.phan_loai==='npp'&&(MOD==='nd'||o.pheu_npp==='da_ky_hd');
-// v35.8: cua ai nguoi nay thay — staff chi xem tiep xuc/yeu cau cua minh, lanh dao thay tat ca
-const laStaffXem=()=>!!ME&&(ME.vai_tro==='staff'||ME.vai_tro==='npp_staff');
+// v35.9: MO HINH 3 TANG QUYEN (theo co trong crm_user_roles — migration v39):
+//  T1 quyen_phe_duyet: phe duyet de xuat + y kien (Khanh, D.N.Ngoc, T.Tam, T.Hong)
+//  T2 quyen_tiep_nhan: Chap nhan/Tu choi yeu cau + bo sung y kien (H.Nam, T.Duan, V.Ngoc)
+//  T3 con lai (Santiago, Hai, Duc, NPP...): bao cao, nhap KQ, gui de xuat/request, nhan & tra loi phan hoi
+const laNguoiDuyet=()=>!!ME&&(ME.vai_tro==='ceo'||ME.quyen_admin==='super_admin'||ME.quyen_phe_duyet===true);
+const laNguoiTiepNhan=()=>!!ME&&(ME.quyen_tiep_nhan===true||ME.vai_tro==='ceo'||ME.quyen_admin==='super_admin');
+const laStaffXem=()=>!!ME&&!laNguoiDuyet()&&!laNguoiTiepNhan(); // nguoi bao cao: cua ai nay thay
 const nhanPhu=o=>(o.phan_loai==='npp'&&o.pheu_npp&&PHEU_NPP[o.pheu_npp])
   ?`<span class="pill ${PHEU_NPP[o.pheu_npp][1]}">🤝 ${PHEU_NPP[o.pheu_npp][0]}</span>`
   :`<span class="pill p${o.trang_thai_phu}">${PHU[o.trang_thai_phu]}</span>`;

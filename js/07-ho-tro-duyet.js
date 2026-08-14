@@ -136,8 +136,9 @@ async function saveApr(){
 function coQuyenDuyet(cap){
   if(!ME)return false;
   if(ME.vai_tro==='ceo'||ME.quyen_admin==='super_admin')return true;
-  if(cap==='manager')return ME.vai_tro==='manager'||ME.quyen_admin==='admin';
-  if(cap==='cfo')return ME.bo_phan==='tckt';
+  if(ME.quyen_phe_duyet!==true)return false; // v35.9: chi nguoi co co quyen_phe_duyet (migration v39)
+  if(cap==='manager')return true;
+  if(cap==='cfo')return ME.bo_phan==='tckt'||ME.quyen_phe_duyet===true;
   return false;
 }
 async function decideApr(id,tt){

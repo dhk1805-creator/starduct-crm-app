@@ -26,6 +26,9 @@ const MB_EN={
 'Chọn trong danh sách để gắn đúng dự án':'Pick from the list so it attaches to the right project',
 'Khách hàng-Đối tác':'Customers-Partners',
 'Gửi yêu cầu':'Send request','Tác nghiệp của tôi':'My actions',
+'Chấp nhận':'Accept','Đã xong':'Done','Trả lời':'Reply','Phản hồi & trao đổi':'Feedback & discussion',
+'Gửi trả lời':'Send reply','Chưa có phản hồi nào.':'No feedback yet.','Nội dung… *':'Message… *',
+'Ý kiến / phản hồi (bác thì bắt buộc)':'Comment / feedback (required if rejecting)',
 'Bản đầy đủ':'Full version','Đăng nhập':'Sign in','Đăng xuất':'Sign out',
 'Đăng nhập để thấy công việc của bạn.':'Sign in to see your work.',
 'dự án quá hạn / đến hạn':'projects overdue / due','ghi nhanh kết quả tiếp xúc':'quick-log your touchpoints',
@@ -97,7 +100,7 @@ function mbOrgsCuaToi(){
   }
   return ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu');
 }
-const mbQL=()=>typeof laQuanLy==='function'&&laQuanLy()&&ME&&ME.vai_tro!=='npp_lead';
+const mbQL=()=>!!ME&&typeof laNguoiDuyet==='function'&&(laNguoiDuyet()||laNguoiTiepNhan()); // v35.9: chi tang 1+2 co giao dien lanh dao
 
 /* ===== dựng shell ===== */
 let MB_CHO=true, MB_LOGIN_NB=false; // splash chờ tự-kết-nối · chế độ đăng nhập nội bộ
@@ -385,7 +388,7 @@ function mbVeHT(el){
     ${cuaToi.length?cuaToi.map(h=>{const d=DEALS.find(z=>z.id===h.deal_id);
       const late=(h.trang_thai==='mo'||h.trang_thai==='dang_xu_ly')&&h.han&&h.han<today;
       const tt=h.trang_thai==='da_xong'?'✅':h.trang_thai==='tu_choi'?'❌':late?'⚠️':'⏳';
-      return `<div class="mb-item"><div><b>${tt} ${esc((h.noi_dung||'').slice(0,60))}</b>
+      return `<div class="mb-item"><button class="mb-mini" style="float:right" onclick="mbMoThr('support','${h.id}','ht')">💬 ${T('Trả lời')}</button><div><b>${tt} ${esc((h.noi_dung||'').slice(0,60))}</b>
       <div class="mb-sub">${esc(d?.ten||'')} · ${T('hạn')} ${h.han||'—'} · ${h.nguoi_xu_ly?esc(h.nguoi_xu_ly):T('chưa ai nhận')}</div></div></div>`}).join('')
     :'<div class="mb-sub">'+T('Chưa gửi yêu cầu nào.')+'</div>'}
   </div>`;
@@ -479,13 +482,23 @@ function mbQLYeuCau(el){
       <b>${v.n}</b><span>${(typeof BP!=='undefined'&&BP[k])||k}${v.qh?' · ⚠'+v.qh:''}</span></div>`).join('')||''}
   </div>
   <div class="mb-card"><h3>🆘 ${T('Yêu cầu đang mở')} (${mo.length})</h3>
-  ${mo.length?mo.slice(0,25).map(h=>{const d=DEALS.find(z=>z.id===h.deal_id);
+  ${(window.__MB_HTQ=mo)&&''}
+  ${mo.length?mo.slice(0,25).map((h,i)=>{const d=DEALS.find(z=>z.id===h.deal_id);
     const late=h.han&&h.han<today;
-    return `<div class="mb-item"><div>
+    const xuly=laNguoiTiepNhan();
+    return `<div class="mb-item" style="flex-direction:column;align-items:stretch"><div>
       <b>${late?'⚠️ ':''}${esc((h.noi_dung||'').slice(0,80))}</b>
       <div class="mb-sub">${esc(h.nguoi_yeu_cau||'')} → ${(typeof BP!=='undefined'&&BP[h.bo_phan_nhan])||h.bo_phan_nhan}
-      ${d?' · '+esc(d.ten):''} · ${T('hạn')} ${h.han||'—'}</div>
-    </div></div>`}).join('')
+      ${d?' · '+esc(d.ten):''} · ${T('hạn')} ${h.han||'—'}${h.nguoi_xu_ly?' · 👤 '+esc(h.nguoi_xu_ly):''}</div>
+    </div>
+    ${xuly?`<input id="mbHtYk_${i}" placeholder="${T('Ý kiến / phản hồi (bác thì bắt buộc)')}" style="margin-top:8px">
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button class="mb-mini" style="flex:1;color:#0f4c81;border-color:#0f4c81" onclick="mbXuLyHT(${i},'dang_xu_ly')">✔ ${T('Chấp nhận')}</button>
+      <button class="mb-mini" style="flex:1;color:#16a34a;border-color:#16a34a" onclick="mbXuLyHT(${i},'da_xong')">✅ ${T('Đã xong')}</button>
+      <button class="mb-mini" style="flex:1;color:#dc2626;border-color:#dc2626" onclick="mbXuLyHT(${i},'tu_choi')">✘ ${T('Từ chối')}</button>
+      <button class="mb-mini" onclick="mbMoThr('support','${h.id}','ht')">💬</button>
+    </div>`:''}
+    </div>`}).join('')
   :'<div class="mb-sub">'+T('Không có yêu cầu nào đang mở.')+'</div>'}
   </div>
   <div class="mb-card"><div class="mb-sub">${T('Phân xử chi tiết / gán người xử lý — làm trên desktop, tab Hỗ trợ.')}</div></div>`;
@@ -551,7 +564,8 @@ async function mbVeDX(el){
   <div class="mb-card"><h3>${T('Đề xuất của tôi')}</h3>
     ${rows.map(a=>{const s=TTA[a.trang_thai]||[a.trang_thai||'—','#64748b'];
       const neo=a.doi_tuong==='deal'?(ALL_DEALS.find(x=>x.id===a.doi_tuong_id)?.ten):(a.doi_tuong==='org'?(ALL_ORGS.find(x=>x.id===a.doi_tuong_id)?.ten):null);
-      return `<div style="padding:8px 0;border-bottom:1px solid #eef2f7">
+      const thr=(a.doi_tuong==='deal'||a.doi_tuong==='org')?`<button class="mb-mini" style="float:right" onclick="mbMoThr('${a.doi_tuong}','${a.doi_tuong_id}','dx')">💬 ${T('Trả lời')}</button>`:'';
+      return `<div style="padding:8px 0;border-bottom:1px solid #eef2f7">${thr}
         <div style="font-size:13px">${neo?'<b>'+esc(neo)+'</b> · ':''}${esc(a.noi_dung||'')}</div>
         <div class="mb-sub"><b style="color:${s[1]}">${s[0]}</b> · ${(a.created_at||'').slice(0,10)}${a.y_kien_duyet?' · 💬 '+esc(a.y_kien_duyet):''}</div>
       </div>`}).join('')||'<div class="mb-sub">'+T('Chưa có đề xuất nào.')+'</div>'}
@@ -569,4 +583,42 @@ async function mbGuiDX(){
     cap_duyet:document.getElementById('dxCap').value,nguoi_de_xuat:ME.ho_ten,noi_dung:nd,han});
   if(r.error){m.textContent=r.error.message;return}
   mbVeDX(document.getElementById('mbView'));
+}
+
+
+/* ===== v35.9 · TRAO ĐỔI 2 CHIỀU (crm_comments) + XỬ LÝ YÊU CẦU ===== */
+async function mbMoThr(dt,id,back,ten){
+  window.__MB_THR={dt,id,back,ten:ten||''};
+  const el=document.getElementById('mbView');if(!el)return;
+  el.innerHTML='<div class="mb-card">'+T('Đang tải…')+'</div>';
+  const r=await sb.from('crm_comments').select('*').eq('doi_tuong',dt).eq('doi_tuong_id',id).order('created_at');
+  const cmts=r.data||[];
+  el.innerHTML=`<div class="mb-card"><h3>💬 ${T('Phản hồi & trao đổi')}</h3>
+    ${cmts.map(c=>`<div style="padding:7px 0;border-bottom:1px solid #eef2f7">
+      <b style="font-size:12.5px;color:${c.nguoi_viet===ME.ho_ten?'#0f4c81':'#111'}">${esc(c.nguoi_viet||'')}</b>
+      <span class="mb-sub"> · ${(c.created_at||'').slice(0,10)}</span>
+      <div style="font-size:13px">${esc(c.noi_dung||'')}</div></div>`).join('')
+    ||'<div class="mb-sub">'+T('Chưa có phản hồi nào.')+'</div>'}
+    <textarea id="thrND" style="width:100%;min-height:56px;margin-top:8px" placeholder="${T('Nội dung… *')}"></textarea>
+    <button class="btn pri" style="width:100%;padding:11px;margin-top:8px;border-radius:12px" onclick="mbGuiThr()">📨 ${T('Gửi trả lời')}</button>
+    <button class="mb-mini" style="width:100%;margin-top:8px" onclick="mbChon('${back}')">← ${T('Đóng')}</button>
+  </div>`;
+}
+async function mbGuiThr(){
+  const nd=document.getElementById('thrND').value.trim();if(!nd)return;
+  const t=window.__MB_THR;
+  const r=await sb.from('crm_comments').insert({doi_tuong:t.dt,doi_tuong_id:t.id,nguoi_viet:ME.ho_ten,noi_dung:nd});
+  if(r.error){alert(r.error.message);return}
+  mbMoThr(t.dt,t.id,t.back,t.ten);
+}
+async function mbXuLyHT(i,tt){
+  const h=(window.__MB_HTQ||[])[i];if(!h)return;
+  const yk=(document.getElementById('mbHtYk_'+i)?.value||'').trim();
+  if(tt==='tu_choi'&&!yk){alert(T('Từ chối bắt buộc ghi lý do — quy tắc L4'));return}
+  const patch={trang_thai:tt};if(tt==='dang_xu_ly')patch.nguoi_xu_ly=ME.ho_ten;
+  const r=await sb.from('crm_support_requests').update(patch).eq('id',h.id);
+  if(r.error){alert(r.error.message);return}
+  if(yk)await sb.from('crm_comments').insert({doi_tuong:'support',doi_tuong_id:h.id,nguoi_viet:ME.ho_ten,noi_dung:yk});
+  if(typeof loadAll==='function')await loadAll();
+  mbRender();
 }
