@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v35.2 · 14/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v35.3 · 14/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -775,20 +775,56 @@ FRAG.push(
 ['tổng','total']
 );
 
-// ===== Bộ dịch: tiền xử lý một lần, hai chiều =====
+// ===== Bộ dịch v35.3: MỘT LƯỢT duy nhất + chặn biên từ + không dịch nửa vời dữ liệu =====
+// Sửa 3 lỗi của bộ dịch cũ (dịch tuần tự split/join):
+//  (1) dịch chèn giữa chữ: "Airports"→"Whorports", "Air-conditioning"→"Whor-conditioning" (cặp ['Ai','Who']),
+//      "23-26 tháng"→"23-2Half-year" (cặp ['6 tháng','Half-year']) → nay CHẶN BIÊN TỪ: không thay khi dính chữ/số hai bên
+//  (2) dịch đè lên chuỗi EN đã dịch: "Bảng tổng hợp 3"→"Bảng total hợp 3" → nay replace MỘT LƯỢT, phần đã thay không bị quét lại
+//  (3) dịch lẻ tẻ vào dữ liệu người dùng: "cần tiếp cận gấp"→"needs tiếp cận gấp" → nay nếu dịch xong vẫn còn
+//      dấu tiếng Việt ngoài danh sách cho phép (tên file/sheet, tên riêng trong từ điển) thì GIỮ NGUYÊN VĂN
 const _rxEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const _F_EN=FRAG.slice().sort((a,b)=>b[0].length-a[0].length);            // VI→EN: sắp theo VI dài trước
-const _F_VI=FRAG.slice().sort((a,b)=>b[1].length-a[1].length)             // EN→VI: sắp theo EN dài trước
-  .map(([v,e])=>[v,e,/^[A-Za-z0-9].*[A-Za-z0-9]$/.test(e)?new RegExp('\\b'+_rxEsc(e)+'\\b','g'):null]);
+const _WORDCH=/[0-9A-Za-z\u00C0-\u1EF9]/;
+const _VN_RX=/[\u00C0-\u1EF9]/;
+function _mkDir(keyIdx){                       // keyIdx 0: VI→EN · 1: EN→VI (mảnh trùng: mảnh khai báo trước thắng — như bản cũ)
+  const map=new Map();
+  for(const p of FRAG){const k=p[keyIdx];if(k&&!map.has(k))map.set(k,p[1-keyIdx]);}
+  const keys=[...map.keys()].sort((a,b)=>b.length-a.length);   // dài trước → ưu tiên khớp mảnh dài nhất
+  return {map,rx:new RegExp(keys.map(_rxEsc).join('|'),'g')};
+}
+const _DIR_EN=_mkDir(0), _DIR_VI=_mkDir(1);
+const _EN_KEEP=[...new Set(FRAG.map(p=>p[1]).filter(e=>_VN_RX.test(e)))].sort((a,b)=>b.length-a.length); // đích EN cố ý giữ dấu (tên sheet/file, Ms Cúc…)
+const _VI_KEEP=[...new Set(FRAG.map(p=>p[0]).filter(v=>/[A-Za-z]/.test(v)))].sort((a,b)=>b.length-a.length); // đích VI có sẵn chữ Latin (NPP, KPI, spec-in, file…)
+function _swap(str,dir){
+  let hit=false;
+  const out=str.replace(dir.rx,function(m){
+    const a=arguments,off=a[a.length-2],src=a[a.length-1];
+    const L=src[off-1],R=src[off+m.length];
+    if(_WORDCH.test(m[0])&&L&&_WORDCH.test(L))return m;            // dính chữ bên trái → bỏ qua
+    if(_WORDCH.test(m[m.length-1])&&R&&_WORDCH.test(R))return m;   // dính chữ bên phải → bỏ qua
+    hit=true;return dir.map.get(m);
+  });
+  return {out,hit};
+}
 function _translate(s,en){
-  if(en){for(const [v,e] of _F_EN){if(s.includes(v))s=s.split(v).join(e)}}
-  else{
-    if(/[\u00C0-\u1EF9]/.test(s))return s; // chuỗi còn dấu tiếng Việt = chưa từng dịch EN → không dịch ngược (tránh biến dạng)
-    for(const [v,e,rx] of _F_VI){
-    if(!s.includes(e))continue;
-    s=rx?s.replace(rx,v):s.split(e).join(v);               // mảnh có emoji/ký tự đặc biệt: thay trực tiếp
-  }}
-  return s;
+  if(en){
+    const r=_swap(s,_DIR_EN);
+    if(!r.hit)return s;
+    if(_VN_RX.test(r.out)){                    // dịch xong vẫn còn dấu VI?
+      let chk=r.out;
+      for(const e of _EN_KEEP){if(chk.includes(e))chk=chk.split(e).join('')}
+      if(_VN_RX.test(chk))return s;            // → là dữ liệu người dùng: giữ nguyên văn tiếng Việt
+    }
+    return r.out;
+  }
+  if(_VN_RX.test(s))return s;                  // chuỗi còn dấu tiếng Việt = chưa từng dịch EN → không dịch ngược (tránh biến dạng)
+  const r=_swap(s,_DIR_VI);
+  if(!r.hit)return s;
+  if(/[A-Za-z]/.test(r.out)){                  // dịch về VI xong vẫn còn chữ Latin?
+    let chk=r.out;
+    for(const v of _VI_KEEP){if(chk.includes(v))chk=chk.split(v).join('')}
+    if(/[A-Za-z]{2,}/.test(chk))return s;      // → dữ liệu tiếng Anh (tên sự kiện, đối tác…): giữ nguyên văn
+  }
+  return r.out;
 }
 const t=s=>LANG==='en'?_translate(s,true):s;               // dùng cho prompt/alert/msg động
 function applyLang(){
