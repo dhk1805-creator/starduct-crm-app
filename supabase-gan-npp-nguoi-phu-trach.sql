@@ -10,10 +10,12 @@
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
+DROP TABLE IF EXISTS bao_cao;
+CREATE TEMP TABLE bao_cao(buoc text, so_luong int);
+
 DO $$
 DECLARE n1 int; n2 int; n3 int; n4 int; n5 int; n6 int; nqt text;
 BEGIN
-  CREATE TEMP TABLE IF NOT EXISTS bao_cao(buoc text, so_luong int) ON COMMIT DROP;
 
   -- ===== BƯỚC 1: điền NPP chỉ định cho deal từ CSDL nền (link ma_du_an_nen) =====
   UPDATE crm_deals d SET npp_chi_dinh = n.npp_chi_dinh, nguoi_cap_nhat = 'auto-gan-v24'
@@ -26,19 +28,25 @@ BEGIN
   INSERT INTO bao_cao VALUES ('1. Điền NPP chỉ định từ CSDL nền', n1);
 
   -- ===== BƯỚC 2: nối npp_dang_ky_id — khớp tên NPP với danh bạ crm_org =====
-  UPDATE crm_deals d SET npp_dang_ky_id = o.id, nguoi_cap_nhat = 'auto-gan-v24'
-  FROM LATERAL (
-    SELECT o.id FROM crm_org o
-    WHERE o.phan_loai = 'npp'
-      AND ( lower(o.ten) LIKE '%'||lower(d.npp_chi_dinh)||'%'
-         OR lower(d.npp_chi_dinh) LIKE '%'||lower(o.ten)||'%'
-         OR similarity(lower(o.ten), lower(d.npp_chi_dinh)) >= 0.55 )
-    ORDER BY similarity(lower(o.ten), lower(d.npp_chi_dinh)) DESC
-    LIMIT 1
-  ) o
+  UPDATE crm_deals d SET
+    npp_dang_ky_id = (
+      SELECT o.id FROM crm_org o
+      WHERE o.phan_loai = 'npp'
+        AND ( lower(o.ten) LIKE '%'||lower(d.npp_chi_dinh)||'%'
+           OR lower(d.npp_chi_dinh) LIKE '%'||lower(o.ten)||'%'
+           OR similarity(lower(o.ten), lower(d.npp_chi_dinh)) >= 0.55 )
+      ORDER BY similarity(lower(o.ten), lower(d.npp_chi_dinh)) DESC
+      LIMIT 1),
+    nguoi_cap_nhat = 'auto-gan-v24'
   WHERE d.npp_dang_ky_id IS NULL
     AND COALESCE(d.npp_chi_dinh,'') <> ''
-    AND COALESCE(d.trang_thai_phe_duyet,'cho_tiep_nhan') IN ('cho_tiep_nhan','da_tiep_nhan','duoc_chi_dinh');
+    AND COALESCE(d.trang_thai_phe_duyet,'cho_tiep_nhan') IN ('cho_tiep_nhan','da_tiep_nhan','duoc_chi_dinh')
+    AND EXISTS (
+      SELECT 1 FROM crm_org o
+      WHERE o.phan_loai = 'npp'
+        AND ( lower(o.ten) LIKE '%'||lower(d.npp_chi_dinh)||'%'
+           OR lower(d.npp_chi_dinh) LIKE '%'||lower(o.ten)||'%'
+           OR similarity(lower(o.ten), lower(d.npp_chi_dinh)) >= 0.55 ));
   GET DIAGNOSTICS n2 = ROW_COUNT;
   INSERT INTO bao_cao VALUES ('2. Nối NPP vào danh bạ (npp_dang_ky_id)', n2);
 
