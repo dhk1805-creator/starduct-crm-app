@@ -21,6 +21,10 @@ const MB_EN={
 'Chờ duyệt':'Pending','Đã duyệt':'Approved','Bị từ chối':'Rejected',
 'Cấp duyệt: Manager':'Approver: Manager','Cấp duyệt: CEO':'Approver: CEO',
 'Đề xuất gì, căn cứ gì…':'What is proposed, on what basis…','Chưa có đề xuất nào.':'No proposals yet.',
+'Chọn dự án':'Select a project','Chọn khách hàng/đối tác':'Select a customer/partner',
+'Gắn vào dự án / khách hàng':'Attach to project / customer','Dự án liên quan':'Related project',
+'Chọn trong danh sách để gắn đúng dự án':'Pick from the list so it attaches to the right project',
+'Khách hàng-Đối tác':'Customers-Partners',
 'Bản đầy đủ':'Full version','Đăng nhập':'Sign in','Đăng xuất':'Sign out',
 'Đăng nhập để thấy công việc của bạn.':'Sign in to see your work.',
 'dự án quá hạn / đến hạn':'projects overdue / due','ghi nhanh kết quả tiếp xúc':'quick-log your touchpoints',
@@ -292,10 +296,10 @@ function mbVeKQ(el){
   const loaiOpts=document.getElementById('txLoai')?.innerHTML||'<option value="gap_truc_tiep">Gặp trực tiếp</option>';
   el.innerHTML=`<div class="mb-card">
     <h3>📝 ${T('Ghi kết quả làm việc')}</h3>
-    <label>${T('Dự án (trong danh sách bạn phụ trách)')}</label>
-    <input id="mbDeal" list="mbDealList" placeholder="${T('Gõ vài chữ để chọn…')}">
+    <label>${T('Dự án (trong danh sách bạn phụ trách)')} *</label>
+    <select id="mbDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="${esc(x.ten)}">${esc(x.ten)}</option>`).join('')}</select>
     <label>${T('Hoặc / và Khách hàng-Đối tác')}</label>
-    <input id="mbOrg" list="mbOrgList" placeholder="${T('Gõ vài chữ để chọn…')}">
+    <select id="mbOrg"><option value="">— ${T('Chọn khách hàng/đối tác')} —</option>${mbOrgsCuaToi().map(o=>`<option value="${esc(o.ten)}">${esc(o.ten)}</option>`).join('')}</select>
     <label>${T('Hình thức')}</label>
     <select id="mbLoai">${loaiOpts}</select>
     <label class="mb-check"><input type="checkbox" id="mbQD"> ${T('Gặp CẤP RA QUYẾT ĐỊNH')}</label>
@@ -357,8 +361,8 @@ function mbVeHT(el){
   const today=new Date().toISOString().slice(0,10);
   el.innerHTML=`<div class="mb-card">
     <h3>🆘 ${T('Gửi yêu cầu hỗ trợ')}</h3>
-    <label>${T('Dự án liên quan (tuỳ chọn)')}</label>
-    <input id="mbHtDeal" list="mbDealList" placeholder="${T('Gõ vài chữ để chọn…')}">
+    <label>${T('Dự án liên quan')} *</label>
+    <select id="mbHtDeal"><option value="">— ${T('Chọn dự án')} —</option>${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="${esc(x.ten)}">${esc(x.ten)}</option>`).join('')}</select>
     <label>${T('Gửi tới bộ phận')}</label><select id="mbHtBP">${bpOpts}</select>
     <label>${T('Loại yêu cầu')}</label><select id="mbHtLoai">${loaiOpts}</select>
     <label>${T('Nội dung cần hỗ trợ')} *</label>
@@ -380,6 +384,7 @@ async function mbGuiHT(){
   const msg=document.getElementById('mbHtMsg');
   if(!mbHtND.value.trim()){msg.textContent='⚠ '+T('Chưa ghi nội dung');return}
   const deal=DEALS.find(d=>d.ten===mbHtDeal.value.trim());
+  if(!deal){msg.textContent='⚠ '+T('Chọn trong danh sách để gắn đúng dự án');return}
   msg.textContent=T('Đang gửi…');
   const r=await sb.from('crm_support_requests').insert({deal_id:deal?.id||null,
     nguoi_yeu_cau:ME.ho_ten,bo_phan_nhan:mbHtBP.value,loai:mbHtLoai.value,
@@ -523,6 +528,10 @@ async function mbVeDX(el){
   const TTA={cho_duyet:['⏳ '+T('Chờ duyệt'),'#d97706'],da_duyet:['✅ '+T('Đã duyệt'),'#16a34a'],tu_choi:['✗ '+T('Bị từ chối'),'#dc2626']};
   el.innerHTML=`
   <div class="mb-card"><h3>📨 ${T('Gửi đề xuất mới')}</h3>
+    <label>${T('Gắn vào dự án / khách hàng')} *</label>
+    <select id="dxGan" style="width:100%;margin-bottom:8px"><option value="">— ${T('Chọn dự án')} —</option>
+      <optgroup label="🎯 ${T('Dự án')}">${mbDealsCuaToi().filter(x=>x.stage!=='dong').map(x=>`<option value="deal:${x.id}">${esc(x.ten)}</option>`).join('')}</optgroup>
+      <optgroup label="👥 ${T('Khách hàng-Đối tác')}">${mbOrgsCuaToi().map(o=>`<option value="org:${o.id}">${esc(o.ten)}</option>`).join('')}</optgroup></select>
     <select id="dxCap" style="width:100%;margin-bottom:8px">
       <option value="manager">${T('Cấp duyệt: Manager')}</option>
       <option value="ceo">${T('Cấp duyệt: CEO')}</option></select>
@@ -531,18 +540,22 @@ async function mbVeDX(el){
     <div class="mb-sub" id="dxMsg"></div></div>
   <div class="mb-card"><h3>${T('Đề xuất của tôi')}</h3>
     ${rows.map(a=>{const s=TTA[a.trang_thai]||[a.trang_thai||'—','#64748b'];
+      const neo=a.doi_tuong==='deal'?(ALL_DEALS.find(x=>x.id===a.doi_tuong_id)?.ten):(a.doi_tuong==='org'?(ALL_ORGS.find(x=>x.id===a.doi_tuong_id)?.ten):null);
       return `<div style="padding:8px 0;border-bottom:1px solid #eef2f7">
-        <div style="font-size:13px">${esc(a.noi_dung||'')}</div>
+        <div style="font-size:13px">${neo?'<b>'+esc(neo)+'</b> · ':''}${esc(a.noi_dung||'')}</div>
         <div class="mb-sub"><b style="color:${s[1]}">${s[0]}</b> · ${(a.created_at||'').slice(0,10)}${a.y_kien_duyet?' · 💬 '+esc(a.y_kien_duyet):''}</div>
       </div>`}).join('')||'<div class="mb-sub">'+T('Chưa có đề xuất nào.')+'</div>'}
   </div>`;
 }
 async function mbGuiDX(){
   const nd=document.getElementById('dxND').value.trim(),m=document.getElementById('dxMsg');
+  const gan=document.getElementById('dxGan').value;
+  if(!gan){m.textContent='⚠ '+T('Chọn trong danh sách để gắn đúng dự án');return}
   if(!nd){m.textContent='⚠ '+T('Đề xuất gì, căn cứ gì…');return}
   m.textContent=T('Đang gửi…');
+  const [dt,did]=gan.split(':');
   const han=new Date(Date.now()+14*864e5).toISOString().slice(0,10);
-  const r=await sb.from('crm_approvals').insert({doi_tuong:'khac',doi_tuong_id:null,loai:'khac',
+  const r=await sb.from('crm_approvals').insert({doi_tuong:dt,doi_tuong_id:did,loai:'khac',
     cap_duyet:document.getElementById('dxCap').value,nguoi_de_xuat:ME.ho_ten,noi_dung:nd,han});
   if(r.error){m.textContent=r.error.message;return}
   mbVeDX(document.getElementById('mbView'));
