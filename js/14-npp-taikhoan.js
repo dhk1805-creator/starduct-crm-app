@@ -18,10 +18,11 @@ window.addEventListener('load',()=>{
   card.innerHTML=`<h2>👥 ${t('Tài khoản NPP (account cha / con)')}</h2>
     <div class="notice">${t('Account cha (NPP Lead) do NSCA cấp — thấy toàn bộ dự án của NPP mình, tự mở tối đa 5 account con cho nhân viên. Account con chỉ thấy dự án được giao. Mọi thao tác cần nhập lại mật khẩu của bạn để xác thực.')}</div>
     <div class="grid g3" style="gap:8px">
+      <input id="tkUserGoi" placeholder="${t('User name CỦA BẠN *')}">
       <input id="tkMKGoi" type="password" placeholder="${t('Mật khẩu CỦA BẠN (xác thực) *')}">
       <button class="btn pri" onclick="nppTkTai()">📋 ${t('Tải danh sách tài khoản')}</button>
-      <span class="muted" id="tkMsg" style="align-self:center"></span>
     </div>
+    <div class="muted" id="tkMsg" style="margin-top:6px"></div>
     <div id="tkList" style="margin-top:10px"></div>
     <div id="tkFormBox" style="display:none;border:1px dashed var(--border);border-radius:8px;padding:12px;margin-top:12px">
       <b style="font-size:13px">➕ ${t('Tạo tài khoản mới')}</b>
@@ -53,17 +54,24 @@ function nppTkVaiTro(){
   // Lead không được chọn NPP khác / tạo lead
   if(nppTkQuyen()==='lead'){tkVaiTro.value='npp_staff';tkNPP.style.display='none'}
 }
+let NPPTK_USER='';
 async function nppTkTai(){
   const q=nppTkQuyen();
   if(!q){tkMsg.textContent='⚠ '+t('Chỉ Admin/CEO/Manager hoặc NPP Lead dùng được khu vực này');return}
-  if(!ME.user_name){tkMsg.textContent='⚠ '+t('Đăng nhập cá nhân trước');return}
+  if(!tkUserGoi.value&&ME.user_name)tkUserGoi.value=ME.user_name;
+  NPPTK_USER=tkUserGoi.value.trim().toLowerCase();
   NPPTK_PASS=tkMKGoi.value;
+  if(!NPPTK_USER){tkMsg.textContent='⚠ '+t('Tài khoản của bạn chưa có user name nội bộ — nhờ admin đặt user_name + mật khẩu trong tab Nhân sự (hoặc SQL) rồi thử lại');return}
   if(!NPPTK_PASS){tkMsg.textContent='⚠ '+t('Nhập mật khẩu của bạn');return}
   tkMsg.textContent=t('Đang tải…');
-  const r=await sb.rpc('crm_ds_tai_khoan_npp',{p_user_goi:ME.user_name,p_pass_goi:NPPTK_PASS});
+  // xác thực tường minh trước để báo lỗi rõ ràng (crm_ds trả rỗng không phân biệt được sai MK)
+  const auth=await sb.rpc('crm_login',{p_user:NPPTK_USER,p_pass:NPPTK_PASS});
+  if(auth.error||!auth.data||!auth.data.length){
+    tkMsg.textContent='❌ '+t('Sai user name hoặc mật khẩu NỘI BỘ (khác mật khẩu email). Nếu bạn chỉ đăng nhập bằng email, cần đặt user_name + mật khẩu nội bộ cho tài khoản của mình trước.');return}
+  const r=await sb.rpc('crm_ds_tai_khoan_npp',{p_user_goi:NPPTK_USER,p_pass_goi:NPPTK_PASS});
   if(r.error){tkMsg.textContent='❌ '+r.error.message+' — '+t('cần chạy migration v26');return}
   const rows=r.data||[];
-  tkMsg.textContent='';
+  tkMsg.textContent='✓ '+t('Đã xác thực');
   // form + danh sách NPP cho admin
   tkFormBox.style.display='';
   if(q==='admin'){
@@ -88,7 +96,7 @@ async function nppTkTai(){
 async function nppTkTao(){
   if(!NPPTK_PASS){tkTaoMsg.textContent='⚠ '+t('Bấm Tải danh sách trước để xác thực');return}
   const q=nppTkQuyen();
-  const args={p_user_goi:ME.user_name,p_pass_goi:NPPTK_PASS,
+  const args={p_user_goi:NPPTK_USER,p_pass_goi:NPPTK_PASS,
     p_ho_ten:tkHoTen.value.trim(),p_user_name:tkUser.value.trim(),
     p_mat_khau_tam:tkMKTam.value,p_vai_tro:tkVaiTro.value,
     p_chuc_danh:tkChucDanh.value.trim()||null,
@@ -102,7 +110,7 @@ async function nppTkMK(user,khoa){
   let mk=null;
   if(khoa){if(!confirm(t('KHÓA tài khoản')+' '+user+'? '+t('(mở lại bằng cách cấp mật khẩu tạm mới)')))return}
   else{mk=prompt(t('Mật khẩu tạm mới cho')+' '+user+' (≥6 ký tự):');if(!mk)return}
-  const r=await sb.rpc('crm_cap_mk_npp',{p_user_goi:ME.user_name,p_pass_goi:NPPTK_PASS,
+  const r=await sb.rpc('crm_cap_mk_npp',{p_user_goi:NPPTK_USER,p_pass_goi:NPPTK_PASS,
     p_user_dich:user,p_mat_khau_moi:mk});
   alert(r.error?('❌ '+r.error.message):r.data);
   nppTkTai();
