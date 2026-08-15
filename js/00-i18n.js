@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v38.0 · 15/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v39.0 · 15/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -839,6 +839,18 @@ FRAG.push(
 ['Mã NPP (code)','Distributor code'],
 ['Mã','Code'],
 ['Chờ phân công','Awaiting assignment'],
+// ---- V39: cau noi ERP ----
+['🔗 Nghiệp vụ từ ERP — đăng ký · đơn hàng · giao hàng','🔗 Live from ERP — registrations · orders · deliveries'],
+['Đăng ký chỉ định từ NPP','Distributor project registrations'],
+['Đơn hàng / YCSX','Orders / production requests'],
+['Giao hàng','Deliveries'],
+['đã có trong CRM','in CRM'],
+['chưa có trong CRM','not in CRM yet'],
+['Số ĐH','Order no.'],
+['Ngày giao','Delivery date'],
+['Duyệt','Approval'],
+['cần chạy migration v46','run migration v46 first'],
+['Nguồn sống từ ERP NSCA (erp-nsca.pages.dev) — chung database, CRM chỉ đọc','Live source: NSCA ERP (erp-nsca.pages.dev) — shared database, CRM is read-only'],
 // ---- V38: cong no NPP ----
 ['💳 Công nợ NPP — theo kỳ','💳 Distributor receivables — by period'],
 ['Xuất HĐ','Invoiced'],

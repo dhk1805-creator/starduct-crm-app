@@ -1,5 +1,5 @@
 {
-  "version": "38.0",
+  "version": "39.0",
   "build": "15/08/2026",
-  "note": "V38: The Cong no NPP theo ky tren dashboard, 120 du an da chao hang quoc te gan theo ma NPP, gan vung du an noi dia (SQL v42)"
+  "note": "V39: Cau noi ERP - dashboard doc song dang ky chi dinh, don hang/YCSX, giao hang tu he thong ERP NSCA (chung database, chi doc)"
 }

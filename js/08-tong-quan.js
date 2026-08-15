@@ -135,6 +135,7 @@ function renderTQ(){
   renderNppKhaiThac();
   renderKhaiThac();
   renderCongNo();
+  renderERP();
 
   phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
     const n=mtKH.filter(o=>o.trang_thai_phu===i).length;
@@ -285,6 +286,37 @@ function renderNppKhaiThac(){
       <td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
       <td class="num">${co?pct(r.thang,co):'<span class="muted">'+t('chưa đủ dữ liệu')+'</span>'}</td></tr>`}).join('')+'</table>'+
     '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Đang theo')+' = '+t('dự án')+' stage ≠ '+t('Đóng')+' · '+t('Thắng')+' = PO/'+t('Đóng')+' '+t('không kèm')+' loss reason</div>';
+}
+
+/* ===== V39: CẦU NỐI ERP — đọc nghiệp vụ sống từ hệ thống ERP NSCA (chung database, migration v46) ===== */
+async function renderERP(){
+  const el=document.getElementById('erpChart');if(!el||!sb)return;
+  if(typeof laStaffXem==='function'&&laStaffXem()){el.innerHTML='<div class="muted">'+t('Dành cho lãnh đạo')+'</div>';return}
+  const [dk,dh,gh]=await Promise.all([
+    sb.from('v_crm_erp_dang_ky').select('*').order('created_at',{ascending:false}).limit(30),
+    sb.from('v_crm_erp_don_hang').select('*').order('created_at',{ascending:false}).limit(15),
+    sb.from('v_crm_erp_giao_hang').select('*').limit(15)
+  ]);
+  if(dk.error){el.innerHTML='<div class="muted">'+esc(dk.error.message)+' — '+t('cần chạy migration v46')+'</div>';return}
+  el.classList.remove('muted');
+  const DK=dk.data||[],DH=dh.data||[],GH=gh.data||[];
+  const tag=x=>x?'<span class="pill p1" style="font-size:10.5px">'+t('đã có trong CRM')+'</span>':'<span class="pill p3" style="font-size:10.5px">'+t('chưa có trong CRM')+'</span>';
+  let h='<div class="muted" style="font-size:12px;margin-bottom:8px"><b>📥 '+t('Đăng ký chỉ định từ NPP')+'</b> ('+DK.length+')</div>';
+  h+=DK.length?'<table><tr><th>NPP</th><th>'+t('Dự án')+'</th><th>CĐT</th><th>'+t('Mã')+'</th><th>'+t('Duyệt')+'</th><th class="num">'+t('Giá trị')+'</th><th></th></tr>'+
+    DK.slice(0,12).map(r=>`<tr><td><b>${esc(r.npp||'')}</b></td><td>${esc((r.du_an||'').slice(0,50))}</td><td>${esc((r.cdt||'').slice(0,24))}</td><td>${esc(r.ma_da||'')}</td><td>${esc(r.duyet_dang_ky||'—')}</td><td class="num">${r.gia_tri_nganh?fmtB(+r.gia_tri_nganh):(r.tong_cong?fmtB(+r.tong_cong):'—')}</td><td>${tag(r.da_co_trong_crm)}</td></tr>`).join('')+'</table>'
+    :'<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';
+  h+='<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🧾 '+t('Đơn hàng / YCSX')+'</b> ('+DH.length+')</div>';
+  h+=DH.length?'<table><tr><th>'+t('Số ĐH')+'</th><th>YCSX</th><th>NPP/KH</th><th>'+t('Dự án')+'</th><th class="num">'+t('Giá trị')+'</th><th>'+t('Trạng thái')+'</th><th>'+t('Ngày giao')+'</th></tr>'+
+    DH.map(r=>`<tr><td><b>${esc(r.order_no||'')}</b></td><td>${esc(r.ycsx_code||'—')}</td><td>${esc(r.npp_name||r.customer_name||'')}</td><td>${esc((r.project_name||'').slice(0,40))} ${tag(r.da_co_trong_crm)}</td><td class="num">${r.total_value?fmtB(+r.total_value):'—'}</td><td>${esc(r.status||'')}</td><td>${esc(String(r.delivery_date||'').slice(0,10))}</td></tr>`).join('')+'</table>'
+    :'<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';
+  if(GH.length){
+    const cols=Object.keys(GH[0]).filter(k=>!/^id$|_id$|uuid/i.test(k)).slice(0,6);
+    h+='<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🚚 '+t('Giao hàng')+'</b> ('+GH.length+')</div>';
+    h+='<table><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+
+      GH.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(String(r[c]==null?'':r[c]).slice(0,40))+'</td>').join('')+'</tr>').join('')+'</table>';
+  }
+  h+='<div class="muted" style="font-size:11px;margin-top:8px">'+t('Nguồn sống từ ERP NSCA (erp-nsca.pages.dev) — chung database, CRM chỉ đọc')+'</div>';
+  el.innerHTML=h;
 }
 
 /* ===== V38: CÔNG NỢ NPP THEO KỲ — nguồn crm_cong_no (migration v42, số liệu báo cáo PKD) ===== */
