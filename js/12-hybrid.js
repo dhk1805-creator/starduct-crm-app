@@ -253,7 +253,7 @@ function renderWs(d,quots,tps,hts,files){
       F(t('NPP được chỉ định'),d.npp_chi_dinh)+F(t('Nhà thầu của NPP'),d.nt_cua_npp)+
       F(t('KH đã báo giá'),d.kh_da_bg)+F('Spec-in',d.spec_in_status||d.moc_spec_in)+
       F(t('Hiện trạng'),d.hien_trang_da)+F('Stage',STG[d.stage]||d.stage)+
-      F(t('Người phụ trách'),d.nguoi_phu_trach||d.owner)+
+      F(t('Người phụ trách'),(d.nguoi_phu_trach||d.owner)||('⏳ '+t('Chờ phân công')))+
       F(t('Giá trị ước'),d.gia_tri_uoc?fmtB(+d.gia_tri_uoc):null)+
       F(t('Việc tiếp theo'),d.next_action?d.next_action+(d.next_action_han?' — hạn '+d.next_action_han:''):null)+
       (d.loss_reason?F('Loss reason',d.loss_reason):'')+

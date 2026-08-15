@@ -838,6 +838,7 @@ FRAG.push(
 ['🤝 Phễu NPP/Agent (toàn bộ danh mục — không tính vào thang phủ khách hàng)','🤝 Distributor/Agent funnel (full catalog — excluded from customer coverage ladder)'],
 ['Mã NPP (code)','Distributor code'],
 ['Mã','Code'],
+['Chờ phân công','Awaiting assignment'],
 // ---- V38: cong no NPP ----
 ['💳 Công nợ NPP — theo kỳ','💳 Distributor receivables — by period'],
 ['Xuất HĐ','Invoiced'],

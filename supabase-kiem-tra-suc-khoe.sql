@@ -66,6 +66,16 @@ select 30, 'Doanh thu H1/2026 tu bao cao: ty (chuan 89.1)',
 from crm_revenue where created_by in ('bao-cao-H1-2026','phan-bo-bc-santiago-h1')
 
 union all
+select 25, 'DA QT gan phu trach ma khong co bang chung hoat dong', count(*)::text,
+  case when count(*)=0 then 'DAT' else 'KHONG DAT' end
+from crm_deals d
+where d.quoc_gia is distinct from 'VN'
+  and (d.nguoi_phu_trach is not null or d.owner is not null)
+  and coalesce(d.stage,'tiep_can')='tiep_can'
+  and not exists (select 1 from crm_touchpoints t where t.deal_id=d.id)
+  and not exists (select 1 from crm_quotations q where q.khu_vuc='quoc_te' and upper(coalesce(q.ten_da,''))=upper(d.ten))
+
+union all
 select 32, 'DT Santiago 5 thi truong (chuan 886 trieu)',
   coalesce(round(sum(so_tien)/1e6,0)::text,'0'),
   case when round(coalesce(sum(so_tien),0)/1e6,0)=886 then 'DAT' else 'KHONG DAT' end
