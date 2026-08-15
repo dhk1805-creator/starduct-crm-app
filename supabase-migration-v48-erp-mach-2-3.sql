@@ -15,7 +15,7 @@ begin;
 create or replace function crm_erp_dong_bo()
 returns table(viec text, so_luong int)
 language plpgsql security definer as $f$
-declare n_po int; n_dk int := 0; n_gh int; t_apr text; v_id text; r record;
+declare n_po int; n_dk int := 0; n_gh int; v_id uuid; r record;
 begin
   -- MACH 1: don hang co YCSX khop ten du an CRM dang mo -> PO
   update crm_deals d set stage='po'
@@ -26,14 +26,13 @@ begin
   get diagnostics n_po = row_count;
 
   -- MACH 2: dang ky ERP chua duyet -> hang cho phe duyet CRM
-  select data_type into t_apr from information_schema.columns
-   where table_schema='public' and table_name='crm_approvals' and column_name='doi_tuong_id';
+  -- doi_tuong_id la uuid -> sinh uuid dinh danh tu ma ERP (md5, on dinh, chay lai khong trung)
   for r in select * from crm_dang_ky_du_an
             where coalesce(btrim(duyet_dang_ky),'') in ('','cho_duyet') loop
     if not exists (select 1 from crm_approvals a
                     where a.doi_tuong='erp_dang_ky'
                       and position('[ERP#'||r.id::text||']' in coalesce(a.noi_dung,''))>0) then
-      if t_apr='uuid' then v_id := md5('erp_dk_'||r.id::text)::uuid::text; else v_id := r.id::text; end if;
+      v_id := md5('erp_dk_'||r.id::text)::uuid;
       insert into crm_approvals (doi_tuong, doi_tuong_id, loai, cap_duyet, nguoi_de_xuat, noi_dung, trang_thai)
       values ('erp_dang_ky', v_id, 'Đăng ký chỉ định ERP', 'ceo', coalesce(r.npp,'NPP'),
         '[ERP#'||r.id::text||'] '||coalesce(r.npp,'?')||' đăng ký: '||coalesce(r.du_an,'?')
