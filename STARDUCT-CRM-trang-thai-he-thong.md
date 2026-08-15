@@ -1,13 +1,13 @@
-# STARDUCT CRM — TRẠNG THÁI HỆ THỐNG (V43.0 · 15/08/2026 — bản chốt bàn giao)
+# STARDUCT CRM — TRẠNG THÁI HỆ THỐNG (V44.0 · 15/08/2026 — bản chốt bàn giao)
 
 App: https://dhk1805-creator.github.io/starduct-crm-app/ · Mobile: `?m=1`
 Repo: github.com/dhk1805-creator/starduct-crm-app (main) · DB: Supabase `zjedibydzkojgarrfbvg` — CHUNG với ERP NSCA (erp-nsca.pages.dev)
-Đọc kèm: `BAN-GIAO-CRM-cho-Pham-Hoai-Nam.md` (bàn giao kỹ thuật) · `STARDUCT-CRM-mo-hinh-nghiep-vu.md` (thiết kế nghiệp vụ gốc) · `supabase-kiem-tra-suc-khoe.sql` (nghiệm thu 22 hạng mục — chạy trước mỗi lần phát hành).
+Đọc kèm: `BAN-GIAO-CRM-cho-Pham-Hoai-Nam.md` (bàn giao kỹ thuật) · `huong-dan.html` (HDSD song ngữ VI/EN, nút 📘 trên header) · 2 bản Word HDSD · `STARDUCT-CRM-mo-hinh-nghiep-vu.md` (thiết kế nghiệp vụ gốc) · `supabase-kiem-tra-suc-khoe.sql` (nghiệm thu 22 hạng mục — chạy trước mỗi lần phát hành).
 
 ## KẾT QUẢ NGHIỆM THU CHỐT (CEO chạy 15/08)
 **20/22 ĐẠT · 0 KHÔNG ĐẠT** · 2 CẢNH BÁO tồn có chủ: #43 (46 DA nội địa chưa gán vùng) · #44 (749 DA chưa nối mã kho nền). Số lõi: 9 NPP QT + 5 ND đủ mã code · 197 báo giá QT/394,4 tỷ/13 YCSX · doanh thu H1 89,1 tỷ (Santiago 886tr/5 thị trường) · công nợ 7 kênh/34,6 tỷ · 120 DA chào hàng gắn NPP · quyền 4 phê duyệt + 3 tiếp nhận · không trùng lặp, không mồ côi, không rò dữ liệu ND↔QT.
 
-## HỆ THỐNG ĐANG CHẠY (app V43.0, migration v36→v52 đã chạy hết)
+## HỆ THỐNG ĐANG CHẠY (app V44.0, migration v36→v53 đã chạy hết)
 - Dashboard = trang báo cáo: mặc định Tổng quan toàn bộ; chọn kỳ (Tháng/Quý/Năm/lịch) mọi chỉ số theo kỳ; trang Quốc tế chọn từng quốc gia. Phễu khai thác quy từ kho nền (3.617 → theo dõi → tiếp cận → chỉ định → thắng). Card Công nợ NPP theo kỳ. Card Nghiệp vụ từ ERP. Mã NPP trong mọi dropdown. DA không bằng chứng hoạt động = "⏳ Chờ phân công".
 - Mobile: nhập theo kế hoạch ngày, 3 form gắn dự án bắt buộc, vòng duyệt 2 chiều với desktop.
 - **Cầu ERP↔CRM khép kín 4 mạch** (rpc `crm_erp_dong_bo()` chạy mỗi lần mở dashboard + `crm_erp_duyet_dang_ky()` khi duyệt):

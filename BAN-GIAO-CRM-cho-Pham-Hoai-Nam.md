@@ -1,67 +1,78 @@
 # HỒ SƠ BÀN GIAO — STARDUCT CRM → PHẠM HOÀI NAM (tác giả NSCA Platform)
 
-Ngày bàn giao: 15/08/2026 · Người bàn giao: CEO Đào Huy Khánh · Phiên bản: **V42.0** · Migration: đến **v51**
+Bàn giao: 15/08/2026 · Người bàn giao: CEO Đào Huy Khánh · **Bản chốt: app V44.0 · migration v36→v53 (đã chạy hết) · nghiệm thu 20/22 ĐẠT (2 cảnh báo có chủ)**
 
-## 1. Tổng quan hệ thống
+## 0. ĐỌC GÌ TRƯỚC
 
-- **App**: static HTML/JS (không build tool), GitHub Pages — repo `github.com/dhk1805-creator/starduct-crm-app` (main). PWA + Service Worker. Mobile = `?m=1` (16-mobile.js).
-- **Database**: DÙNG CHUNG Supabase `zjedibydzkojgarrfbvg` với NSCA Platform. CRM chỉ sở hữu các bảng tiền tố `crm_` liệt kê ở mục 3 — mọi bảng khác là của ERP.
-- **Tài liệu nghiệp vụ gốc**: `STARDUCT-CRM-mo-hinh-nghiep-vu.md` (trong repo). Mọi tính năng mới chiếu theo dòng chảy: Kho nền → Theo dõi → Tiếp cận → Chỉ định → Báo giá → Đơn (YCSX) → Doanh thu → Công nợ.
-- **Nghiệm thu**: `supabase-kiem-tra-suc-khoe.sql` — 22 hạng mục ĐẠT/KHÔNG ĐẠT/CẢNH BÁO, chạy read-only bất kỳ lúc nào. **Quy tắc: trước mỗi lần phát hành phải chạy, toàn ĐẠT mới giao.**
+1. File này (kiến trúc + ràng buộc + việc mở)
+2. `STARDUCT-CRM-mo-hinh-nghiep-vu.md` — thiết kế nghiệp vụ gốc, mọi tính năng mới chiếu theo đây
+3. `STARDUCT-CRM-trang-thai-he-thong.md` — trạng thái chốt + toàn bộ bài học kỹ thuật
+4. `huong-dan.html` (song ngữ VI/EN, nút 📘 trên header app) + 2 bản Word HDSD — góc nhìn người dùng từng vai
+5. `supabase-kiem-tra-suc-khoe.sql` — bộ nghiệm thu 22 hạng mục, chạy trước MỌI lần phát hành
 
-## 2. Kỷ luật phát hành (BẮT BUỘC theo)
+## 1. TỔNG QUAN
 
-1. Phiên bản app số tròn (V42, V43…) — độc lập với số migration SQL.
-2. Mỗi lần phát hành đồng bộ **5 điểm**: `SD_VER` (js/18-version.js) · `CACHE`+`SHELL` (sw.js) · version.json · `APP_VER` (js/00-i18n.js) · `?v=` trong index.html.
-3. Mọi thay đổi dữ liệu = 1 file SQL đánh số `supabase-migration-vNN-*.sql`, commit vào repo, **an toàn chạy lại** (idempotent).
-4. Song ngữ VI/EN: từ điển FRAG trong 00-i18n.js (~1.100 cặp), dịch một lượt regex dài-trước-ngắn + chặn biên từ + guard 2 chiều. Chuỗi UI mới phải thêm cặp FRAG.
-5. Supabase SQL Editor: chỉ hiện kết quả CÂU CUỐI; không để dấu `;` hay xuống dòng trong string literal; text dài nạp bằng base64 `convert_from(decode(...,'base64'),'UTF8')` (file ≤100KB).
+- **App**: static HTML/JS thuần (không build tool), GitHub Pages, repo `github.com/dhk1805-creator/starduct-crm-app` (main). PWA + Service Worker; mobile `?m=1` (js/16-mobile.js). Song ngữ bằng từ điển FRAG ~1.100 cặp (js/00-i18n.js) — chuỗi UI mới PHẢI thêm cặp.
+- **Database**: DÙNG CHUNG Supabase `zjedibydzkojgarrfbvg` với NSCA Platform của anh. CRM sở hữu các bảng mục 3; mọi bảng khác là của ERP.
+- **CRM đã là module chính thức của platform**: `erp_modules` id=`crm_starduct` (route = URL đầy đủ). Việc còn của anh: thêm ngôi sao thứ 7 vào chòm Kinh Doanh trong frontend (chòm sao đang hardcode) + cho router mở tab mới khi route bắt đầu `https://`. Gỡ module khi cần: `update erp_modules set is_active=false where id='crm_starduct';`
 
-## 3. Bảng thuộc CRM (được phép sửa schema/dữ liệu)
+## 2. KỶ LUẬT PHÁT HÀNH (BẮT BUỘC)
 
-`crm_org` (ma_code, pheu_npp, quan_he, vung…) · `crm_deals` (+backup crm_deals_backup_vi_20260814) · `crm_du_an_nen` · `crm_touchpoints` · `crm_events` · `crm_revenue` · `crm_cong_no` · `crm_approvals` · `crm_comments` · `crm_support_requests` · `crm_plans/plan_items/plan_objectives` · `crm_quotations` (bảng báo giá XK của CRM — KHÁC crm_quotes của ERP) · `crm_thi_truong` · `crm_user_roles` · `crm_bci` · `crm_du_an_cap_nhat` · views `v_crm_*`, `crm_v_*`.
+1. Phiên bản app số tròn (V44, V45…) — độc lập số migration SQL.
+2. Đồng bộ **5 điểm** mỗi lần phát hành: `SD_VER` (js/18-version.js) · `CACHE`+`SHELL` (sw.js) · version.json · `APP_VER` (js/00-i18n.js) · `?v=` (index.html).
+3. Mọi thay đổi dữ liệu = 1 file `supabase-migration-vNN-*.sql` trong repo, idempotent (chạy lại không hỏng).
+4. Trước khi giao: chạy bộ nghiệm thu — toàn ĐẠT mới phát hành; CẢNH BÁO ghi vào việc mở.
+5. Supabase SQL Editor: chỉ hiện kết quả CÂU CUỐI; không để `;`/xuống dòng trong string; text dài = base64 `convert_from(decode(...),'UTF8')` ≤100KB; date trong VALUES phải `::date`.
 
-Ràng buộc đáng nhớ: `crm_approvals` có CHECK trên **doi_tuong** (deal/org/plan/support/erp_dang_ky — đã nới NOT VALID) và **loai** (dùng 'khac' cho bản ghi máy sinh); doi_tuong_id là **uuid**. `crm_revenue` unique (thang,org_id,ma_nganh,kenh) — dòng máy ghi dùng `ma_nganh='ERP_GH'`, thang là date 'YYYY-MM-01'. `crm_cong_no` unique (ky,ma_code). `crm_org.phan_loai` NOT NULL.
+## 3. BẢNG THUỘC CRM (được sửa schema/dữ liệu)
 
-## 4. CẦU NỐI CRM ↔ ERP (phần Nam quan tâm nhất)
+`crm_org` (ma_code, pheu_npp, quan_he, vung) · `crm_deals` (+backup _vi_20260814) · `crm_du_an_nen` · `crm_touchpoints` · `crm_events` · `crm_revenue` · `crm_cong_no` · `crm_approvals` · `crm_comments` · `crm_support_requests` · `crm_plans/plan_items/plan_objectives` · `crm_quotations` (báo giá XK của CRM — KHÁC crm_quotes của ERP) · `crm_thi_truong` · `crm_user_roles` · `crm_bci` · `crm_du_an_cap_nhat` · views `v_crm_*`, `crm_v_*`.
 
-Nguyên tắc: **CRM chỉ đọc bảng ERP qua view**; ngoại lệ ghi duy nhất là rpc duyệt đăng ký (bên dưới).
+Ràng buộc phải nhớ: `crm_approvals` CHECK kép trên **doi_tuong** (deal/org/plan/support/erp_dang_ky — đã nới NOT VALID) và **loai** (bản ghi máy sinh dùng 'khac'); doi_tuong_id **uuid**. `crm_revenue` unique (thang,org_id,ma_nganh,kenh) — dòng máy ghi dùng `ma_nganh='ERP_GH'`, thang date 'YYYY-MM-01'. `crm_cong_no` unique (ky,ma_code). `crm_org.phan_loai` NOT NULL. Môi trường có cơ chế tự bật RLS bảng mới → bảng CRM mới luôn kèm policy `select to authenticated` (vụ crm_cong_no/v50).
 
-- **View đọc** (v46, v50): `v_crm_erp_dang_ky` (crm_dang_ky_du_an) · `v_crm_erp_don_hang` (crm_orders) · `v_crm_erp_giao_hang` (wms_delivery_orders) · `v_crm_erp_dang_ky_moi` (crm_project_registrations). Cờ `da_co_trong_crm` = khớp tên CHỨA NHAU (≥6 ký tự) với crm_deals. Owner postgres → vượt RLS bảng gốc; grant select to authenticated.
-- **rpc `crm_erp_dong_bo()`** (v47→v49, security definer, gọi mỗi lần mở dashboard, idempotent):
-  - Mạch 1: crm_orders có `ycsx_code` khớp tên deal đang mở → deal sang stage `po`.
-  - Mạch 2: đăng ký chưa duyệt từ CẢ 2 kho (crm_dang_ky_du_an: duyet_dang_ky trống/cho_duyet · crm_project_registrations: status='cho_duyet') → chèn crm_approvals (doi_tuong='erp_dang_ky', loai='khac', marker `[ERP#<uuid>]` trong noi_dung để truy ngược).
-  - Mạch 3: wms_delivery_orders có `delivered_at ≥ 2026-07-01` → gộp theo (tháng, org) ghi crm_revenue `ma_nganh='ERP_GH'`, created_by='erp-giao-hang', kiểu XÓA-GHI LẠI toàn bộ mỗi lần chạy (idempotent). Mốc 01/07 vì doanh thu đến 30/06 đã nạp từ báo cáo H1 (tránh đếm đôi). Khớp org theo npp_name/customer_name = crm_org.ten hoặc ma_code — đơn không khớp bị bỏ qua lặng lẽ (việc mở: cảnh báo).
-- **rpc `crm_erp_duyet_dang_ky(p_marker, p_tt)`** (v48→v49): CRM duyệt/từ chối → ghi ngược `crm_dang_ky_du_an.duyet_dang_ky` = da_duyet/tu_choi VÀ `crm_project_registrations.status` (+reviewed_by='CRM Starduct', reviewed_at, stage_updated_at). Gọi từ `duyetNhanh()` trong js/08-tong-quan.js.
-- **v51 (chuyển kho)**: 26 đăng ký BO đã chuyển vào crm_project_registrations với `status='can_bo_sung'` (chờ BO xác nhận, source='chuyen-tu-BO-15/08/2026'); bản gốc đánh dấu `duyet_dang_ky='chuyen_kanban'` để không vào hàng chờ nữa. **Luồng chuẩn từ giờ: BO xác nhận trên Kanban → cho_duyet → hàng chờ CRM → CEO duyệt → ghi ngược.**
-- Lưu ý môi trường: có cơ chế (nghi là housekeeping của ERP) tự bật RLS trên bảng mới → bảng CRM tạo mới phải kèm policy `select to authenticated` (vụ crm_cong_no, v50).
+## 4. CẦU NỐI CRM ↔ ERP (4 mạch — phần anh quan tâm nhất)
 
-## 5. Mã code NPP (khóa nối 2 hệ thống)
+Nguyên tắc: CRM đọc bảng ERP qua view; ghi sang ERP CHỈ qua 2 rpc security definer, đúng enum ERP.
 
-QT: ECA(TNR-KH) · EID(Sinabu-ID) · EMC(MeyFoong-MO) · EPH(AireFocus+Greentech-PH) · ETL(WindControl-TH) · EUY(Vitrilan-UY) · EAL(Plasticade-US) · EQC(QC-US). ND: NTK · GLX · VNMEP · IMP · MEPCO. Kênh tổng hợp: TT (trực tiếp), XK. Ứng viên: CAREZONE (đang đàm phán), BKG (đang kết nối). Đề nghị ERP dùng cùng bộ mã này trong crm_npp để join thay vì khớp tên.
+- **View đọc** (v46, v50): `v_crm_erp_dang_ky` (crm_dang_ky_du_an) · `v_crm_erp_don_hang` (crm_orders) · `v_crm_erp_giao_hang` (wms_delivery_orders) · `v_crm_erp_dang_ky_moi` (crm_project_registrations). Cờ `da_co_trong_crm` = khớp tên CHỨA NHAU ≥6 ký tự với crm_deals.
+- **rpc `crm_erp_dong_bo()`** (bản chốt v52, gọi mỗi lần mở dashboard, idempotent):
+  1. crm_orders có `ycsx_code` khớp tên deal đang mở → stage `po`.
+  2. Đăng ký chưa duyệt từ CẢ 2 kho (crm_dang_ky_du_an: duyet_dang_ky trống/cho_duyet · crm_project_registrations: status cho_duyet) → crm_approvals (doi_tuong='erp_dang_ky', marker `[ERP#uuid]` trong noi_dung).
+  3. wms_delivery_orders có `delivered_at ≥ 2026-07-01` (mốc chống đếm đôi với báo cáo H1) → crm_revenue ma_nganh='ERP_GH', xóa-ghi lại theo created_by='erp-giao-hang'; khớp org theo npp_name/customer_name = ten hoặc ma_code; lọc %TEST%.
+  4. Đăng ký ĐÃ DUYỆT (cả 2 kho, gồm trien_khai/thang_thau) mà CRM chưa có → tự tạo crm_deals (lọc demo/TEST/Ví Dụ; giá trị chỉ nhận 1tr–500 tỷ). Đã sinh dự án đầu: Tiến Bộ Plaza.
+- **rpc `crm_erp_duyet_dang_ky(p_marker, p_tt)`** (v49): duyệt/từ chối tại CRM → ghi `duyet_dang_ky` (kho BO) VÀ `status`+reviewed_by/reviewed_at (kho Kanban). Gọi từ `duyetNhanh()` trong js/08-tong-quan.js.
+- **v51**: 26 đăng ký BO đã chuyển vào Kanban (`status='can_bo_sung'`, scale_desc ghi "Chuyển từ BO 15/08/2026"); nguồn cũ đánh dấu `duyet_dang_ky='chuyen_kanban'`. Luồng chuẩn: BO xác nhận thẻ → cho_duyet → hàng chờ CRM → duyệt → ghi ngược + tự tạo dự án.
+- Gợi ý nâng cấp cho anh: ERP có sẵn `erp_module_capabilities` (trigger INSERT/UPDATE trên crm_orders…) — chuyển từ đồng bộ khi-mở-dashboard sang bắn sự kiện tức thời.
 
-## 6. Phân quyền
+## 5. BÀI HỌC "XƯƠNG MÁU" KHI GHI VÀO BẢNG CỦA ANH (đêm 15/08)
 
-`crm_user_roles`: quyen_phe_duyet = Đào Huy Khánh, Đào Nguyên Ngọc, Nguyễn Thị Thanh Tâm, Nguyễn Thị Thúy Hồng (4). quyen_tiep_nhan = Phạm Hoài Nam, Nguyễn Tiến Duẩn, Nguyễn Văn Ngọc (3). Còn lại (Santiago, Hải, Đức, NPP) = báo cáo, "của ai nấy thấy" (laStaffXem trong 01-core.js). RLS cứng theo 3 tầng ở mức database: CHƯA làm — đang enforce ở tầng app (việc mở ưu tiên cao khi mở tài khoản cho NPP).
+Chuỗi lỗi thật khi chèn vào `crm_project_registrations`: NOT NULL hàng loạt (investor, site_address, design_unit, supervision_unit, products_of_interest, scale_desc) · CHECK trên `source` · `submitted_by` uuid · `gia_tri_nganh` bên BO là **JSONB** (ép số phải chặn ngưỡng 1tr–500 tỷ, tránh 3,58 triệu tỷ). Hàm `_v51` trong migration v51 là mẫu xử lý tổng quát: **tự quét NOT NULL từ information_schema + tự đọc CHECK từ pg_constraint** để chọn giá trị hợp lệ. Từ nay hai chiều: CRM ghi bảng ERP hay ERP ghi bảng CRM — đọc catalog trước, đừng dò bằng tay.
 
-## 7. Dữ liệu đã nạp & nguồn gốc (để không nạp trùng)
+## 6. MÃ NPP — KHÓA NỐI HAI HỆ THỐNG
 
-- 489 DA QT "cần tiếp cận" (EN, v36) — không bằng chứng hoạt động thì owner trống = "Chờ phân công" (v44)
-- 197 báo giá XK / 394,4 tỷ / 13 YCSX (v41, khu_vuc='quoc_te') · 120 DA đã chào hàng gộp từ báo giá (v42, YCSX→po)
-- Doanh thu H1/2026 = 89,1 tỷ: created_by='bao-cao-H1-2026' (ND theo NPP theo tháng) + 'phan-bo-bc-santiago-h1' (XK tách 5 thị trường + khối truyền thống; chi tiết tháng×thị trường là PHÂN BỔ ƯỚC theo tỷ trọng tháng — CEO đã duyệt cách này)
-- Công nợ H1 7 kênh / 34,6 tỷ (crm_cong_no, ky='H1-2026') · Pipeline H2 ND 33 dự án ~77,7 tỷ (v40) · Thị trường/tình báo 16 nước (crm_thi_truong, v37)
+QT: ECA(TNR-KH) · EID(Sinabu-ID) · EMC(MeyFoong-MO) · EPH(AireFocus+Greentech-PH) · ETL(WindControl-TH) · EUY(Vitrilan-UY) · EAL(Plasticade-US) · EQC(QC-US). ND: NTK · GLX · VNMEP · IMP · MEPCO. Kênh tổng hợp: TT, XK. Ứng viên (không phải NPP ký HĐ): CAREZONE (đang đàm phán) · BKG (đang kết nối). Đề nghị crm_npp của ERP dùng cùng bộ mã để join thay khớp tên. Kỷ luật đi kèm: mã dự án duy nhất (dữ liệu BO trùng D0258 hàng loạt — nút thắt số 1 của tự động hóa), email `[Mã DA][Mã NPP] Loại việc`.
 
-## 8. Việc còn mở (ưu tiên từ trên xuống)
+## 7. PHÂN QUYỀN & TÀI KHOẢN CHA–CON NPP
 
-1. BO xác nhận 26 thẻ "Cần bổ sung" trên Kanban (luồng mới bắt đầu chạy)
-2. Kỷ luật MÃ DỰ ÁN duy nhất (dữ liệu BO trùng D0258 hàng loạt) — điều kiện để đơn hàng/báo giá khớp tự động theo mã thay vì theo tên
-3. RLS cứng 3 tầng + npp_org_id; tài khoản email 11 nhân sự + NPP (GALAXYTECH Lead: Ms Hoa)
-4. 46 DA VN chưa gán vùng · 750 DA chưa nối mã kho nền · phân công các DA "Chờ phân công"
-5. Cảnh báo giao hàng không khớp org; nhãn ngành 'ERP_GH' trong tab Doanh thu (NGANH dict, js/06)
-6. Card KPI hợp đồng Santiago (mốc Phụ lục III 31/12/2026 — hiện 11,4% mục tiêu, VAV Box 4,2%)
-7. Hợp nhất crm_quotations (CRM) với module Báo giá ERP khi BO chuyển hẳn sang ERP
-8. Dọn: ~24 file CRLF working tree (Discard) · rác zz-rac-* trong .git (xóa tay trên Windows — git trong môi trường mount không xóa được file)
+`crm_user_roles`: quyen_phe_duyet = Khánh, Đ.N.Ngọc, T.Tâm, T.Hồng (4) · quyen_tiep_nhan = Nam, Duẩn, V.Ngọc (3) · còn lại tầng báo cáo "của ai nấy thấy" (đang enforce ở tầng app — laStaffXem, js/01-core.js).
 
-## 9. Ghi chú vận hành cho AI assistant
+**Việc lớn nhất còn lại: RLS cứng tầng database theo 3 tầng + `npp_org_id`** — điều kiện BẮT BUỘC trước khi phát tài khoản NPP. Mô hình đã thiết kế (chi tiết trong HUONG-DAN-CRM-ADMIN-BO-PHAN.md mục 3): tài khoản CHA (npp_lead — thấy toàn bộ NPP mình, phân công cho con) + CON (npp_sale — chỉ dự án được giao); 7 bước mở; khóa-không-xóa; lộ trình GALAXYTECH (Ms Hoa) → 5 ND → 9 QT.
 
-Sổ tay kỹ thuật ERP đã có MCP endpoint (sotay-mcp) — thêm vào Connectors của trợ lý AI để tra cứu trực tiếp. LƯU Ý: đường link chứa khóa truy cập (`?k=...`) — không chia sẻ công khai, không commit vào repo. Toàn bộ lịch sử xây CRM + bài học kỹ thuật chi tiết lưu tại Claude Project "CRM Project" (doc `starduct-crm-trang-thai-he-thong.md` + `mo-hinh-nghiep-vu-crm.md`).
+## 8. DỮ LIỆU ĐÃ NẠP & NGUỒN GỐC (không nạp trùng)
+
+489 DA QT "cần tiếp cận" EN (v36; không bằng chứng = "Chờ phân công", v44) · 197 báo giá XK/394,4 tỷ/13 YCSX (v41, khu_vuc='quoc_te') · 120 DA đã chào hàng gộp từ báo giá (v42) · DT H1/2026 = 89,1 tỷ: created_by='bao-cao-H1-2026' (ND theo NPP theo tháng) + 'phan-bo-bc-santiago-h1' (XK: Santiago 886tr tách 5 thị trường + truyền thống 14,98 tỷ — chi tiết tháng×thị trường là PHÂN BỔ ƯỚC, CEO duyệt) · công nợ H1 7 kênh/34,6 tỷ (crm_cong_no) · pipeline H2 ND 33 DA ~77,7 tỷ (v40) · thị trường 16 nước (crm_thi_truong, v37) · vùng DA ND gán theo địa danh (v42, còn 46 thiếu).
+
+## 9. VIỆC MỞ (ưu tiên từ trên xuống)
+
+1. **RLS cứng 3 tầng + npp_org_id** → mở tài khoản Cha–Con NPP (thí điểm GALAXYTECH)
+2. Ngôi sao CRM trong chòm Kinh Doanh (1 dòng frontend) + route https:// mở tab mới
+3. BO xác nhận 26 thẻ Kanban (nhiều thẻ giá trị ước cần chỉnh — có SQL đưa >30 tỷ về 0 nếu muốn sạch trước)
+4. Kỷ luật mã DA duy nhất → nâng khớp đơn/BG theo mã; cân nhắc trigger erp_module_capabilities thay polling
+5. 46 DA ND chưa vùng · 749 DA chưa nối mã kho nền · phân công DA "Chờ phân công"
+6. Nhãn 'ERP_GH' trong NGANH (js/06) · cảnh báo giao hàng không khớp org · card KPI Santiago (mốc 31/12/2026) · DT ND tách ngành khi có BO chi tiết · DT PH tách Dico/Greentech
+7. Dọn: ~24 file CRLF working tree (Discard trong GitHub Desktop) · rác zz-rac-* trong .git (xóa tay Windows — sinh ra do git trong mount không xóa được lock)
+8. Kiểm tra phân quyền nút "Gắn Module Mới" của platform (CEO Super Admin bị chặn — nghi gate nhầm ở erp_role_permissions)
+
+## 10. GHI CHÚ CHO TRỢ LÝ AI
+
+Toàn bộ lịch sử + bài học chi tiết lưu tại Claude Project "CRM Project". Sổ Tay Kỹ Thuật ERP có MCP endpoint (sotay-mcp) — thêm vào Connectors để AI đọc đặc tả ERP trước khi viết SQL; LINK CHỨA KEY (?k=...) — không chia sẻ công khai, không commit.
