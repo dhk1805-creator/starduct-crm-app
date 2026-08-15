@@ -4,7 +4,7 @@
    fallback cache khi mất mạng để vỏ ứng dụng vẫn mở được ngoài hiện trường.
    KHÔNG cache request Supabase (dữ liệu động).
    ========================================================================== */
-const CACHE = 'starduct-crm-v43.0';
+const CACHE = 'starduct-crm-v44.0';
 const SHELL = [
   './index.html',
   './css/app.css',
