@@ -39,7 +39,7 @@ begin
                       and position('[ERP#'||r.id::text||']' in coalesce(a.noi_dung,''))>0) then
       v_id := r.id; -- id dang ky ERP da la uuid
       insert into crm_approvals (doi_tuong, doi_tuong_id, loai, cap_duyet, nguoi_de_xuat, noi_dung, trang_thai)
-      values ('erp_dang_ky', v_id, 'Đăng ký chỉ định ERP', 'ceo', coalesce(r.npp,'NPP'),
+      values ('erp_dang_ky', v_id, 'khac', 'ceo', coalesce(r.npp,'NPP'),
         '[ERP#'||r.id::text||'] '||coalesce(r.npp,'?')||' đăng ký: '||coalesce(r.du_an,'?')
           ||coalesce(' — CĐT '||nullif(r.cdt,''),'')||coalesce(' — mã '||nullif(r.ma_da,''),'')
           ||coalesce(' — '||nullif(r.khu_vuc,''),''),
