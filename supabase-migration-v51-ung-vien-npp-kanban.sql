@@ -60,10 +60,10 @@ begin
                  else 'can_bo_sung' end;
     insert into crm_project_registrations
       (npp_id, npp_name_snapshot, project_name, investor, design_unit, mep_contractor,
-       estimated_value, status, source, submitted_by, created_at)
+       estimated_value, status, source, created_at)
     values (v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'), nullif(r.cdt,''),
        nullif(r.tvtk,''), nullif(r.nha_thau,''), v_gt, v_st,
-       'chuyen-tu-BO-15/08/2026', 'BO', coalesce(r.created_at, now()));
+       'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now()));
     update crm_dang_ky_du_an set duyet_dang_ky='chuyen_kanban'
      where id=r.id and coalesce(duyet_dang_ky,'') in ('','cho_duyet');
     n := n + 1;
