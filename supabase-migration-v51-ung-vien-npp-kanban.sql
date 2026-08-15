@@ -23,8 +23,18 @@ update crm_org set pheu_npp='dang_ket_noi', quan_he='npp_moi'
 -- B) chuyen kho dang ky BO -> Kanban
 create or replace function _v51() returns text as $f$
 declare r record; n int := 0; v_npp_id crm_npp.id%type; v_gt numeric; v_st text;
-        v_cols text; v_vals text; extra record;
+        v_cols text; v_vals text; extra record; v_def text; v_src text;
 begin
+  -- Cot source co CHECK constraint -> tu doc dinh nghia va chon gia tri hop le
+  select pg_get_constraintdef(oid) into v_def from pg_constraint
+   where conrelid='crm_project_registrations'::regclass
+     and conname='crm_project_registrations_source_chk';
+  if v_def is not null then
+    if v_def like '%''admin''%' then v_src := 'admin';
+    else v_src := (regexp_match(v_def, '''([^'']+)'''))[1];
+    end if;
+  end if;
+  v_src := coalesce(v_src, 'admin');
   -- Tu quet cac cot BAT BUOC (not null, khong default) ngoai bo cot minh chu dong dien
   -- va tu dong dien placeholder theo kieu du lieu -> khong con lo sot cot nao
   v_cols := ''; v_vals := '';
@@ -33,7 +43,7 @@ begin
      where table_schema='public' and table_name='crm_project_registrations'
        and is_nullable='NO' and column_default is null
        and column_name not in ('id','npp_id','npp_name_snapshot','project_name','investor',
-                               'design_unit','mep_contractor','estimated_value','status','source','created_at')
+                               'design_unit','mep_contractor','estimated_value','status','source','created_at','scale_desc')
   loop
     v_cols := v_cols || ', ' || quote_ident(extra.column_name);
     v_vals := v_vals || ', ' ||
@@ -80,12 +90,13 @@ begin
                  else 'can_bo_sung' end;
     execute 'insert into crm_project_registrations '
       || '(npp_id, npp_name_snapshot, project_name, investor, design_unit, mep_contractor, '
-      || 'estimated_value, status, source, created_at' || v_cols || ') '
-      || 'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10' || v_vals || ')'
+      || 'estimated_value, status, source, created_at, scale_desc' || v_cols || ') '
+      || 'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11' || v_vals || ')'
       using v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'),
             coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'),
             coalesce(nullif(r.tvtk,''),'(chưa rõ)'), coalesce(nullif(r.nha_thau,''),'(chưa rõ)'),
-            coalesce(v_gt,0), v_st, 'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now());
+            coalesce(v_gt,0), v_st, v_src, coalesce(r.created_at, now()),
+            'Chuyển từ BO 15/08/2026 — chờ BO xác nhận, bổ sung thông tin';
     update crm_dang_ky_du_an set duyet_dang_ky='chuyen_kanban'
      where id=r.id and coalesce(duyet_dang_ky,'') in ('','cho_duyet');
     n := n + 1;
@@ -106,7 +117,7 @@ commit;
 -- NGHIEM THU:
 -- 1) Kanban phai co ~26 ban ghi moi nguon chuyen-tu-BO:
 select status, count(*) from crm_project_registrations
- where source='chuyen-tu-BO-15/08/2026' group by status;
+ where scale_desc like 'Chuyển từ BO%' group by status;
 -- 2) NPP ky HD noi dia phai ve dung 5 (CAREZONE/BKG da ha pheu):
 select count(*) from crm_org where pheu_npp='da_ky_hd' and quoc_gia='VN';
 -- 3) Hang cho CRM chi con de xuat khong thuoc kho BO da chuyen:
