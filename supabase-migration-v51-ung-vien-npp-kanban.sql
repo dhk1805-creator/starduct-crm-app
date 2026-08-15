@@ -23,7 +23,27 @@ update crm_org set pheu_npp='dang_ket_noi', quan_he='npp_moi'
 -- B) chuyen kho dang ky BO -> Kanban
 create or replace function _v51() returns text as $f$
 declare r record; n int := 0; v_npp_id crm_npp.id%type; v_gt numeric; v_st text;
+        v_cols text; v_vals text; extra record;
 begin
+  -- Tu quet cac cot BAT BUOC (not null, khong default) ngoai bo cot minh chu dong dien
+  -- va tu dong dien placeholder theo kieu du lieu -> khong con lo sot cot nao
+  v_cols := ''; v_vals := '';
+  for extra in
+    select column_name, data_type from information_schema.columns
+     where table_schema='public' and table_name='crm_project_registrations'
+       and is_nullable='NO' and column_default is null
+       and column_name not in ('id','npp_id','npp_name_snapshot','project_name','investor',
+                               'design_unit','mep_contractor','estimated_value','status','source','created_at')
+  loop
+    v_cols := v_cols || ', ' || quote_ident(extra.column_name);
+    v_vals := v_vals || ', ' ||
+      case when extra.data_type in ('text','character varying') then quote_literal('(chưa rõ)')
+           when extra.data_type in ('numeric','integer','bigint','smallint','double precision','real') then '0'
+           when extra.data_type like 'timestamp%' or extra.data_type='date' then 'now()'
+           when extra.data_type='boolean' then 'false'
+           when extra.data_type='jsonb' then quote_literal('{}') || '::jsonb'
+           else 'null' end;
+  end loop;
   for r in select * from crm_dang_ky_du_an
             where coalesce(duyet_dang_ky,'') in ('','cho_duyet','da_duyet','tu_choi') loop
     -- da co trong Kanban (theo NPP + ten du an) thi bo qua
@@ -58,12 +78,13 @@ begin
     v_st := case when r.duyet_dang_ky='da_duyet' then 'da_duyet'
                  when r.duyet_dang_ky='tu_choi' then 'tu_choi'
                  else 'can_bo_sung' end;
-    insert into crm_project_registrations
-      (npp_id, npp_name_snapshot, project_name, investor, design_unit, mep_contractor,
-       estimated_value, status, source, created_at)
-    values (v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'), coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'),
-       nullif(r.tvtk,''), nullif(r.nha_thau,''), v_gt, v_st,
-       'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now()));
+    execute 'insert into crm_project_registrations '
+      || '(npp_id, npp_name_snapshot, project_name, investor, design_unit, mep_contractor, '
+      || 'estimated_value, status, source, created_at' || v_cols || ') '
+      || 'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10' || v_vals || ')'
+      using v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'),
+            coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'), nullif(r.tvtk,''), nullif(r.nha_thau,''),
+            v_gt, v_st, 'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now());
     update crm_dang_ky_du_an set duyet_dang_ky='chuyen_kanban'
      where id=r.id and coalesce(duyet_dang_ky,'') in ('','cho_duyet');
     n := n + 1;
