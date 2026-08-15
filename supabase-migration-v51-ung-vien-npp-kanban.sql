@@ -34,12 +34,27 @@ begin
       continue;
     end if;
     select id into v_npp_id from crm_npp where name ilike '%'||coalesce(r.npp,'~~~')||'%' limit 1;
+    -- gia_tri_nganh la JSONB (gia tri tach theo nganh hang) -> cong don cac so trong do
     v_gt := null;
-    if r.gia_tri_nganh ~ '^[0-9., ]+$' and length(regexp_replace(r.gia_tri_nganh,'[^0-9]','','g')) >= 6 then
-      v_gt := regexp_replace(r.gia_tri_nganh,'[^0-9]','','g')::numeric;
-    elsif r.tong_cong ~ '^[0-9., ]+$' and length(regexp_replace(r.tong_cong,'[^0-9]','','g')) >= 6 then
-      v_gt := regexp_replace(r.tong_cong,'[^0-9]','','g')::numeric;
+    begin
+      if jsonb_typeof(to_jsonb(r.gia_tri_nganh)) = 'number' then
+        v_gt := to_jsonb(r.gia_tri_nganh)::text::numeric;
+      elsif jsonb_typeof(to_jsonb(r.gia_tri_nganh)) = 'object' then
+        select sum(regexp_replace(value,'[^0-9]','','g')::numeric) into v_gt
+          from jsonb_each_text(to_jsonb(r.gia_tri_nganh))
+         where regexp_replace(value,'[^0-9]','','g') <> '';
+      end if;
+    exception when others then v_gt := null;
+    end;
+    if v_gt is null or v_gt = 0 then
+      begin
+        if length(regexp_replace(r.tong_cong::text,'[^0-9]','','g')) >= 6 then
+          v_gt := regexp_replace(r.tong_cong::text,'[^0-9]','','g')::numeric;
+        end if;
+      exception when others then v_gt := null;
+      end;
     end if;
+    if v_gt = 0 then v_gt := null; end if;
     v_st := case when r.duyet_dang_ky='da_duyet' then 'da_duyet'
                  when r.duyet_dang_ky='tu_choi' then 'tu_choi'
                  else 'can_bo_sung' end;
