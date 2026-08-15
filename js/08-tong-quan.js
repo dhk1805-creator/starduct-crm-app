@@ -134,6 +134,7 @@ function renderTQ(){
   ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
   renderNppKhaiThac();
   renderKhaiThac();
+  renderCongNo();
 
   phuChart.innerHTML=[0,1,2,3,4,5].map(i=>{
     const n=mtKH.filter(o=>o.trang_thai_phu===i).length;
@@ -284,6 +285,30 @@ function renderNppKhaiThac(){
       <td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
       <td class="num">${co?pct(r.thang,co):'<span class="muted">'+t('chưa đủ dữ liệu')+'</span>'}</td></tr>`}).join('')+'</table>'+
     '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Đang theo')+' = '+t('dự án')+' stage ≠ '+t('Đóng')+' · '+t('Thắng')+' = PO/'+t('Đóng')+' '+t('không kèm')+' loss reason</div>';
+}
+
+/* ===== V38: CÔNG NỢ NPP THEO KỲ — nguồn crm_cong_no (migration v42, số liệu báo cáo PKD) ===== */
+async function renderCongNo(){
+  const el=document.getElementById('cnChart');if(!el||!sb)return;
+  if(typeof laStaffXem==='function'&&laStaffXem()){el.innerHTML='<div class="muted">'+t('Dành cho lãnh đạo')+'</div>';return}
+  const r=await sb.from('crm_cong_no').select('*').order('cap_nhat',{ascending:false}).limit(200);
+  if(r.error){el.innerHTML='<div class="muted">'+esc(r.error.message)+' — '+t('cần chạy migration v42')+'</div>';return}
+  const all=r.data||[];
+  const ndCodes=['NTK','GLX','VNMEP','IMP','MEPCO','TT'];
+  const rows=all.filter(x=>MOD==='qt'?!ndCodes.includes(x.ma_code):ndCodes.includes(x.ma_code));
+  if(!rows.length){el.innerHTML='<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';return}
+  const ky=rows[0].ky;
+  const kyRows=rows.filter(x=>x.ky===ky).sort((a,b)=>(+b.no_cuoi_ky||0)-(+a.no_cuoi_ky||0));
+  el.classList.remove('muted');
+  const sum=f=>kyRows.reduce((s,x)=>s+(+x[f]||0),0);
+  el.innerHTML='<div class="muted" style="font-size:12px;margin-bottom:6px"><b>'+t('Kỳ')+': '+esc(ky)+'</b> · '+t('cập nhật')+' '+esc(String(kyRows[0].cap_nhat||'').slice(0,10))+'</div>'
+   +'<table><tr><th>'+t('Mã')+'</th><th class="num">'+t('Xuất HĐ')+'</th><th class="num">'+t('Đã thanh toán')+'</th><th class="num">'+t('Nợ cuối kỳ')+'</th><th class="num">'+t('Nợ khó đòi')+'</th><th>'+t('Ghi chú')+'</th></tr>'
+   +kyRows.map(x=>`<tr><td><b>${esc(x.ma_code||'')}</b></td><td class="num">${fmtB(+x.xuat_hd||0)}</td><td class="num">${fmtB(+x.da_tt||0)}</td>
+     <td class="num"><b${(+x.no_cuoi_ky||0)>=6e9?' style="color:var(--bad,#c33)"':''}>${fmtB(+x.no_cuoi_ky||0)}</b></td>
+     <td class="num"${(+x.no_kho_doi||0)>0?' style="color:var(--bad,#c33);font-weight:700"':''}>${(+x.no_kho_doi||0)>0?fmtB(+x.no_kho_doi):'—'}</td>
+     <td class="muted" style="font-size:11.5px">${esc(x.ghi_chu||'')}</td></tr>`).join('')
+   +`<tr><td><b>${t('Tổng cộng')}</b></td><td class="num"><b>${fmtB(sum('xuat_hd'))}</b></td><td class="num"><b>${fmtB(sum('da_tt'))}</b></td><td class="num"><b>${fmtB(sum('no_cuoi_ky'))}</b></td><td class="num"><b>${sum('no_kho_doi')?fmtB(sum('no_kho_doi')):'—'}</b></td><td></td></tr>`
+   +'</table>';
 }
 
 /* ===== V37: PHỄU KHAI THÁC CSDL — kho dự án nền là CSDL TỔNG, mọi bước quy từ đó ra

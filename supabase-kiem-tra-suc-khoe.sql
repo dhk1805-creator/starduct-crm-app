@@ -49,6 +49,17 @@ select 22, 'Don YCSX: so don / ty (chuan 13 / 15.9)',
 from crm_quotations where trang_thai='YCSX'
 
 union all
+select 23, 'Cong no NPP ky H1-2026 (chuan = 7 dong / 34.6 ty)',
+  count(*)::text || ' / ' || round(sum(no_cuoi_ky)/1e9,1)::text,
+  case when count(*)=7 then 'DAT' else 'KHONG DAT' end
+from crm_cong_no where ky='H1-2026'
+
+union all
+select 24, 'Du an QT da chao hang co NPP (chuan >= 120)', count(*)::text,
+  case when count(*)>=120 then 'DAT' else 'KHONG DAT' end
+from crm_deals where quoc_gia<>'VN' and stage in ('chao_gia','po') and npp_chi_dinh is not null
+
+union all
 select 30, 'Doanh thu H1/2026 tu bao cao: ty (chuan 89.1)',
   coalesce(round(sum(so_tien)/1e9,1)::text,'0'),
   case when round(coalesce(sum(so_tien),0)/1e9,1)=89.1 then 'DAT' else 'KHONG DAT' end

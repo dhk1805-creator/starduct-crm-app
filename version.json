@@ -1,5 +1,5 @@
 {
-  "version": "37.0",
+  "version": "38.0",
   "build": "15/08/2026",
-  "note": "V37: Dashboard = trang bao cao (mac dinh Tong quan, chon ky, chon quoc gia o trang QT), pheu khai thac tu kho nen, ma code NPP, doanh thu H1/2026 Noi dia + pipeline H2"
+  "note": "V38: The Cong no NPP theo ky tren dashboard, 120 du an da chao hang quoc te gan theo ma NPP, gan vung du an noi dia (SQL v42)"
 }

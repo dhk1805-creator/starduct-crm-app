@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v37.0 · 15/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v38.0 · 15/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -838,6 +838,15 @@ FRAG.push(
 ['🤝 Phễu NPP/Agent (toàn bộ danh mục — không tính vào thang phủ khách hàng)','🤝 Distributor/Agent funnel (full catalog — excluded from customer coverage ladder)'],
 ['Mã NPP (code)','Distributor code'],
 ['Mã','Code'],
+// ---- V38: cong no NPP ----
+['💳 Công nợ NPP — theo kỳ','💳 Distributor receivables — by period'],
+['Xuất HĐ','Invoiced'],
+['Đã thanh toán','Paid'],
+['Nợ cuối kỳ','Ending balance'],
+['Nợ khó đòi','Bad debt'],
+['Tổng cộng','Grand total'],
+['cập nhật','updated'],
+['cần chạy migration v42','run migration v42 first'],
 ['trong kỳ','in period'],
 ['Dành cho lãnh đạo','For leadership'],
 ['Kỳ báo cáo','Reporting period'],
