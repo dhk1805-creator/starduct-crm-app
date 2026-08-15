@@ -63,7 +63,13 @@ union all
 select 30, 'Doanh thu H1/2026 tu bao cao: ty (chuan 89.1)',
   coalesce(round(sum(so_tien)/1e9,1)::text,'0'),
   case when round(coalesce(sum(so_tien),0)/1e9,1)=89.1 then 'DAT' else 'KHONG DAT' end
-from crm_revenue where created_by='bao-cao-H1-2026'
+from crm_revenue where created_by in ('bao-cao-H1-2026','phan-bo-bc-santiago-h1')
+
+union all
+select 32, 'DT Santiago 5 thi truong (chuan 886 trieu)',
+  coalesce(round(sum(so_tien)/1e6,0)::text,'0'),
+  case when round(coalesce(sum(so_tien),0)/1e6,0)=886 then 'DAT' else 'KHONG DAT' end
+from crm_revenue where created_by='phan-bo-bc-santiago-h1' and quoc_gia<>'XK'
 
 union all
 select 31, 'Doanh thu co dong am hoac bang 0', count(*)::text,
