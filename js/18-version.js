@@ -13,7 +13,7 @@
 (function(){
 'use strict';
 
-const SD_VER   = '40.0';
+const SD_VER   = '41.0';
 const SD_BUILD = '15/08/2026';
 
 /* ---------- ngôn ngữ: bám theo biến LANG của 00-i18n.js ---------- */

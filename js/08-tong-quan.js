@@ -208,6 +208,7 @@ async function renderAprQueue(){
     if(a.doi_tuong==='org')return ALL_ORGS.find(x=>x.id===a.doi_tuong_id)?.ten||'(đối tác)';
     if(a.doi_tuong==='plan')return (window.PLANS||[]).find(x=>x.id===a.doi_tuong_id)?.ten||'(kế hoạch)';
     if(a.doi_tuong==='support')return t('Yêu cầu hỗ trợ');
+    if(a.doi_tuong==='erp_dang_ky')return t('Đăng ký chỉ định (ERP)');
     return '—'};
   aprQueue.innerHTML=rows.length?'<table><tr><th>'+t('Chờ')+'</th><th>'+t('Loại')+'</th><th>'+t('Đối tượng')+'</th><th>'+t('Đề xuất')+'</th><th>'+t('Người đề xuất')+'</th><th>'+t('Cấp')+'</th><th style="min-width:280px"></th></tr>'+
     rows.slice(0,20).map((a,i)=>{
@@ -258,6 +259,10 @@ async function duyetNhanh(i,tt){
   if(r.error){alert(r.error.message);return}
   if(a.doi_tuong==='plan')
     await sb.from('crm_plans').update({trang_thai:tt==='da_duyet'?'da_duyet':'tu_choi'}).eq('id',a.doi_tuong_id);
+  if(a.doi_tuong==='erp_dang_ky'){ // V41: ghi nguoc quyet dinh ve ERP (duyet_dang_ky)
+    const m=(a.noi_dung||'').match(/\[ERP#([^\]]+)\]/);
+    if(m)try{await sb.rpc('crm_erp_duyet_dang_ky',{p_marker:m[1],p_tt:tt})}catch(e){console.warn('erp duyet',e)}
+  }
   renderAprQueue();
 }
 
@@ -321,7 +326,7 @@ async function renderERP(){
     h+='<table><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr>'+
       GH.map(r=>'<tr>'+cols.map(c=>'<td>'+esc(String(r[c]==null?'':r[c]).slice(0,40))+'</td>').join('')+'</tr>').join('')+'</table>';
   }
-  h+='<div class="muted" style="font-size:11px;margin-top:8px">'+t('Nguồn sống từ ERP NSCA (erp-nsca.pages.dev) — chung database, CRM chỉ đọc')+'</div>';
+  h+='<div class="muted" style="font-size:11px;margin-top:8px">'+t('Nguồn sống từ ERP NSCA — đăng ký đổ vào Hàng chờ phê duyệt bên dưới, duyệt tại CRM sẽ cập nhật ngược về ERP')+'</div>';
   el.innerHTML=h;
 }
 

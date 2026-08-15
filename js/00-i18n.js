@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v40.0 · 15/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v41.0 · 15/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -850,6 +850,9 @@ FRAG.push(
 ['Ngày giao','Delivery date'],
 ['Duyệt','Approval'],
 ['dự án vừa tự chuyển sang PO theo YCSX từ ERP','projects auto-moved to PO from ERP production orders'],
+['Đăng ký chỉ định (ERP)','Designation request (ERP)'],
+['Đăng ký chỉ định ERP','ERP designation request'],
+['Nguồn sống từ ERP NSCA — đăng ký đổ vào Hàng chờ phê duyệt bên dưới, duyệt tại CRM sẽ cập nhật ngược về ERP','Live from NSCA ERP — registrations flow into the Approval queue below; deciding in CRM updates the ERP'],
 ['cần chạy migration v46','run migration v46 first'],
 ['Nguồn sống từ ERP NSCA (erp-nsca.pages.dev) — chung database, CRM chỉ đọc','Live source: NSCA ERP (erp-nsca.pages.dev) — shared database, CRM is read-only'],
 // ---- V38: cong no NPP ----

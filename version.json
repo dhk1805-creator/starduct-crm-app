@@ -1,5 +1,5 @@
 {
-  "version": "40.0",
+  "version": "41.0",
   "build": "15/08/2026",
-  "note": "V40: Buoc 2 mach 1 - YCSX tren ERP tu chuyen du an CRM sang PO (rpc crm_erp_dong_bo, SQL v47)"
+  "note": "V41: Cau noi ERP tron ven - dang ky chi dinh do vao hang cho phe duyet CRM (duyet tai CRM ghi nguoc ERP), giao hang tu 01/07 tu ghi doanh thu, YCSX tu chuyen PO (SQL v48)"
 }
