@@ -42,7 +42,7 @@ begin
       elsif jsonb_typeof(to_jsonb(r.gia_tri_nganh)) = 'object' then
         select sum(regexp_replace(value,'[^0-9]','','g')::numeric) into v_gt
           from jsonb_each_text(to_jsonb(r.gia_tri_nganh))
-         where regexp_replace(value,'[^0-9]','','g') <> '';
+         where length(regexp_replace(value,'[^0-9]','','g')) between 6 and 12;
       end if;
     exception when others then v_gt := null;
     end;
@@ -54,14 +54,14 @@ begin
       exception when others then v_gt := null;
       end;
     end if;
-    if v_gt = 0 then v_gt := null; end if;
+    if v_gt is not null and (v_gt < 1000000 or v_gt > 500000000000) then v_gt := null; end if; -- nguong hop ly: 1 trieu .. 500 ty
     v_st := case when r.duyet_dang_ky='da_duyet' then 'da_duyet'
                  when r.duyet_dang_ky='tu_choi' then 'tu_choi'
                  else 'can_bo_sung' end;
     insert into crm_project_registrations
       (npp_id, npp_name_snapshot, project_name, investor, design_unit, mep_contractor,
        estimated_value, status, source, created_at)
-    values (v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'), nullif(r.cdt,''),
+    values (v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'), coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'),
        nullif(r.tvtk,''), nullif(r.nha_thau,''), v_gt, v_st,
        'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now()));
     update crm_dang_ky_du_an set duyet_dang_ky='chuyen_kanban'
