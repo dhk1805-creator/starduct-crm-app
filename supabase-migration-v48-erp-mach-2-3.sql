@@ -12,6 +12,12 @@
 -- ============================================================
 begin;
 
+-- Noi check constraint doi_tuong de nhan them 'erp_dang_ky'
+-- (NOT VALID: chi ap cho dong moi, khong dong cham dong cu)
+alter table crm_approvals drop constraint if exists crm_approvals_doi_tuong_check;
+alter table crm_approvals add constraint crm_approvals_doi_tuong_check
+  check (doi_tuong in ('deal','org','plan','support','erp_dang_ky')) not valid;
+
 create or replace function crm_erp_dong_bo()
 returns table(viec text, so_luong int)
 language plpgsql security definer as $f$
@@ -26,13 +32,12 @@ begin
   get diagnostics n_po = row_count;
 
   -- MACH 2: dang ky ERP chua duyet -> hang cho phe duyet CRM
-  -- doi_tuong_id la uuid -> sinh uuid dinh danh tu ma ERP (md5, on dinh, chay lai khong trung)
   for r in select * from crm_dang_ky_du_an
             where coalesce(btrim(duyet_dang_ky),'') in ('','cho_duyet') loop
     if not exists (select 1 from crm_approvals a
                     where a.doi_tuong='erp_dang_ky'
                       and position('[ERP#'||r.id::text||']' in coalesce(a.noi_dung,''))>0) then
-      v_id := md5('erp_dk_'||r.id::text)::uuid;
+      v_id := r.id; -- id dang ky ERP da la uuid
       insert into crm_approvals (doi_tuong, doi_tuong_id, loai, cap_duyet, nguoi_de_xuat, noi_dung, trang_thai)
       values ('erp_dang_ky', v_id, 'Đăng ký chỉ định ERP', 'ceo', coalesce(r.npp,'NPP'),
         '[ERP#'||r.id::text||'] '||coalesce(r.npp,'?')||' đăng ký: '||coalesce(r.du_an,'?')
