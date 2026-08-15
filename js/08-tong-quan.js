@@ -314,7 +314,7 @@ async function renderERP(){
   const tag=x=>x?'<span class="pill p1" style="font-size:10.5px">'+t('đã có trong CRM')+'</span>':'<span class="pill p3" style="font-size:10.5px">'+t('chưa có trong CRM')+'</span>';
   let h=syncLine+'<div class="muted" style="font-size:12px;margin-bottom:8px"><b>📥 '+t('Đăng ký chỉ định từ NPP')+'</b> ('+DK.length+')</div>';
   h+=DK.length?'<table><tr><th>NPP</th><th>'+t('Dự án')+'</th><th>CĐT</th><th>'+t('Mã')+'</th><th>'+t('Duyệt')+'</th><th class="num">'+t('Giá trị')+'</th><th></th></tr>'+
-    DK.slice(0,12).map(r=>`<tr><td><b>${esc(r.npp||'')}</b></td><td>${esc((r.du_an||'').slice(0,50))}</td><td>${esc((r.cdt||'').slice(0,24))}</td><td>${esc(r.ma_da||'')}</td><td>${esc(r.duyet_dang_ky||'—')}</td><td class="num">${r.gia_tri_nganh?fmtB(+r.gia_tri_nganh):(r.tong_cong?fmtB(+r.tong_cong):'—')}</td><td>${tag(r.da_co_trong_crm)}</td></tr>`).join('')+'</table>'
+    DK.slice(0,12).map(r=>`<tr><td><b>${esc(r.npp||'')}</b></td><td>${esc((r.du_an||'').slice(0,50))}</td><td>${esc((r.cdt||'').slice(0,24))}</td><td>${esc(r.ma_da||'')}</td><td>${esc(r.duyet_dang_ky||'—')}</td><td class="num">${(v=>isFinite(v)&&v>0?fmtB(v):((r.gia_tri_nganh||r.tong_cong)?esc(String(r.gia_tri_nganh||r.tong_cong).slice(0,16)):'—'))(+String(r.gia_tri_nganh??r.tong_cong??'').replace(/[^0-9.]/g,''))}</td><td>${tag(r.da_co_trong_crm)}</td></tr>`).join('')+'</table>'
     :'<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';
   h+='<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🧾 '+t('Đơn hàng / YCSX')+'</b> ('+DH.length+')</div>';
   h+=DH.length?'<table><tr><th>'+t('Số ĐH')+'</th><th>YCSX</th><th>NPP/KH</th><th>'+t('Dự án')+'</th><th class="num">'+t('Giá trị')+'</th><th>'+t('Trạng thái')+'</th><th>'+t('Ngày giao')+'</th></tr>'+
