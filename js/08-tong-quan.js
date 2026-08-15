@@ -46,7 +46,59 @@ async function renderNen(){
   }catch(e){el.textContent='⚠ '+e.message}
 }
 
+/* ===== V37: KỲ BÁO CÁO toàn dashboard — trang báo cáo tổng quan.
+   KHÔNG chọn gì → TỔNG QUAN (toàn bộ dữ liệu). Chọn kỳ → mọi chỉ số hoạt động tính theo kỳ.
+   Trang Quốc tế: chọn được từng quốc gia (BC_QG) — lọc toàn bộ báo cáo. ===== */
+function _d10(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')} // theo giờ địa phương — KHÔNG dùng toISOString (lệch múi giờ)
+function kyBC(){
+  const all=window.BC_ALL!==false; // mặc định: tổng quan
+  const tu=window.BC_TU||_d10(new Date(new Date().getFullYear(),0,1));
+  const den=window.BC_DEN||_d10(new Date());
+  return {tu,den,all};
+}
+function datKyBC(kieu){
+  const nay=new Date();
+  window.BC_ALL=false;
+  if(kieu==='thang'){window.BC_TU=_d10(new Date(nay.getFullYear(),nay.getMonth(),1));window.BC_DEN=_d10(nay)}
+  else if(kieu==='quy'){const q=Math.floor(nay.getMonth()/3)*3;window.BC_TU=_d10(new Date(nay.getFullYear(),q,1));window.BC_DEN=_d10(nay)}
+  else if(kieu==='nam'){window.BC_TU=_d10(new Date(nay.getFullYear(),0,1));window.BC_DEN=_d10(nay)}
+  else if(kieu==='all'){window.BC_ALL=true;window.BC_TU='';window.BC_DEN=''}
+  else{
+    const a=(document.getElementById('bcTu')||{}).value||'',b=(document.getElementById('bcDen')||{}).value||'';
+    if(a||b){window.BC_TU=a||'2000-01-01';window.BC_DEN=b||_d10(nay)}
+    else window.BC_ALL=true; // không chọn gì → tổng quan
+  }
+  renderTQ();
+}
+/* Bộ lọc quốc gia của báo cáo (chỉ trang Quốc tế) */
+function bcQG(){return (MOD==='qt'&&window.BC_QG)?window.BC_QG:''}
+function datQGBC(v){window.BC_QG=v||'';renderTQ()}
+function O_BC(){const q=bcQG();return q?ORGS.filter(o=>o.quoc_gia===q):ORGS}
+function D_BC(){const q=bcQG();return q?DEALS.filter(d=>d.quoc_gia===q):DEALS}
+function T_BC(){const q=bcQG();if(!q)return TPS;
+  const ids=new Set(O_BC().map(o=>o.id)),dd=new Set(D_BC().map(d=>d.id));
+  return TPS.filter(x=>ids.has(x.org_id)||(x.deal_id&&dd.has(x.deal_id)))}
+function R_BC(){const q=bcQG();return q?REVS.filter(r=>r.quoc_gia===q):REVS}
+function capNhatQGSel(){
+  const sel=document.getElementById('bcQG');if(!sel)return;
+  if(MOD!=='qt'){sel.style.display='none';window.BC_QG='';return}
+  sel.style.display='';
+  const qgs=[...new Set(ORGS.map(o=>o.quoc_gia).concat(DEALS.map(d=>d.quoc_gia)).filter(q=>q&&q!=='VN'))].sort();
+  const cur=window.BC_QG||'';
+  if(cur&&!qgs.includes(cur))window.BC_QG='';
+  sel.innerHTML='<option value="">'+t('— Tất cả quốc gia —')+'</option>'+
+    qgs.map(q=>`<option value="${q}"${q===(window.BC_QG||'')?' selected':''}>${isoName[q]||q}</option>`).join('');
+}
 function renderTQ(){
+  const KY=kyBC();
+  capNhatQGSel();
+  const ORGS=O_BC(),DEALS=D_BC(),TPS=T_BC(); // trong hàm này: dữ liệu đã lọc theo quốc gia đang xem
+  const bcTu=document.getElementById('bcTu'),bcDen=document.getElementById('bcDen'),bcNhan=document.getElementById('bcNhan');
+  if(bcTu&&document.activeElement!==bcTu)bcTu.value=KY.all?'':KY.tu;
+  if(bcDen&&document.activeElement!==bcDen)bcDen.value=KY.all?'':KY.den;
+  if(bcNhan)bcNhan.textContent=(KY.all?t('Tổng quan — toàn bộ dữ liệu'):(t('Báo cáo')+' '+KY.tu+' → '+KY.den))
+    +(bcQG()?' · '+(isoName[bcQG()]||bcQG()):'');
+  const TPS_KY=KY.all?TPS:TPS.filter(x=>x.ngay&&x.ngay>=KY.tu&&x.ngay<=KY.den);
   renderNen();
   const mt=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu');
   const mtKH=mt.filter(o=>o.phan_loai!=='npp');   // khách hàng (Nhóm 2/3) — đo thang phủ
@@ -57,23 +109,26 @@ function renderTQ(){
   const nContacts=ORGS.reduce((s,o)=>s+(o._nc||0),0);
   const dealTVTK=DEALS.filter(d=>d.tvtk_id||d.tvtk_text).length;
   const uuCao=DEALS.filter(d=>(d.uu_tien||'').startsWith('1')).length;
-  // ===== V36: bo KPI day du theo yeu cau CEO 15/08 =====
+  // ===== V37: bo KPI theo phong cach bao cao — nhat quan phe~u, khong con so ao =====
   const orgTC=ORGS.filter(o=>o.trang_thai_phu>=1||(o.phan_loai==='npp'&&o.pheu_npp&&o.pheu_npp!=='chua_tiep_can')).length;
-  const dealCoTX=new Set(TPS.filter(x=>x.deal_id).map(x=>x.deal_id));
-  const daTX=DEALS.filter(d=>dealCoTX.has(d.id)||d.stage!=='tiep_can').length;
-  const daCD=DEALS.filter(d=>d.owner||d.nguoi_phu_trach||d.npp_dang_ky_id||d.npp_chi_dinh).length;
-  const tongGT=DEALS.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
-  const gtKT=DEALS.filter(d=>d.stage!=='dong'&&(d.owner||d.nguoi_phu_trach||d.npp_dang_ky_id||d.npp_chi_dinh))
+  const dealDaCD=d=>d.owner||d.nguoi_phu_trach||d.npp_dang_ky_id||d.npp_chi_dinh;
+  const dealCoTX=new Set(TPS_KY.filter(x=>x.deal_id).map(x=>x.deal_id));
+  // Tổng quan: đã tiếp cận BAO GỒM DA đã chỉ định / đã qua giai đoạn tiếp cận (phễu nhất quán: chỉ định ⊂ tiếp cận)
+  const daTX=DEALS.filter(d=>dealCoTX.has(d.id)||(KY.all&&(d.stage!=='tiep_can'||dealDaCD(d)))).length;
+  const daCD=DEALS.filter(dealDaCD).length;
+  const coGT=DEALS.filter(d=>+d.gia_tri_uoc>0);
+  const tongGT=coGT.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
+  const gtKT=DEALS.filter(d=>d.stage!=='dong'&&dealDaCD(d))
     .reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
   const thang=DEALS.filter(d=>d.stage==='po'||(d.stage==='dong'&&!d.loss_reason)).length;
   const thua=DEALS.filter(d=>d.stage==='dong'&&d.loss_reason).length;
   kpis.innerHTML=[
     ['Tổng đối tác',ORGS.length,`${orgTC} đã tiếp cận · ${ORGS.length-orgTC} chưa tiếp cận (${pct(orgTC,ORGS.length)})`],
     ['Độ phủ KH ≥1 / ≥2',`${pct(phu1,mtKH.length)} / ${pct(phu2,mtKH.length)}`,`${phu1} · ${phu2} / ${mtKH.length} tài khoản KH`],
-    ['Tổng dự án',DEALS.length,`${daTX} đã tiếp cận · ${DEALS.length-daTX} chưa tiếp cận (${pct(daTX,DEALS.length)})`],
+    ['Tổng dự án',DEALS.length,`${daTX} ${KY.all?'đã tiếp cận':'đã tiếp cận trong kỳ'} · ${DEALS.length-daTX} chưa (${pct(daTX,DEALS.length)})`],
     ['Đã chỉ định / phân công',pct(daCD,DEALS.length),`${daCD} đã chỉ định · ${DEALS.length-daCD} chưa chỉ định`],
-    ['Giá trị khai thác',fmtB(gtKT),`tỉ lệ khai thác ${pct(gtKT,tongGT)} trên tổng ${fmtB(tongGT)}`],
-    ['Tỷ lệ win',`${pct(thang,thang+thua)}`,`${thang} Thắng · ${thua} Thua/Hủy — trên dự án đã đóng sổ`],
+    ['Giá trị khai thác',fmtB(gtKT),`${pct(gtKT,tongGT)} / ${fmtB(tongGT)} — ${coGT.length}/${DEALS.length} DA có giá trị ước`],
+    ['Tỷ lệ win',thua?`${pct(thang,thang+thua)}`:(thang?thang+' W':'—'),thua?`${thang} Thắng · ${thua} Thua/Hủy — trên dự án đã đóng sổ`:`${thang} Thắng · chưa ghi nhận thua/hủy — tỷ lệ chưa có ý nghĩa`],
     ['Có người phụ trách',pct(coChu,mt.length),`${coChu}/${mt.length} — danh mục CEO duyệt`],
     ['Dự án ưu tiên cao',uuCao,`trên ${DEALS.length} dự án · TVTK nối ${pct(dealTVTK,DEALS.length)}`]
   ].map(([h,v,m])=>`<div class="kpi"><h3>${h}</h3><div class="v">${v}</div><div class="m">${m}</div></div>`).join('');
@@ -86,13 +141,14 @@ function renderTQ(){
       <span class="pill p${i}" style="width:170px">${PHU[i]}</span>
       <div class="bar" style="flex:1"><i style="width:${mtKH.length?n/mtKH.length*100:0}%"></i></div>
       <b style="width:44px;text-align:right">${n}</b></div>`}).join('')+
-    `<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🤝 Phễu NPP/Agent (Nhóm 1 — không tính vào thang phủ khách hàng)</b></div>`+
-    Object.entries(PHEU_NPP).map(([k,[nhan,cls]])=>{
-      const n=mtNPP.filter(o=>o.pheu_npp===k).length;if(!n&&k!=='da_ky_hd')return '';
+    `<div class="muted" style="font-size:12px;margin:10px 0 6px"><b>🤝 Phễu NPP/Agent (toàn bộ danh mục — không tính vào thang phủ khách hàng)</b></div>`+
+    (()=>{const nppAllArr=ORGS.filter(o=>o.phan_loai==='npp'); // V37: cùng một tập với bảng khai thác — hết lệch số
+    return Object.entries(PHEU_NPP).map(([k,[nhan,cls]])=>{
+      const n=nppAllArr.filter(o=>o.pheu_npp===k).length;if(!n&&k!=='da_ky_hd')return '';
       return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
       <span class="pill ${cls}" style="width:170px">${nhan}</span>
-      <div class="bar" style="flex:1"><i style="width:${mtNPP.length?n/mtNPP.length*100:0}%"></i></div>
-      <b style="width:44px;text-align:right">${n}</b></div>`}).join('');
+      <div class="bar" style="flex:1"><i style="width:${nppAllArr.length?n/nppAllArr.length*100:0}%"></i></div>
+      <b style="width:44px;text-align:right">${n}</b></div>`}).join('')})();
 
   // V36: tinh tren TOAN BO danh muc (khong chi 'muc tieu'); ND chia theo VUNG, QT theo quoc gia
   const ndMode=MOD==='nd';
@@ -107,7 +163,8 @@ function renderTQ(){
     Object.entries(byQG).sort((a,b)=>b[1].n-a[1].n).map(([q,v])=>
     `<tr><td>${ndMode?esc((typeof VUNGDM!=='undefined'&&VUNGDM[q])||q):(isoName[q]||q)}</td><td class="num">${v.n}</td><td class="num">${v.p}</td><td class="num">${pct(v.p,v.n)}</td>
      <td class="num">${v.da}</td><td class="num">${v.gt?fmtB(v.gt):'—'}</td></tr>`).join('')+'</table>'+
-    '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Tính trên toàn bộ danh mục của trang này')+' — '+ORGS.length+' '+t('tài khoản')+' · '+DEALS.length+' '+t('dự án')+'</div>';
+    '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Tính trên toàn bộ danh mục của trang này')+' — '+ORGS.length+' '+t('tài khoản')+' · '+DEALS.length+' '+t('dự án')+
+    (ndMode&&DEALS.filter(d=>!d.vung).length?' · ⚠ '+DEALS.filter(d=>!d.vung).length+' '+t('dự án chưa gán vùng'):'')+'</div>';
 
   // Kết quả theo nhóm quan hệ × quốc gia
   const tp30=new Set(TPS.filter(t=>t.ngay>=new Date(Date.now()-30*864e5).toISOString().slice(0,10)).map(t=>t.org_id));
@@ -207,6 +264,7 @@ async function duyetNhanh(i,tt){
 /* ===== V36: NPP ĐÃ KÝ HĐ — số dự án đang theo, kết quả, tỉ lệ thành công, giá trị khai thác ===== */
 function renderNppKhaiThac(){
   const el=document.getElementById('nppChart');if(!el)return;
+  const ORGS=O_BC(),DEALS=D_BC(); // V37: theo quốc gia đang xem
   const npps=ORGS.filter(NPP_KYHD);
   if(!npps.length){el.innerHTML='<div class="muted">'+t('Chưa có NPP ký HĐ')+'</div>';return}
   el.classList.remove('muted');
@@ -216,11 +274,11 @@ function renderNppKhaiThac(){
     const thangN=cua.filter(d=>d.stage==='po'||(d.stage==='dong'&&!d.loss_reason)).length;
     const thuaN=cua.filter(d=>d.stage==='dong'&&d.loss_reason).length;
     const gt=dang.reduce((s,d)=>s+(+d.gia_tri_uoc||0),0);
-    return {ten:o.ten,qg:o.quoc_gia||'',dang:dang.length,gt,thang:thangN,thua:thuaN};
+    return {ten:o.ten,ma:o.ma_code||'',qg:o.quoc_gia||'',dang:dang.length,gt,thang:thangN,thua:thuaN};
   }).sort((a,b)=>b.dang-a.dang||b.gt-a.gt);
-  el.innerHTML='<table><tr><th>NPP</th><th>'+t('Thị trường')+'</th><th class="num">'+t('Đang theo')+'</th><th class="num">'+t('Giá trị ước')+'</th><th class="num">'+t('Thắng')+'</th><th class="num">'+t('Thua/Hủy')+'</th><th class="num">'+t('Tỷ lệ win')+'</th></tr>'+
+  el.innerHTML='<table><tr><th>'+t('Mã')+'</th><th>NPP</th><th>'+t('Thị trường')+'</th><th class="num">'+t('Đang theo')+'</th><th class="num">'+t('Giá trị ước')+'</th><th class="num">'+t('Thắng')+'</th><th class="num">'+t('Thua/Hủy')+'</th><th class="num">'+t('Tỷ lệ win')+'</th></tr>'+
     rows.map(r=>{const co=r.thang+r.thua;
-      return `<tr><td><b>${esc(r.ten)}</b></td><td>${esc(r.qg)}</td>
+      return `<tr><td>${r.ma?'<b>'+esc(r.ma)+'</b>':'<span class="muted">—</span>'}</td><td><b>${esc(r.ten)}</b></td><td>${esc(r.qg)}</td>
       <td class="num"><b>${r.dang}</b></td><td class="num">${r.gt?fmtB(r.gt):'—'}</td>
       <td class="num" style="color:var(--ok,#0a7)">${r.thang}</td>
       <td class="num" style="color:var(--bad,#c33)">${r.thua}</td>
@@ -228,70 +286,78 @@ function renderNppKhaiThac(){
     '<div class="muted" style="font-size:11.5px;margin-top:6px">'+t('Đang theo')+' = '+t('dự án')+' stage ≠ '+t('Đóng')+' · '+t('Thắng')+' = PO/'+t('Đóng')+' '+t('không kèm')+' loss reason</div>';
 }
 
-/* ===== V36: TÌNH HÌNH KHAI THÁC CSDL — tài nguyên đang có vs hệ thống đã khai thác, theo từng đối tượng ===== */
+/* ===== V37: PHỄU KHAI THÁC CSDL — kho dự án nền là CSDL TỔNG, mọi bước quy từ đó ra
+   (theo yêu cầu CEO 15/08: tiếp xúc → đăng ký → chỉ định → theo đuổi → thắng/thua đều từ kho nền) ===== */
 async function renderKhaiThac(){
   const el=document.getElementById('ktChart');if(!el||!sb)return;
   if(typeof laStaffXem==='function'&&laStaffXem()){el.innerHTML='<div class="muted">'+t('Dành cho lãnh đạo')+'</div>';return}
   const qt=MOD==='qt';
-  // kỳ xem: CEO/Manager chọn lịch — mặc định từ đầu năm đến hôm nay
-  const tu=window.KT_TU||new Date(new Date().getFullYear(),0,1).toISOString().slice(0,10);
-  const den=window.KT_DEN||new Date().toISOString().slice(0,10);
-  // tài nguyên cần truy vấn: kho nền + báo giá (lọc đúng khu vực)
-  const kv=q=>qt?q.eq('khu_vuc','quoc_te'):q.or('khu_vuc.is.null,khu_vuc.neq.quoc_te');
+  const KY=kyBC(),tu=KY.tu,den=KY.den,qg=bcQG(); // dùng chung Kỳ báo cáo + quốc gia đầu trang
+  const ORGS=O_BC(),DEALS=D_BC(),TPS=T_BC(),REVS=R_BC();
+  // tài nguyên cần truy vấn: kho nền + báo giá (đúng khu vực; đúng quốc gia nếu đang xem 1 quốc gia)
+  const qgAcc=qg?[...new Set([qg,isoName[qg]||qg,(isoName[qg]||qg).toUpperCase()])]:null;
+  const kv=q=>{q=qt?q.eq('khu_vuc','quoc_te'):q.or('khu_vuc.is.null,khu_vuc.neq.quoc_te');return qgAcc?q.in('quoc_gia',qgAcc):q};
   const [nen,bg]=await Promise.all([
     kv(sb.from('crm_du_an_nen').select('id',{count:'exact',head:true})),
-    kv(sb.from('crm_quotations').select('gia_tri_bao_gia,trang_thai,ngay_update')).limit(3000)
+    kv(sb.from('crm_quotations').select('gia_tri_bao_gia,trang_thai,ngay_update,quoc_gia')).limit(3000)
   ]);
   const tongNen=nen.count||0;
   const bgRows=bg.data||[];
   const bgN=bgRows.length, bgGT=bgRows.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
   const ycsx=bgRows.filter(r=>/YCSX/i.test(r.trang_thai||''));
   const ycsxGT=ycsx.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
-  // chỉ số từ bộ nhớ (đã lọc theo trang)
+  // ===== PHỄU DỰ ÁN — nhất quán với bộ KPI đầu trang: chỉ định ⊂ tiếp cận =====
   const mtKH=ORGS.filter(o=>o.loai_ban_ghi==='muc_tieu'&&o.phan_loai!=='npp');
   const orgTC=ORGS.filter(o=>o.trang_thai_phu>=1||(o.phan_loai==='npp'&&o.pheu_npp&&o.pheu_npp!=='chua_tiep_can')).length;
   const phu2=mtKH.filter(o=>o.trang_thai_phu>=2).length;
   const nppAll=ORGS.filter(o=>o.phan_loai==='npp').length;
   const nppKy=ORGS.filter(NPP_KYHD).length;
   const bamSat=DEALS.filter(x=>x.ma_du_an_nen).length;
+  const dealDaCD=x=>x.owner||x.nguoi_phu_trach||x.npp_dang_ky_id||x.npp_chi_dinh;
   const dealCoTX=new Set(TPS.filter(x=>x.deal_id).map(x=>x.deal_id));
-  const daTX=DEALS.filter(x=>dealCoTX.has(x.id)||x.stage!=='tiep_can');
-  const daCD=DEALS.filter(x=>x.owner||x.nguoi_phu_trach||x.npp_dang_ky_id||x.npp_chi_dinh);
+  const daTX=DEALS.filter(x=>dealCoTX.has(x.id)||x.stage!=='tiep_can'||dealDaCD(x));
+  const daCD=DEALS.filter(dealDaCD);
   const gtCD=daCD.reduce((s,x)=>s+(+x.gia_tri_uoc||0),0);
   const gtTX=daTX.reduce((s,x)=>s+(+x.gia_tri_uoc||0),0);
   const thang=DEALS.filter(x=>x.stage==='po'||(x.stage==='dong'&&!x.loss_reason)).length;
   const thua=DEALS.filter(x=>x.stage==='dong'&&x.loss_reason).length;
   const dtTong=REVS.reduce((s,r)=>s+(+r.so_tien||0),0);
-  // ===== chỉ số theo KỲ (khoảng thời gian chọn) =====
-  const bgKy=bgRows.filter(r=>{const n=(r.ngay_update||'').slice(0,10);return n&&n>=tu&&n<=den});
+  // ===== chỉ số theo KỲ (tổng quan = toàn bộ) =====
+  const bgKy=KY.all?bgRows:bgRows.filter(r=>{const n=(r.ngay_update||'').slice(0,10);return n&&n>=tu&&n<=den});
   const bgKyGT=bgKy.reduce((s,r)=>s+(+r.gia_tri_bao_gia||0),0);
   const ycsxKy=bgKy.filter(r=>/YCSX/i.test(r.trang_thai||''));
-  const dtKy=REVS.filter(r=>{const m=(r.thang||'').slice(0,7);return m&&m>=tu.slice(0,7)&&m<=den.slice(0,7)})
+  const dtKy=KY.all?dtTong:REVS.filter(r=>{const m=(r.thang||'').slice(0,7);return m&&m>=tu.slice(0,7)&&m<=den.slice(0,7)})
     .reduce((s,r)=>s+(+r.so_tien||0),0);
+  el.classList.remove('muted');
+  const kyNhan=KY.all?t('toàn bộ'):t('trong kỳ');
+  const kyHtml=`<div class="grid g3" style="margin-bottom:12px">
+    <div class="kpi"><h3>${t('Báo giá phát hành')} (${kyNhan})</h3><div class="v">${fmtB(bgKyGT)}</div><div class="m">${bgKy.length} ${t('báo giá')} · ${ycsxKy.length} YCSX</div></div>
+    <div class="kpi"><h3>${t('Doanh thu')} (${kyNhan})</h3><div class="v">${fmtB(dtKy)}</div><div class="m">${KY.all?t('Toàn bộ dữ liệu'):tu+' → '+den}</div></div>
+    <div class="kpi"><h3>${t('Tỉ lệ chuyển đổi')}</h3><div class="v">${pct(dtKy,bgKyGT)}</div><div class="m">${t('Doanh thu')} / ${t('giá trị chào')} (${kyNhan})</div></div>
+  </div>`;
+  const F=(buoc,n,truoc,gia)=>`<tr><td>${buoc}</td><td class="num"><b>${n.toLocaleString('vi')}</b></td>
+    <td class="num">${truoc?pct(n,truoc):'—'}</td><td class="num">${tongNen?pct(n,tongNen):'—'}</td>
+    <td class="num">${gia!=null?fmtB(gia):'—'}</td></tr>`;
   const H=(dt,tong,kt,gia)=>`<tr><td>${dt}</td><td class="num">${tong.toLocaleString('vi')}</td>
     <td class="num"><b>${kt.toLocaleString('vi')}</b></td><td class="num">${pct(kt,tong)}</td>
     <td class="num">${gia!=null?fmtB(gia):'—'}</td></tr>`;
-  el.classList.remove('muted');
-  const kyHtml=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-    <b style="font-size:12.5px">${t('Kỳ:')}</b>
-    <input type="date" id="ktTu" value="${tu}"><span class="muted">→</span><input type="date" id="ktDen" value="${den}">
-    <button class="btn" onclick="window.KT_TU=document.getElementById('ktTu').value;window.KT_DEN=document.getElementById('ktDen').value;renderKhaiThac()">${t('Tính')}</button>
-  </div>
-  <div class="grid g3" style="margin-bottom:12px">
-    <div class="kpi"><h3>${t('Báo giá phát hành (kỳ)')}</h3><div class="v">${fmtB(bgKyGT)}</div><div class="m">${bgKy.length} ${t('báo giá')} · ${ycsxKy.length} YCSX</div></div>
-    <div class="kpi"><h3>${t('Doanh thu kỳ')}</h3><div class="v">${fmtB(dtKy)}</div><div class="m">${tu} → ${den}</div></div>
-    <div class="kpi"><h3>${t('Tỉ lệ chuyển đổi')}</h3><div class="v">${pct(dtKy,bgKyGT)}</div><div class="m">${t('Doanh thu')} / ${t('giá trị chào')} ${t('trong kỳ')}</div></div>
-  </div>`;
-  el.innerHTML=kyHtml+'<table><tr><th>'+t('Đối tượng')+'</th><th class="num">'+t('Tổng CSDL')+'</th><th class="num">'+t('Đã khai thác')+'</th><th class="num">'+t('Tỉ lệ')+'</th><th class="num">'+t('Giá trị')+' (VND)</th></tr>'+
-    H(t('Kho dự án nền → đưa vào bám sát'),tongNen,bamSat,null)+
-    H(t('Dự án theo dõi → đã tiếp cận'),DEALS.length,daTX.length,gtTX)+
-    H(t('Dự án theo dõi → đã chỉ định'),DEALS.length,daCD.length,gtCD)+
-    H(t('Dự án đóng sổ → thắng'),thang+thua,thang,null)+
-    H(t('Đối tác → đã tiếp cận'),ORGS.length,orgTC,null)+
-    H(t('Đối tác → quan hệ thực (≥2)'),mtKH.length,phu2,null)+
-    H(t('NPP phễu → đã ký HĐ'),nppAll,nppKy,null)+
-    H(t('Báo giá → chốt YCSX'),bgN,ycsx.length,ycsxGT)+
-    `<tr><td>${t('Doanh thu ghi nhận')}</td><td class="num">${REVS.length.toLocaleString('vi')} ${t('dòng ghi nhận')}</td><td class="num">—</td><td class="num">—</td><td class="num"><b>${fmtB(dtTong)}</b></td></tr>`+
-    '</table>'+
-    `<div class="muted" style="font-size:11.5px;margin-top:6px">${t('giá trị chào')}: <b>${fmtB(bgGT)}</b> · ${t('Giá trị khai thác')} (${t('đã chỉ định')}, ${t('chưa đóng')}): <b>${fmtB(daCD.filter(x=>x.stage!=='dong').reduce((s,x)=>s+(+x.gia_tri_uoc||0),0))}</b></div>`;
+  el.innerHTML=kyHtml
+    +`<div class="muted" style="font-size:12px;margin-bottom:6px"><b>🔻 ${t('Phễu khai thác từ kho nền')}</b> — ${t('kho dự án nền là CSDL tổng, mọi bước quy từ đó ra')}</div>`
+    +'<table><tr><th>'+t('Bước phễu')+'</th><th class="num">'+t('Số lượng')+'</th><th class="num">'+t('% bước trước')+'</th><th class="num">'+t('% kho nền')+'</th><th class="num">'+t('Giá trị')+' (VND)</th></tr>'
+    +F(t('Kho dự án nền (CSDL tổng)'),tongNen,null,null)
+    +F(t('Đưa vào theo dõi'),DEALS.length,tongNen,null)
+    +F(t('Đã tiếp cận'),daTX.length,DEALS.length,gtTX)
+    +F(t('Đã chỉ định NPP/phụ trách'),daCD.length,daTX.length,gtCD)
+    +F(t('Đã đóng sổ'),thang+thua,daCD.length,null)
+    +F(t('Thắng (PO)'),thang,thang+thua,null)
+    +'</table>'
+    +`<div class="muted" style="font-size:11.5px;margin:4px 0 12px">${bamSat}/${DEALS.length} ${t('DA theo dõi đã nối mã kho nền')} — <b>${DEALS.length-bamSat}</b> ${t('chưa nối')}${thua===0?' · ⚠ '+t('chưa ghi nhận thua/hủy'):''}</div>`
+    +'<table><tr><th>'+t('Đối tượng')+'</th><th class="num">'+t('Tổng CSDL')+'</th><th class="num">'+t('Đã khai thác')+'</th><th class="num">'+t('Tỉ lệ')+'</th><th class="num">'+t('Giá trị')+' (VND)</th></tr>'
+    +H(t('Đối tác → đã tiếp cận'),ORGS.length,orgTC,null)
+    +H(t('Đối tác → quan hệ thực (≥2)'),mtKH.length,phu2,null)
+    +H(t('NPP phễu → đã ký HĐ'),nppAll,nppKy,null)
+    +H(t('Báo giá → chốt YCSX'),bgN,ycsx.length,ycsxGT)
+    +`<tr><td>${t('Doanh thu ghi nhận')}</td><td class="num">${REVS.length.toLocaleString('vi')} ${t('dòng ghi nhận')}</td><td class="num">—</td><td class="num">—</td><td class="num"><b>${fmtB(dtTong)}</b></td></tr>`
+    +'</table>'
+    +`<div class="muted" style="font-size:11.5px;margin-top:6px">${t('giá trị chào')}: <b>${fmtB(bgGT)}</b> · ${t('Giá trị khai thác')} (${t('đã chỉ định')}, ${t('chưa đóng')}): <b>${fmtB(daCD.filter(x=>x.stage!=='dong').reduce((s,x)=>s+(+x.gia_tri_uoc||0),0))}</b></div>`;
 }

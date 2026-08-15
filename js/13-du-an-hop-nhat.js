@@ -57,13 +57,13 @@ renderDA=function(){
   // nạp bộ lọc NPP + người phụ trách
   const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
-    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc((n.ma_code?n.ma_code+' · ':'')+n.ten)}</option>`).join('');
     fdaNPP.value=cur}
   const owners=[...new Set(DEALS.flatMap(d=>[d.owner,d.nguoi_phu_trach]).filter(Boolean))].sort();
   if(fdaNguoi.options.length-1!==owners.length){const cur=fdaNguoi.value;
     fdaNguoi.innerHTML='<option value="">— '+t('Người phụ trách')+' —</option>'+owners.map(o=>`<option>${esc(o)}</option>`).join('');
     fdaNguoi.value=cur}
-  const npByid=Object.fromEntries(npps.map(n=>[n.id,n.ten]));
+  const npByid=Object.fromEntries(npps.map(n=>[n.id,(n.ma_code?n.ma_code+' · ':'')+n.ten]));
   // ---- dòng PIPELINE (🎯) đã lọc ----
   let rows=DEALS.filter(d=>
     (DA_MODE==='chidinh'?daGiao(d):!daGiao(d))&&
@@ -174,7 +174,7 @@ function moPhanCong(i){
     <label style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
       <input type="radio" name="pcKieu" value="npp" checked style="width:auto" onchange="pcDoiKieu()"> <b>${t('Giao cho NPP')}</b></label>
     <select id="pcNPP" style="width:100%;margin-bottom:10px">
-      ${npps.map(o=>`<option value="${o.id}">${esc(o.ten)}</option>`).join('')}</select>
+      ${npps.map(o=>`<option value="${o.id}">${esc((o.ma_code?o.ma_code+' · ':'')+o.ten)}</option>`).join('')}</select>
     <label style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
       <input type="radio" name="pcKieu" value="noibo" style="width:auto" onchange="pcDoiKieu()"> <b>${t('Phân công nội bộ (nhân sự NSCA)')}</b></label>
     <select id="pcNS" style="width:100%;margin-bottom:10px" disabled>

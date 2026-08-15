@@ -159,7 +159,7 @@ renderDA=function(){
   const q=fdaQ.value.toLowerCase(),tp=fdaTP.value.toLowerCase(),hm=fdaHM.value.toLowerCase();
   const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
-    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc((n.ma_code?n.ma_code+' · ':'')+n.ten)}</option>`).join('');
     fdaNPP.value=cur}
   // nạp bộ lọc người phụ trách (nhân sự + owner distinct)
   const owners=[...new Set(DEALS.flatMap(d=>[d.owner,d.nguoi_phu_trach]).filter(Boolean))].sort();
@@ -265,7 +265,7 @@ function renderWs(d,quots,tps,hts,files){
             ${(window.NHANSU||[]).filter(n=>!['npp_lead','npp_staff'].includes(n.vai_tro)).map(n=>
               `<option value="${esc(n.ho_ten)}"${(d.nguoi_phu_trach||d.owner)===n.ho_ten?' selected':''}>${esc(n.ho_ten)}</option>`).join('')}</select>
           <select id="wsNPP" style="min-width:200px"><option value="">— ${t('Chọn NPP')} —</option>
-            ${ORGS.filter(NPP_KYHD).map(o=>`<option value="${o.id}"${d.npp_dang_ky_id===o.id?' selected':''}>${esc(o.ten)}</option>`).join('')}</select>
+            ${ORGS.filter(NPP_KYHD).map(o=>`<option value="${o.id}"${d.npp_dang_ky_id===o.id?' selected':''}>${esc((o.ma_code?o.ma_code+' · ':'')+o.ten)}</option>`).join('')}</select>
           <button class="btn pri" onclick="wsGan('${d.id}')">💾 ${t('Lưu')}</button>
           <span class="muted" id="wsGanMsg" style="align-self:center"></span>
         </div></div>`:'')+

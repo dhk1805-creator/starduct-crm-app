@@ -56,6 +56,17 @@
 
 <!-- ============ TỔNG QUAN ============ -->
 <section id="tab-tq">
+  <div class="card" style="padding:10px 14px;margin-bottom:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <b>📅 Kỳ báo cáo</b>
+    <input type="date" id="bcTu"><span class="muted">→</span><input type="date" id="bcDen">
+    <button class="btn" onclick="datKyBC('thang')">Tháng này</button>
+    <button class="btn" onclick="datKyBC('quy')">Quý này</button>
+    <button class="btn" onclick="datKyBC('nam')">Năm nay</button>
+    <button class="btn" onclick="datKyBC('all')">Toàn bộ</button>
+    <button class="btn pri" onclick="datKyBC()">Xem báo cáo</button>
+    <select id="bcQG" onchange="datQGBC(this.value)" style="display:none;min-width:170px"></select>
+    <span class="muted" id="bcNhan" style="font-size:12px"></span>
+  </div></div>
   <div class="grid g4" id="kpis"></div>
   <div class="card"><h2>📊 Tình hình khai thác CSDL — theo từng đối tượng</h2><div id="ktChart" class="muted">Đang tải…</div></div>
   <div class="grid g2" style="margin-top:14px">
@@ -530,6 +541,6 @@
 <script src="js/16-mobile.js"></script>
 <script src="js/17-nganh-hang-kh.js"></script>
 <script src="js/19-thi-truong.js"></script>
-<script src="js/18-version.js?v=36.0"></script>
+<script src="js/18-version.js?v=37.0"></script>
 </body>
 </html>

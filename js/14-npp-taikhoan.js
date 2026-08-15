@@ -98,7 +98,7 @@ async function nppTkTai(){
   if(q==='admin'){
     const npps=ORGS.filter(NPP_KYHD);
     tkNPP.innerHTML='<option value="">— '+t('Chọn NPP')+' —</option>'+
-      npps.map(o=>`<option value="${o.id}">${esc(o.ten)}${o.quoc_gia&&o.quoc_gia!=='VN'?' ('+o.quoc_gia+')':''}</option>`).join('');
+      npps.map(o=>`<option value="${o.id}">${esc((o.ma_code?o.ma_code+' · ':'')+o.ten)}${o.quoc_gia&&o.quoc_gia!=='VN'?' ('+o.quoc_gia+')':''}</option>`).join('');
     tkNPP.style.display='';
   } else nppTkVaiTro();
   tkList.innerHTML=rows.length?'<table><tr><th>NPP</th><th>'+t('Họ tên')+'</th><th>User</th><th>'+t('Vai trò')+'</th><th>'+t('Đăng nhập cuối')+'</th><th></th></tr>'+

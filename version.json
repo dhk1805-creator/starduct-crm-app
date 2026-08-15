@@ -1,5 +1,5 @@
 {
-  "version": "36.0",
+  "version": "37.0",
   "build": "15/08/2026",
-  "note": "Phat hanh V36: Market Information, du lieu QT tieng Anh, 9 NPP, 3 tang quyen, mobile theo ke hoach ngay, trao doi 2 chieu, gan nguoi phu trach + NPP trong Workspace"
+  "note": "V37: Dashboard = trang bao cao (mac dinh Tong quan, chon ky, chon quoc gia o trang QT), pheu khai thac tu kho nen, ma code NPP, doanh thu H1/2026 Noi dia + pipeline H2"
 }

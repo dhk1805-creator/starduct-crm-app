@@ -149,6 +149,7 @@ async function openOrg(id){
     <div class="frow" id="rowPheu" style="${o.phan_loai==='npp'?'':'display:none'}"><label>Phễu NPP</label><select id="oPheu">
       <option value="">— Chưa xếp —</option>${Object.entries(PHEU_NPP).map(([k,v])=>
       `<option value="${k}"${o.pheu_npp===k?' selected':''}>${v[0]}</option>`).join('')}</select></div>
+    <div class="frow" id="rowMa" style="${o.phan_loai==='npp'?'':'display:none'}"><label>Mã NPP (code)</label><input id="oMa" value="${esc(o.ma_code||'')}" placeholder="NTK, GLX, ECA, EPH…" style="text-transform:uppercase"></div>
     <div class="frow"><label>Trạng thái phủ</label><select id="oPhu">${PHU.map((p,i)=>
       `<option value="${i}"${o.trang_thai_phu===i?' selected':''}>${p}</option>`).join('')}</select></div>
     <div class="frow"><label>Nhóm quan hệ</label><select id="oQH">
@@ -170,12 +171,13 @@ async function openOrg(id){
     <div style="margin-top:14px;display:flex;gap:8px"><button class="btn pri" onclick="saveOrg('${id||''}')">Lưu</button>
     ${id?`<button class="btn" onclick="dlgOrg.close();openThread('org','${id}','${esc(o.ten)}')">💬 Thảo luận & phê duyệt</button>`:''}</div>`;
   dlgOrg.showModal();applyLang();
-  oPL.onchange=()=>{document.getElementById('rowPheu').style.display=oPL.value==='npp'?'':'none'};
+  oPL.onchange=()=>{const sh=oPL.value==='npp'?'':'none';document.getElementById('rowPheu').style.display=sh;document.getElementById('rowMa').style.display=sh};
 }
 async function saveOrg(id){
   const rec={ten:oTen.value.trim(),phan_loai:oPL.value,quoc_gia:oQG.value.trim().toUpperCase(),
     trang_thai_phu:+oPhu.value,quan_he:oQH.value||null,
-    pheu_npp:(oPL.value==='npp'?(oPheu.value||null):null),nguoi_phu_trach:oChu.value.trim()||null,
+    pheu_npp:(oPL.value==='npp'?(oPheu.value||null):null),
+    ma_code:(oPL.value==='npp'?(oMa.value.trim().toUpperCase()||null):null),nguoi_phu_trach:oChu.value.trim()||null,
     vung:oVung.value||null,kenh_thuong_mai:oKenh.value||null,
     doi_thu_dang_chiem:oDT.value.trim()||null,ghi_chu:oGC.value.trim()||null,updated_at:new Date().toISOString()};
   if(!rec.ten)return;

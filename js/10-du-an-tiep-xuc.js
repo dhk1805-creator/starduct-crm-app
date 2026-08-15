@@ -10,7 +10,7 @@ function renderDA(){
   // nạp danh sách NPP cho bộ lọc (một lần mỗi render, giữ lựa chọn)
   const npps=ORGS.filter(NPP_KYHD);
   if(fdaNPP.options.length-1!==npps.length){const cur=fdaNPP.value;
-    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc(n.ten)}</option>`).join('');
+    fdaNPP.innerHTML='<option value="">'+t('— NPP —')+'</option>'+npps.map(n=>`<option value="${n.id}">${esc((n.ma_code?n.ma_code+' · ':'')+n.ten)}</option>`).join('');
     fdaNPP.value=cur}
   let rows=DEALS.filter(d=>
     (!q||d.ten.toLowerCase().includes(q)||(d.cdt_text||'').toLowerCase().includes(q)||

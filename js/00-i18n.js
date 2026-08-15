@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v36.0 · 15/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v37.0 · 15/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -811,9 +811,45 @@ FRAG.push(
 ['Doanh thu ghi nhận','Recorded revenue'],
 ['giá trị chào','quoted value'],
 ['Báo giá phát hành (kỳ)','Quotations issued (period)'],
+['Báo giá phát hành','Quotations issued'],
 ['Tỉ lệ chuyển đổi','Conversion rate'],
+// ---- V37: trang báo cáo tổng quan + phễu kho nền + quốc gia ----
+['Tổng quan — toàn bộ dữ liệu','Overview — all data'],
+['— Tất cả quốc gia —','— All countries —'],
+['toàn bộ','all-time'],
+['Phễu khai thác từ kho nền','Exploitation funnel from base catalog'],
+['kho dự án nền là CSDL tổng, mọi bước quy từ đó ra','the base project catalog is the master database — every stage derives from it'],
+['Bước phễu','Funnel stage'],
+['Số lượng','Count'],
+['% bước trước','% of prior stage'],
+['% kho nền','% of base'],
+['Kho dự án nền (CSDL tổng)','Base project catalog (master DB)'],
+['Đưa vào theo dõi','Moved into tracking'],
+['Đã tiếp cận','Approached'],
+['Đã chỉ định NPP/phụ trách','Assigned distributor/owner'],
+['Đã đóng sổ','Closed out'],
+['Thắng (PO)','Won (PO)'],
+['DA theo dõi đã nối mã kho nền','tracked projects linked to the base catalog'],
+['chưa nối','not linked'],
+['chưa ghi nhận thua/hủy','no loss/cancel recorded yet'],
+['tỷ lệ chưa có ý nghĩa','ratio not meaningful yet'],
+['DA có giá trị ước','projects with estimated value'],
+['dự án chưa gán vùng','projects without a region'],
+['🤝 Phễu NPP/Agent (toàn bộ danh mục — không tính vào thang phủ khách hàng)','🤝 Distributor/Agent funnel (full catalog — excluded from customer coverage ladder)'],
+['Mã NPP (code)','Distributor code'],
+['Mã','Code'],
 ['trong kỳ','in period'],
 ['Dành cho lãnh đạo','For leadership'],
+['Kỳ báo cáo','Reporting period'],
+['Tháng này','This month'],
+['Quý này','This quarter'],
+['Năm nay','This year'],
+['Toàn bộ','All time'],
+['Xem báo cáo','View report'],
+['Toàn bộ dữ liệu','All data'],
+['Báo cáo','Report'],
+['đã tiếp cận trong kỳ','approached in period'],
+['chưa','not yet'],
 ['Tính trên toàn bộ danh mục của trang này','Computed over this page\u2019s full catalog'],
 ['Chưa xếp','Not set'],
 ['chưa đóng','not closed'],
