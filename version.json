@@ -1,5 +1,5 @@
 {
-  "version": "39.0",
+  "version": "40.0",
   "build": "15/08/2026",
-  "note": "V39: Cau noi ERP - dashboard doc song dang ky chi dinh, don hang/YCSX, giao hang tu he thong ERP NSCA (chung database, chi doc)"
+  "note": "V40: Buoc 2 mach 1 - YCSX tren ERP tu chuyen du an CRM sang PO (rpc crm_erp_dong_bo, SQL v47)"
 }

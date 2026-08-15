@@ -292,6 +292,12 @@ function renderNppKhaiThac(){
 async function renderERP(){
   const el=document.getElementById('erpChart');if(!el||!sb)return;
   if(typeof laStaffXem==='function'&&laStaffXem()){el.innerHTML='<div class="muted">'+t('Dành cho lãnh đạo')+'</div>';return}
+  // V40: dong bo mach 1 — YCSX tren ERP -> deal CRM sang PO (idempotent, an toan goi nhieu lan)
+  let syncLine='';
+  try{const sy=await sb.rpc('crm_erp_dong_bo');
+    const n=(sy.data||[]).find(x=>x.viec==='ycsx_sang_po')?.so_luong||0;
+    if(n>0)syncLine='<div class="notice" style="margin-bottom:8px">⚙ '+n+' '+t('dự án vừa tự chuyển sang PO theo YCSX từ ERP')+'</div>';
+  }catch(e){}
   const [dk,dh,gh]=await Promise.all([
     sb.from('v_crm_erp_dang_ky').select('*').order('created_at',{ascending:false}).limit(30),
     sb.from('v_crm_erp_don_hang').select('*').order('created_at',{ascending:false}).limit(15),
@@ -301,7 +307,7 @@ async function renderERP(){
   el.classList.remove('muted');
   const DK=dk.data||[],DH=dh.data||[],GH=gh.data||[];
   const tag=x=>x?'<span class="pill p1" style="font-size:10.5px">'+t('đã có trong CRM')+'</span>':'<span class="pill p3" style="font-size:10.5px">'+t('chưa có trong CRM')+'</span>';
-  let h='<div class="muted" style="font-size:12px;margin-bottom:8px"><b>📥 '+t('Đăng ký chỉ định từ NPP')+'</b> ('+DK.length+')</div>';
+  let h=syncLine+'<div class="muted" style="font-size:12px;margin-bottom:8px"><b>📥 '+t('Đăng ký chỉ định từ NPP')+'</b> ('+DK.length+')</div>';
   h+=DK.length?'<table><tr><th>NPP</th><th>'+t('Dự án')+'</th><th>CĐT</th><th>'+t('Mã')+'</th><th>'+t('Duyệt')+'</th><th class="num">'+t('Giá trị')+'</th><th></th></tr>'+
     DK.slice(0,12).map(r=>`<tr><td><b>${esc(r.npp||'')}</b></td><td>${esc((r.du_an||'').slice(0,50))}</td><td>${esc((r.cdt||'').slice(0,24))}</td><td>${esc(r.ma_da||'')}</td><td>${esc(r.duyet_dang_ky||'—')}</td><td class="num">${r.gia_tri_nganh?fmtB(+r.gia_tri_nganh):(r.tong_cong?fmtB(+r.tong_cong):'—')}</td><td>${tag(r.da_co_trong_crm)}</td></tr>`).join('')+'</table>'
     :'<div class="muted">'+t('Chưa có dữ liệu.')+'</div>';
