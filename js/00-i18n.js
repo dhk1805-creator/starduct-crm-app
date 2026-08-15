@@ -4,7 +4,7 @@
    Từ điển VI/EN (FRAG + _legacyVI2EN) và bộ dịch 2 chiều
    ========================================================================== */
 /* ================= NGÔN NGỮ VI/EN — dịch theo mảnh, phủ mọi text node ================= */
-const APP_VER='v42.0 · 15/08/2026';console.log('CRM build',APP_VER);
+const APP_VER='v43.0 · 15/08/2026';console.log('CRM build',APP_VER);
 let LANG=localStorage.getItem('crm_lang')||'vi';
 const FRAG=[
 // ---- bổ sung 14/08 v20: phễu NPP + win/loss + nối deal↔nền ----
@@ -849,6 +849,7 @@ FRAG.push(
 ['Số ĐH','Order no.'],
 ['Ngày giao','Delivery date'],
 ['Duyệt','Approval'],
+['Chờ duyệt','Awaiting approval'],['Đã duyệt','Approved'],['Từ chối','Rejected'],
 ['dự án vừa tự chuyển sang PO theo YCSX từ ERP','projects auto-moved to PO from ERP production orders'],
 ['Đăng ký chỉ định (ERP)','Designation request (ERP)'],
 ['Đăng ký chỉ định ERP','ERP designation request'],

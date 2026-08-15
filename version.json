@@ -1,5 +1,5 @@
 {
-  "version": "42.0",
+  "version": "43.0",
   "build": "15/08/2026",
-  "note": "V42: sua NaN gia tri dang ky ERP, khop ten chua nhau (da co trong CRM), mo doc cong no (RLS)"
+  "note": "V43: dang ky DA DUYET tu tao du an CRM (mach 4), sua hien thi gia tri json + nhan cot Duyet"
 }
