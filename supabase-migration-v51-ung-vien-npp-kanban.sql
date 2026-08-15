@@ -83,8 +83,9 @@ begin
       || 'estimated_value, status, source, created_at' || v_cols || ') '
       || 'values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10' || v_vals || ')'
       using v_npp_id, coalesce(r.npp,'NPP'), coalesce(r.du_an,'(chưa rõ tên)'),
-            coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'), nullif(r.tvtk,''), nullif(r.nha_thau,''),
-            v_gt, v_st, 'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now());
+            coalesce(nullif(r.cdt,''),'(chưa rõ CĐT)'),
+            coalesce(nullif(r.tvtk,''),'(chưa rõ)'), coalesce(nullif(r.nha_thau,''),'(chưa rõ)'),
+            coalesce(v_gt,0), v_st, 'chuyen-tu-BO-15/08/2026', coalesce(r.created_at, now());
     update crm_dang_ky_du_an set duyet_dang_ky='chuyen_kanban'
      where id=r.id and coalesce(duyet_dang_ky,'') in ('','cho_duyet');
     n := n + 1;
